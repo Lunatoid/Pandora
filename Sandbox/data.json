@@ -1,0 +1,109 @@
+﻿{
+    "items": [
+        {
+            "name": "Shaders/Phong",
+            "type": "Shader",
+            "sources": [
+                {
+                    "backend": "DirectX",
+                    "vertex": "data/shaders/Phong.Vertex.hlsl",
+                    "pixel": "data/shaders/Phong.Pixel.hlsl"
+                },
+                {
+                    "backend": "OpenGL",
+                    "vertex": "data/shaders/Phong.Vertex.glsl",
+                    "pixel": "data/shaders/Phong.Pixel.glsl"
+                }
+            ]
+        },
+        {
+            "name": "Shaders/Unlit",
+            "type": "Shader",
+            "sources": [
+                {
+                    "backend": "DirectX",
+                    "vertex": "data/shaders/Unlit.Vertex.hlsl",
+                    "pixel": "data/shaders/Unlit.Pixel.hlsl"
+                },
+                {
+                    "backend": "OpenGL",
+                    "vertex": "data/shaders/Unlit.Vertex.glsl",
+                    "pixel": "data/shaders/Unlit.Pixel.glsl"
+                }
+            ]
+        },
+        {
+            "name": "Shaders/Sprite",
+            "type": "Shader",
+            "sources": [
+                {
+                    "backend": "DirectX",
+                    "vertex": "data/shaders/Sprite.Vertex.hlsl",
+                    "pixel": "data/shaders/Sprite.Pixel.hlsl"
+                },
+                {
+                    "backend": "OpenGL",
+                    "vertex": "data/shaders/Sprite.Vertex.glsl",
+                    "pixel": "data/shaders/Sprite.Pixel.glsl"
+                }
+            ]
+        },
+        {
+            "name": "Shaders/SolidSprite",
+            "type": "Shader",
+            "sources": [
+                {
+                    "backend": "DirectX",
+                    "vertex": "data/shaders/SolidSprite.Vertex.hlsl",
+                    "pixel": "data/shaders/SolidSprite.Pixel.hlsl"
+                },
+                {
+                    "backend": "OpenGL",
+                    "vertex": "data/shaders/SolidSprite.Vertex.glsl",
+                    "pixel": "data/shaders/SolidSprite.Pixel.glsl"
+                }
+            ]
+        },
+        {
+            "name": "monkeTex",
+            "type": "Texture",
+            "source": "data/textures/monke.png",
+            "filtering": "Anisotropic",
+            "wrapping": "Clamp"
+        },
+        {
+            "name": "monkeTexInv",
+            "type": "Texture",
+            "source": "data/textures/monkeInv.png",
+            "filtering": "Anisotropic",
+            "wrapping": "Clamp"
+        },
+        {
+            "name": "monke",
+            "type": "Mesh",
+            "source": "data/models/monke.fbx"
+        },
+        {
+            "name": "OsakaFont",
+            "type": "Font",
+            "source": "data/fonts/osaka.ttf"
+        },
+        {
+            "name": "SegoeFont",
+            "type": "Font",
+            "source": "data/fonts/SegoeUI.ttf"
+        },
+        {
+            "name": "tunes",
+            "type": "Audio",
+            "source": "data/audio/tunes.wav"
+        },
+        {
+            "name": "tiles",
+            "type": "Texture",
+            "source": "data/textures/tiles.png",
+            "filtering": "Point",
+            "wrapping": "Clamp"
+        }
+    ]
+}

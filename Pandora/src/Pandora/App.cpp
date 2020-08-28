@@ -1,0 +1,197 @@
+#include "Pandora/App.h"
+
+#include "Pandora/Libs/ImGui/imgui.h"
+
+namespace pd {
+
+App::App(int argc, char** argv, VideoBackend backend, StringView title, Vec2i size, u32 style) :
+    catalog(ResourceCatalog::Get()), sceneManager(this) {
+    // General initialization
+    for (int i = 0; i < argc; i++) {
+        args.Add(argv[i]);
+    }
+
+    SeedRandom();
+    InitTicks();
+
+    // Open window and create video backend+renderer
+    window.Open(title, size, style);
+
+    video = VideoAPI::Create(&window, backend);
+    PD_ASSERT_D(video, "video backend could not be created (backend '%s')", VIDEO_BACKEND_NAMES[(int)backend].Data());
+
+    video->SetVsync(true);
+    video->SetViewport(window.GetSize());
+    video->SetClearColor(Color(0.1f, 0.1f, 0.1f));
+
+    renderer = video->GetRenderer();
+
+    // Create audio backend
+    audio = AudioAPI::Create(AudioBackend::SoLoud);
+
+    // Initialize all handlers
+    video->SetTextureRequestHandler(catalog);
+    video->SetShaderRequestHandler(catalog);
+    video->SetFontRequestHandler(catalog);
+    video->SetMeshRequestHandler(catalog);
+    audio->SetAudioRequestHandler(catalog);
+
+}
+
+App::~App() {
+    // Manually calling the destructor is kinda wack
+    catalog.~ResourceCatalog();
+
+    // Scene destructors must run before video/audio destructors
+    sceneManager.Delete();
+    AudioAPI::Delete();
+    VideoAPI::Delete();
+    window.Delete();
+    DeleteStorage();
+}
+
+void App::Run() {
+    if (IsRunning()) return;
+
+    isRunning = true;
+
+    Stopwatch deltaClock;
+
+    // The fixed framerate is not very optimized if we're just idling
+    while (IsRunning()) {
+        rawDelta = (f32)deltaClock.Restart().seconds;
+
+        OnUpdateInternal(rawDelta * updateTimescale);
+        OnRenderInternal(rawDelta * renderTimescale);
+
+        video->BindDefaultFrameBuffer();
+
+#if !defined(PD_NO_IMGUI)
+        OnImGuiInternal();
+#endif
+
+        // Window swap
+        video->Swap();
+
+        // Wait for next frame
+        if (fixedFramerate) {
+            while (deltaClock.GetElapsed().seconds < 1.0f / fixedFps);
+        }
+    }
+}
+
+void App::Quit() {
+    isRunning = false;
+}
+
+bool App::IsRunning() const {
+    return isRunning;
+}
+
+void App::PushEvent(Event* event) {
+    OnEventInternal(event);
+}
+
+void App::SetFixedFramerate(bool isOn, f32 fps) {
+    fixedFramerate = isOn;
+    fixedFps = fps;
+}
+
+Vec2 App::GetNormalizedMousePos() {
+    Vec2i windowSize = window.GetSize();
+
+    Vec2 normalized = Vec2((f32)mousePos.x, (f32)mousePos.y) / Vec2((f32)windowSize.x, (f32)windowSize.y);
+    normalized *= Vec2(2.0f);
+    normalized -= Vec2(1.0f);
+
+    return normalized;
+}
+
+Vec2i App::GetMousePosition() const {
+    return mousePos;
+}
+
+Window& App::GetWindow() {
+    return window;
+}
+
+InputManager& App::GetInputManager() {
+    return input;
+}
+
+Ref<Renderer> App::GetRenderer(RefType type) {
+    return renderer.NewRef(type);
+}
+
+SceneManager& App::GetSceneManager() {
+    return sceneManager;
+}
+
+void App::OnUpdateInternal(f32 dt) {
+    window.HandleEvents();
+    input.Update();
+
+    WindowEvent event;
+    while (window.PollEvent(&event)) {
+        PushEvent(&event);
+    }
+
+    OnUpdate(dt);
+    sceneManager.Update(dt);
+}
+
+void App::OnRenderInternal(f32 dt) {
+    video->Clear();
+
+    OnRender(dt);
+    sceneManager.Render(dt);
+}
+
+#if !defined(PD_NO_IMGUI)
+void App::OnImGuiInternal() {
+    // Explicitly check if we're quitting because otherwise we abort
+    if (!isRunning) return;
+
+    video->ImGuiNewFrame();
+    window.ImGuiNewFrame();
+    ImGui::NewFrame();
+
+    if (!window.IsCursorVisible()) {
+        ImGui::SetMouseCursor(ImGuiMouseCursor_None);
+    }
+
+    // Enable dockspace
+    ImGui::DockSpaceOverViewport(nullptr, ImGuiDockNodeFlags_PassthruCentralNode);
+
+    OnImGui();
+    sceneManager.ImGui();
+    ImGui::Render();
+    video->ImGuiRender();
+}
+#endif
+
+void App::OnEventInternal(Event* event) {
+    // Handle certain events
+    if (event->category == EventCategory::Window) {
+        WindowEvent* we = (WindowEvent*)event;
+
+        switch (we->type) {
+            case WindowEventType::Close: {
+                Quit();
+                break;
+            }
+
+            case WindowEventType::MouseMove: {
+                mousePos = Vec2i(we->mouseMove.position.x, window.GetSize().y - we->mouseMove.position.y);
+                break;
+            }
+        }
+    }
+    input.OnEvent(event);
+
+    // Pass the events to the user
+    OnEvent(event);
+    sceneManager.OnEvent(event);
+}
+
+}

@@ -1,0 +1,169 @@
+<?xml version="1.0" encoding="utf-8"?>
+<AutoVisualizer xmlns="http://schemas.microsoft.com/vstudio/debugger/natvis/2010">
+    <!-- Array -->
+    <Type Name="pd::Array&lt;*&gt;">
+        <DisplayString>{"$T1"} {{ count={count} }}</DisplayString>
+        <Expand>
+            <Item Name="[count]">count</Item>
+            <Item Name="[capacity]">bufferSize/sizeof($T1)</Item>
+            <Item Name="[buffer size]">bufferSize</Item>
+            <Item Name="[allocator]">allocator</Item>
+
+            <ArrayItems>
+                <Size>count</Size>
+                <ValuePointer>memory</ValuePointer>
+            </ArrayItems>
+        </Expand>
+    </Type>
+
+    <!-- String -->
+    <Type Name="pd::String">
+        <DisplayString>{{ string={memory,na}, count={strlen((char*)memory)} }}</DisplayString>
+        <Expand>
+            <Item Name="[capacity]">bufferSize</Item>
+            <Item Name="[allocator]">allocator</Item>
+            <Item Name="[string]">(char*)memory,na</Item>
+
+            <ArrayItems>
+                <Size>bufferSize</Size>
+                <ValuePointer>(u8*)memory</ValuePointer>
+            </ArrayItems>
+        </Expand>
+    </Type>
+
+    <!-- Slice -->
+    <Type Name="pd::Slice&lt;*&gt;">
+        <DisplayString>{"$T1"} {{ count={count} }}</DisplayString>
+        <Expand>
+            <Item Name="[count]">count</Item>
+            <ArrayItems>
+                <Size>count</Size>
+                <ValuePointer>memory</ValuePointer>
+            </ArrayItems>
+        </Expand>
+    </Type>
+
+    <!-- StringView -->
+    <Type Name="pd::StringView">
+        <DisplayString>{{ string={memory,[count]na}, count={count} }}</DisplayString>
+        <Expand>
+            <Item Name="[count]">count</Item>
+            <Item Name="[string]">(byte*)memory,na</Item>
+
+            <ArrayItems>
+                <Size>count</Size>
+                <ValuePointer>memory</ValuePointer>
+            </ArrayItems>
+        </Expand>
+    </Type>
+
+    <!-- Dictionary -->
+    <Type Name="pd::Dictionary&lt;*&gt;">
+        <DisplayString>{"$T1"}, {"$T2"} {{ count={count}, buckets={bufferSize/sizeof(DictEntry&lt;$T1,$T2&gt;)} }}</DisplayString>
+        <Expand>
+            <Item Name="[count]">count</Item>
+            <Item Name="[buckets]">bufferSize/sizeof(DictEntry&lt;$T1,$T2&gt;)</Item>
+            <Item Name="[allocator]">allocator,na</Item>
+            <Synthetic Name="[buckets]">
+                <Expand>
+                    <CustomListItems>
+                        <Variable Name="i" InitialValue="0" />
+                        <Loop>
+                            <If Condition="memory[i].dist >= 0">
+                                <Item Name="[{i}]">memory[i]</Item>
+                            </If>
+
+                            <Exec>i++</Exec>
+                            <Break Condition="i >= bufferSize/sizeof(DictEntry&lt;$T1,$T2&gt;)"/>
+                        </Loop>
+                    </CustomListItems>
+                </Expand>
+            </Synthetic>
+        </Expand>
+    </Type>
+
+    <!-- DictEntry -->
+    <Type Name="pd::DictEntry&lt;*&gt;">
+        <DisplayString>{{ {"$T1"}, {"$T2"} }}</DisplayString>
+        <Expand>
+            <Item Name="[distance]">(int)dist</Item>
+            <Item Name="[key]">key</Item>
+            <Item Name="[value]">val</Item>
+        </Expand>
+    </Type>
+
+    <!-- Ref -->
+    <Type Name="pd::Ref&lt;*&gt;">
+        <DisplayString>{"$T1"} {{ type={type}, strong={count->strong}, weak={count->weak} }}</DisplayString>
+        <Expand>
+            <Item Name="[type]">type</Item>
+            <Item Name="[count]">count,na</Item>
+            <Item Name="[data]">data,na</Item>
+        </Expand>
+    </Type>
+
+    <!-- Vec2 -->
+    <Type Name="pd::Vec2">
+        <DisplayString>{{ x={x}, y={y} }}</DisplayString>
+        <Expand>
+            <Item Name="[x]">x</Item>
+            <Item Name="[y]">y</Item>
+        </Expand>
+    </Type>
+
+    <!-- Vec3 -->
+    <Type Name="pd::Vec3">
+        <DisplayString>{{ x={x}, y={y}, z={z} }}</DisplayString>
+        <Expand>
+            <Item Name="[x]">x</Item>
+            <Item Name="[y]">y</Item>
+            <Item Name="[z]">z</Item>
+        </Expand>
+    </Type>
+
+    <!-- Vec4 -->
+    <Type Name="pd::Vec4">
+        <DisplayString>{{ x={x}, y={y}, z={z}, w={w} }}</DisplayString>
+        <Expand>
+            <Item Name="[x]">x</Item>
+            <Item Name="[y]">y</Item>
+            <Item Name="[z]">z</Item>
+            <Item Name="[w]">w</Item>
+        </Expand>
+    </Type>
+
+    <!-- Color -->
+    <Type Name="pd::Color">
+        <DisplayString>{{ r={r}, g={g}, b={b}, a={a} }}</DisplayString>
+        <Expand>
+            <Item Name="[r]">r</Item>
+            <Item Name="[g]">g</Item>
+            <Item Name="[b]">b</Item>
+            <Item Name="[a]">a</Item>
+        </Expand>
+    </Type>
+
+    <!-- Mat4 -->
+    <Type Name="pd::Mat4">
+        <DisplayString>{{ {elements[0]}, {elements[1]}, {elements[2]}, {elements[3]} }}</DisplayString>
+        <Expand>
+            <Item Name="[0]">elements[0]</Item>
+            <Item Name="[1]">elements[1]</Item>
+            <Item Name="[2]">elements[2]</Item>
+            <Item Name="[3]">elements[3]</Item>
+        </Expand>
+    </Type>
+
+    <!-- MemoryStream -->
+    <Type Name="pd::MemoryStream">
+        <DisplayString>{{ bufferSize={bufferSize}, ownsBuffer={ownsBuffer} }}</DisplayString>
+        <Expand>
+            <Item Name="[memory]">memory</Item>
+            <Item Name="[buffer size]">bufferSize</Item>
+            <Item Name="[position]">position</Item>
+            <Item Name="[owns buffer]">ownsBuffer</Item>
+            <Item Name="[can grow]">canGrow</Item>
+            <Item Name="[allocator]">allocator</Item>
+        </Expand>
+    </Type>
+</AutoVisualizer>

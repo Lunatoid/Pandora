@@ -1,0 +1,20 @@
+#include "Scene.h"
+
+#include "Pandora/App.h"
+
+namespace pd {
+
+Scene::Scene(App* app, StringView name) : app(app), resources(ResourceCatalog::Get()),
+    window(app->GetWindow()), input(app->GetInputManager()), sceneManager(app->GetSceneManager()) {
+    renderer = app->GetRenderer();
+}
+
+StringView Scene::GetName() {
+    return name;
+}
+
+Camera& Scene::GetCamera() {
+    return cam;
+}
+
+}
