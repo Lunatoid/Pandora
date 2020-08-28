@@ -12,6 +12,11 @@
 *.sln
 *.vcxproj*
 
+# Don't include archives
+*.box
+*.exe
+!premake5/premake.exe
+
 # User-specific files (MonoDevelop/Xamarin Studio)
 *.userprefs
 
