@@ -1,20 +1,27 @@
 #version 330 core
 
-layout(location = 0) in vec3 aPosition;
-layout(location = 1) in vec2 aUV;
-layout(location = 2) in vec3 aNormal;
+layout (location = 0) in vec3 position;
+layout (location = 1) in vec3 normal;
+layout (location = 2) in vec2 uv;
+layout (location = 3) in vec3 tangent;
 
-out vec3 position;
-out vec2 texUV;
-out vec3 normal;
+out VS_OUT {
+    vec3 fragPos;
+    vec2 uv;
+    vec3 tangentLightPos;
+    vec3 tangentViewPos;
+    vec3 tangentFragPos;
+} vs_out;
 
-uniform mat4 u_mvp;
+uniform mat4 u_view_proj;
 uniform mat4 u_model;
 
-void main() {
-    gl_Position = u_mvp * u_model * vec4(aPosition, 1.0);
+uniform vec3 lightPos;
+uniform vec3 viewPos;
 
-    position = (u_model * vec4(aPosition, 1.0)).xyz;
-    texUV = aUV;
-    normal = (u_model * vec4(aNormal, 0.0)).xyz;
+void main() {
+    vs_out.fragPos = vec3(u_model * vec4(position, 1.0));   
+    vs_out.uv = uv;
+    
+    gl_Position = u_view_proj * u_model * vec4(position, 1.0);
 }

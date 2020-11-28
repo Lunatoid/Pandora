@@ -61,6 +61,8 @@ void SpriteRenderer::Render() {
             sprites[i].position.z = zDistance * (f32)i;
         }
 
+        maxDepth = Max(sprites[i].position.z, maxDepth);
+
         sprites[i].GenerateVertices(vertices.Data() + (u64)i * 4);
 
         if (sprites[i].GetMaterialHash() != currBatch.spriteHash) {
@@ -75,7 +77,7 @@ void SpriteRenderer::Render() {
 
     for (int i = 0; i < batches.Count(); i++) {
         batches[i].material->Bind(renderer.Get());
-        renderer->DrawQuads(vertices.Data() + batches[i].offset * 4, batches[i].quadCount);
+        renderer->DrawQuads(vertices.Data() + (u64)batches[i].offset * 4, batches[i].quadCount);
         mvpBuffer->SetElement("u_mvp", mvp);
         mvpBuffer->Upload();
 
@@ -83,6 +85,10 @@ void SpriteRenderer::Render() {
     }
 
     sprites.Clear();
+}
+
+f32 SpriteRenderer::GetMaxDepth() const {
+    return maxDepth;
 }
 
 }

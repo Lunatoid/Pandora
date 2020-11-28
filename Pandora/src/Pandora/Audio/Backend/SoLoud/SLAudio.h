@@ -1,12 +1,12 @@
 #if !defined(PD_NO_SOLOUD)
 #pragma once
 
+#include <SoLoud/soloud_wav.h>
+#include <SoLoud/soloud_wavstream.h>
+
 #include "Pandora/Audio/Audio.h"
 
 #include "Pandora/Audio/Backend/SoLoud/SLAudioAPI.h"
-
-#include <SoLoud/soloud_wav.h>
-#include <SoLoud/soloud_wavstream.h>
 
 namespace pd {
 

@@ -1,18 +1,19 @@
 ﻿{
+    "compressed": true,
     "items": [
         {
-            "name": "Shaders/Phong",
+            "name": "Shaders/Lit",
             "type": "Shader",
             "sources": [
                 {
                     "backend": "DirectX",
-                    "vertex": "data/shaders/Phong.Vertex.hlsl",
-                    "pixel": "data/shaders/Phong.Pixel.hlsl"
+                    "vertex": "data/shaders/Lit.Vertex.hlsl",
+                    "pixel": "data/shaders/Lit.Pixel.hlsl"
                 },
                 {
                     "backend": "OpenGL",
-                    "vertex": "data/shaders/Phong.Vertex.glsl",
-                    "pixel": "data/shaders/Phong.Pixel.glsl"
+                    "vertex": "data/shaders/Lit.Vertex.glsl",
+                    "pixel": "data/shaders/Lit.Pixel.glsl"
                 }
             ]
         },
@@ -65,45 +66,82 @@
             ]
         },
         {
-            "name": "monkeTex",
+            "name": "MonkeTex",
             "type": "Texture",
             "source": "data/textures/monke.png",
             "filtering": "Anisotropic",
             "wrapping": "Clamp"
         },
         {
-            "name": "monkeTexInv",
+            "name": "MonkeTexInv",
             "type": "Texture",
             "source": "data/textures/monkeInv.png",
             "filtering": "Anisotropic",
             "wrapping": "Clamp"
         },
         {
-            "name": "monke",
-            "type": "Mesh",
-            "source": "data/models/monke.fbx"
-        },
-        {
-            "name": "OsakaFont",
-            "type": "Font",
-            "source": "data/fonts/osaka.ttf"
-        },
-        {
-            "name": "SegoeFont",
-            "type": "Font",
-            "source": "data/fonts/SegoeUI.ttf"
-        },
-        {
-            "name": "tunes",
-            "type": "Audio",
-            "source": "data/audio/tunes.wav"
-        },
-        {
-            "name": "tiles",
+            "name": "Tiles",
             "type": "Texture",
             "source": "data/textures/tiles.png",
             "filtering": "Point",
             "wrapping": "Clamp"
+        },
+        {
+            "name": "cerberus_A",
+            "type": "Texture",
+            "source": "data/textures/cerberus_A.png",
+            "filtering": "Trilinear",
+            "wrapping": "Repeat"
+        },
+        // {
+        //     "name": "cerberus_M",
+        //     "type": "Texture",
+        //     "source": "data/textures/cerberus_M.png",
+        //     "filtering": "Anisotropic",
+        //     "wrapping": "Repeat"
+        // },
+        {
+            "name": "cerberus_N",
+            "type": "Texture",
+            "source": "data/textures/cerberus_N.png",
+            "filtering": "Trilinear",
+            "wrapping": "Repeat"
+        },
+        // {
+        //     "name": "cerberus_R",
+        //     "type": "Texture",
+        //     "source": "data/textures/cerberus_R.png",
+        //     "filtering": "Anisotropic",
+        //     "wrapping": "Repeat"
+        // },
+        {
+            "name": "Cerberus",
+            "type": "Mesh",
+            "source": "data/models/cerberus.fbx"
+        },
+        {
+            "name": "BricksAlbedo",
+            "type": "Texture",
+            "source": "data/textures/bricks_albedo.png",
+            "filtering": "Anisotropic",
+            "wrapping": "Clamp"
+        },
+        {
+            "name": "BricksNormal",
+            "type": "Texture",
+            "source": "data/textures/bricks_normal.png",
+            "filtering": "Anisotropic",
+            "wrapping": "Clamp"
+        },
+        {
+            "name": "Plane",
+            "type": "Mesh",
+            "source": "data/models/plane.fbx"
+        },
+        {
+            "name": "Osaka",
+            "type": "Font",
+            "source": "data/fonts/osaka.ttf"
         }
     ]
 }

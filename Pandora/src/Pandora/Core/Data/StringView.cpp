@@ -1,12 +1,12 @@
 #include "StringView.h"
 
-#include "Pandora/Core/Data/String.h"
-
-#include "Pandora/Libs/utf8/utf8.h"
-
 #if defined(PD_WINDOWS)
 #include <Windows.h>
 #endif
+
+#include "Pandora/Core/Data/String.h"
+
+#include "Pandora/Libs/utf8/utf8.h"
 
 namespace pd {
 
@@ -122,7 +122,7 @@ void StringView::Adjust(int start, int count) {
     this->count = count;
 }
 
-codepoint StringView::At(int index) {
+codepoint StringView::At(int index) const {
     codepoint point = 0;
     const uchar* u = Data();
     for (int i = 0; i < index + 1; i++) {
@@ -153,6 +153,14 @@ bool StringView::operator==(const StringView& other) {
 
 codepoint StringView::operator[](int index) {
     return At(index);
+}
+
+StringViewIt StringView::begin() const {
+    return StringViewIt(*this, 0);
+}
+
+StringViewIt StringView::end() const {
+    return StringViewIt(*this, Count());
 }
 
 }

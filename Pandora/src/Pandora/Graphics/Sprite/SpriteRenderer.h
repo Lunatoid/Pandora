@@ -5,7 +5,6 @@
 #include "Pandora/Graphics/Renderer.h"
 #include "Pandora/Graphics/ConstantBuffer.h"
 #include "Pandora/Graphics/Camera.h"
-
 #include "Pandora/Graphics/Sprite/Sprite.h"
 
 namespace pd {
@@ -30,6 +29,12 @@ public:
     void Render();
     
     /// <summary>
+    /// Returns the max depth the sprites we're drawn to.
+    /// </summary>
+    /// <returns>The max depth the sprites we're drawn to.</returns>
+    f32 GetMaxDepth() const;
+
+    /// <summary>
     /// If <c>true</c> the sprite renderer will change the Z value to be squished together.
     /// This avoids Z-fighting while still using the depth buffer.
     /// </summary>
@@ -42,6 +47,7 @@ public:
 
 private:
     Mat4 mvp = Mat4(1.0f);
+    f32 maxDepth;
 
     Ref<Renderer> renderer;
     Ref<ConstantBuffer> mvpBuffer;

@@ -5,14 +5,14 @@
 
 namespace pd {
 
-void LogInternal(Stream* out, wchar* remainingFormat) {
+void LogInternal(Stream& out, wchar* remainingFormat) {
     int formatLength = (int)wcslen(remainingFormat);
 
     bool parsingParam = false;
     for (int i = 0; i < formatLength; i++) {
         if (remainingFormat[i] == L'{') {
             if (i + 1 < formatLength && remainingFormat[i + 1] == L'{') {
-                out->Write("{");
+                out.Write("{");
                 i += 1;
                 continue;
             }
@@ -20,14 +20,14 @@ void LogInternal(Stream* out, wchar* remainingFormat) {
             parsingParam = true;
         } else if (remainingFormat[i] == L'}') {
             if (i + 1 < formatLength && remainingFormat[i + 1] == L'}') {
-                out->WriteByte('}');
+                out.WriteByte('}');
                 i += 1;
                 continue;
             }
 
             if (parsingParam) {
                 parsingParam = false;
-                out->WriteBytes("{ missing }");
+                out.WriteBytes("{ missing }");
                 continue;
             }
         } else if (parsingParam) {
@@ -41,7 +41,7 @@ void LogInternal(Stream* out, wchar* remainingFormat) {
 
             buffer[1] = '\0';
 
-            out->WriteByte(buffer[0]);
+            out.WriteByte(buffer[0]);
         }
     }
 }

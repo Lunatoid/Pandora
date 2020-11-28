@@ -27,20 +27,33 @@ class Sprite {
 public:
     Sprite() = default;
     Sprite(Sprite& other);
+    ~Sprite() = default;
     
     /// <summary>
     /// Loads the sprite.
     /// </summary>
     /// <param name="texName">Name of the texture.</param>
     /// <param name="shaderName">Name of the shader.</param>
-    void Load(StringView texName, StringView shaderName = "Shaders/Sprite");
+    template<typename T = Material>
+    void Load(StringView texName, StringView shaderName = "Shaders/Sprite") {
+        CreateNewMaterial<T>(shaderName);
+
+        material->SetTexture(texName, 0);
+        size = (Vec2)material->GetTexture(0, RefType::Weak)->GetSize();
+    }
         
     /// <summary>
     /// Loads the sprite.
     /// </summary>
     /// <param name="texture">Reference to the texture.</param>
     /// <param name="shaderName">Name of the shader.</param>
-    void Load(Ref<Texture> texture, StringView shaderName = "Shaders/Sprite");
+    template<typename T = Material>
+    void Load(const Ref<Texture>& texture, StringView shaderName = "Shaders/Sprite") {
+        CreateNewMaterial<T>(shaderName);
+
+        material->SetTexture(texture, 0);
+        size = (Vec2)texture->GetSize();
+    }
     
     /// <summary>
     /// Generates the sprite vertices.
@@ -90,6 +103,14 @@ public:
     /// <param name="mask">The mask.</param>
     void SetNormalizedClippingMask(Vec4 mask);
     
+    /// <summary>
+    /// Sets the clipping mask as if it were a tile on an atlas.
+    /// </summary>
+    /// <param name="position">The tile position, (0,0) being the top left.</param>
+    /// <param name="tileSize">The size of the tile in pixels.</param>
+    /// <param name="offset">The offset from the top left in pixels.</param>
+    void SetAtlasMask(Vec2i position, Vec2 tileSize, Vec2 offset = Vec2(0.0f));
+
     /// <summary>
     /// Returns the normalized clipping mask of the sprite.
     /// </summary>

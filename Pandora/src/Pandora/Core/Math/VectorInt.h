@@ -1,9 +1,7 @@
 #pragma once
 
 #include "Pandora/Core/Types.h"
-
 #include "Pandora/Core/Math/Vector.h"
-
 #include "Pandora/Core/Logging/PrintType.h"
 
 namespace pd {
@@ -199,36 +197,36 @@ int SquareMagnitude(Vec4i v);
 // Print
 
 template<>
-inline void PrintType(Vec2i* type, FormatInfo* info) {
-    PrintfToStream(info->output, "{%s", (info->pretty) ? "\n    " : " ");
-    PrintType(&type->x, info);
-    PrintfToStream(info->output, ",%s", (info->pretty) ? "\n    " : " ");
-    PrintType(&type->y, info);
-    PrintfToStream(info->output, "%s}", (info->pretty) ? "\n" : " ");
+inline void PrintType(Vec2i& type, FormatInfo& info) {
+    PrintfToStream(info.output, "{%s", (info.pretty) ? "\n    " : " ");
+    PrintType(type.x, info);
+    PrintfToStream(info.output, ",%s", (info.pretty) ? "\n    " : " ");
+    PrintType(type.y, info);
+    PrintfToStream(info.output, "%s}", (info.pretty) ? "\n" : " ");
 }
 
 template<>
-inline void PrintType(Vec3i* type, FormatInfo* info) {
-    PrintfToStream(info->output, "{%s", (info->pretty) ? "\n    " : " ");
-    PrintType(&type->x, info);
-    PrintfToStream(info->output, ",%s", (info->pretty) ? "\n    " : " ");
-    PrintType(&type->y, info);
-    PrintfToStream(info->output, ",%s", (info->pretty) ? "\n    " : " ");
-    PrintType(&type->z, info);
-    PrintfToStream(info->output, "%s}", (info->pretty) ? "\n" : " ");
+inline void PrintType(Vec3i& type, FormatInfo& info) {
+    PrintfToStream(info.output, "{%s", (info.pretty) ? "\n    " : " ");
+    PrintType(type.x, info);
+    PrintfToStream(info.output, ",%s", (info.pretty) ? "\n    " : " ");
+    PrintType(type.y, info);
+    PrintfToStream(info.output, ",%s", (info.pretty) ? "\n    " : " ");
+    PrintType(type.z, info);
+    PrintfToStream(info.output, "%s}", (info.pretty) ? "\n" : " ");
 }
 
 template<>
-inline void PrintType(Vec4i* type, FormatInfo* info) {
-    PrintfToStream(info->output, "{%s", (info->pretty) ? "\n    " : " ");
-    PrintType(&type->x, info);
-    PrintfToStream(info->output, ",%s", (info->pretty) ? "\n    " : " ");
-    PrintType(&type->y, info);
-    PrintfToStream(info->output, ",%s", (info->pretty) ? "\n    " : " ");
-    PrintType(&type->z, info);
-    PrintfToStream(info->output, ",%s", (info->pretty) ? "\n    " : " ");
-    PrintType(&type->z, info);
-    PrintfToStream(info->output, "%s}", (info->pretty) ? "\n" : " ");
+inline void PrintType(Vec4i& type, FormatInfo& info) {
+    PrintfToStream(info.output, "{%s", (info.pretty) ? "\n    " : " ");
+    PrintType(type.x, info);
+    PrintfToStream(info.output, ",%s", (info.pretty) ? "\n    " : " ");
+    PrintType(type.y, info);
+    PrintfToStream(info.output, ",%s", (info.pretty) ? "\n    " : " ");
+    PrintType(type.z, info);
+    PrintfToStream(info.output, ",%s", (info.pretty) ? "\n    " : " ");
+    PrintType(type.z, info);
+    PrintfToStream(info.output, "%s}", (info.pretty) ? "\n" : " ");
 }
 
 // Operators

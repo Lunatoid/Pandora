@@ -6,6 +6,7 @@
 #include "Pandora/Graphics/Renderer.h"
 #include "Pandora/Graphics/Shader.h"
 #include "Pandora/Graphics/Texture.h"
+#include "Pandora/Graphics/TexturePacker.h"
 #include "Pandora/Graphics/Camera.h"
 #include "Pandora/Graphics/FPSCamera.h"
 #include "Pandora/Graphics/ConstantBuffer.h"

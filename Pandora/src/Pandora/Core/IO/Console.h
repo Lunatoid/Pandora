@@ -1,7 +1,6 @@
 #pragma once
 
 #include "Pandora/Core/IO/Stream.h"
-
 #include "Pandora/Core/Logging/Logging.h"
 
 #include <cstdio>
@@ -68,7 +67,7 @@ public:
     /// <param name="...args">The arguments.</param>
     template<typename... Args>
     void Log(StringView fmt, const Args&... args) {
-        pd::Log(this, fmt, args...);
+        pd::Log(*this, fmt, args...);
     }
     
     /// <summary>
@@ -152,15 +151,15 @@ extern Console console;
 #endif
 
 template<>
-inline void PrintType(ConColor* type, FormatInfo* info) {
+inline void PrintType(ConColor& type, FormatInfo& info) {
     // Only change color if we're the console
-    if (info->output == &console) {
+    if (&info.output == &console) {
         if (!console.IsColorEnabled()) return;
 
-        if (info->pretty) {
-            console.SetBackColor(*type);
+        if (info.pretty) {
+            console.SetBackColor(type);
         } else {
-            console.SetColor(*type);
+            console.SetColor(type);
         }
     }
 }

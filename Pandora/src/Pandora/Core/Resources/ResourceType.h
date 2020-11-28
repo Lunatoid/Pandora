@@ -27,8 +27,8 @@ const StringView RESOURCE_TYPE_NAMES[] = {
 };
 
 template<>
-inline void PrintType(ResourceType* type, FormatInfo* info) {
-    PrintfToStream(info->output, "%s", RESOURCE_TYPE_NAMES[(int)*type].Data());
+inline void PrintType(ResourceType& type, FormatInfo& info) {
+    PrintfToStream(info.output, "%s", RESOURCE_TYPE_NAMES[(int)type].Data());
 }
 
 }

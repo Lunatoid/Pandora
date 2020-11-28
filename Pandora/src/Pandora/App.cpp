@@ -36,14 +36,15 @@ App::App(int argc, char** argv, VideoBackend backend, StringView title, Vec2i si
     video->SetMeshRequestHandler(catalog);
     audio->SetAudioRequestHandler(catalog);
 
+#if !defined(PD_NO_IMGUI)
+    LoadImGuiTheme();
+#endif
 }
 
 App::~App() {
-    // Manually calling the destructor is kinda wack
-    catalog.~ResourceCatalog();
-
     // Scene destructors must run before video/audio destructors
     sceneManager.Delete();
+
     AudioAPI::Delete();
     VideoAPI::Delete();
     window.Delete();
@@ -57,26 +58,20 @@ void App::Run() {
 
     Stopwatch deltaClock;
 
-    // The fixed framerate is not very optimized if we're just idling
     while (IsRunning()) {
         rawDelta = (f32)deltaClock.Restart().seconds;
 
         OnUpdateInternal(rawDelta * updateTimescale);
-        OnRenderInternal(rawDelta * renderTimescale);
 
+        video->BindDefaultFrameBuffer();
+        OnRenderInternal(rawDelta * renderTimescale);
         video->BindDefaultFrameBuffer();
 
 #if !defined(PD_NO_IMGUI)
         OnImGuiInternal();
 #endif
 
-        // Window swap
         video->Swap();
-
-        // Wait for next frame
-        if (fixedFramerate) {
-            while (deltaClock.GetElapsed().seconds < 1.0f / fixedFps);
-        }
     }
 }
 
@@ -92,14 +87,10 @@ void App::PushEvent(Event* event) {
     OnEventInternal(event);
 }
 
-void App::SetFixedFramerate(bool isOn, f32 fps) {
-    fixedFramerate = isOn;
-    fixedFps = fps;
-}
-
 Vec2 App::GetNormalizedMousePos() {
     Vec2i windowSize = window.GetSize();
 
+    Vec2 mousePos = GetMousePos();
     Vec2 normalized = Vec2((f32)mousePos.x, (f32)mousePos.y) / Vec2((f32)windowSize.x, (f32)windowSize.y);
     normalized *= Vec2(2.0f);
     normalized -= Vec2(1.0f);
@@ -107,8 +98,8 @@ Vec2 App::GetNormalizedMousePos() {
     return normalized;
 }
 
-Vec2i App::GetMousePosition() const {
-    return mousePos;
+Vec2 App::GetMousePos() const {
+    return input.GetMousePos();
 }
 
 Window& App::GetWindow() {
@@ -168,6 +159,50 @@ void App::OnImGuiInternal() {
     ImGui::Render();
     video->ImGuiRender();
 }
+
+void App::LoadImGuiTheme() {
+    ImGui::GetStyle().WindowMenuButtonPosition = ImGuiDir_Right;
+    ImGui::GetStyle().GrabRounding = 2;
+    ImGui::GetStyle().ScrollbarRounding = 2;
+
+    ImVec4* colors = ImGui::GetStyle().Colors;
+    colors[ImGuiCol_WindowBg] = ImVec4(0.07f, 0.07f, 0.07f, 1.00f);
+    colors[ImGuiCol_FrameBg] = ImVec4(0.24f, 0.24f, 0.24f, 0.54f);
+    colors[ImGuiCol_FrameBgHovered] = ImVec4(0.40f, 0.45f, 0.57f, 0.40f);
+    colors[ImGuiCol_FrameBgActive] = ImVec4(0.57f, 0.63f, 0.73f, 0.67f);
+    colors[ImGuiCol_TitleBg] = ImVec4(0.07f, 0.30f, 0.30f, 1.00f);
+    colors[ImGuiCol_TitleBgActive] = ImVec4(0.12f, 0.44f, 0.31f, 1.00f);
+    colors[ImGuiCol_CheckMark] = ImVec4(0.20f, 0.60f, 0.29f, 1.00f);
+    colors[ImGuiCol_SliderGrab] = ImVec4(0.20f, 0.60f, 0.29f, 1.00f);
+    colors[ImGuiCol_SliderGrabActive] = ImVec4(0.35f, 0.77f, 0.31f, 1.00f);
+    colors[ImGuiCol_Button] = ImVec4(0.52f, 0.52f, 0.52f, 0.40f);
+    colors[ImGuiCol_ButtonHovered] = ImVec4(0.57f, 0.63f, 0.73f, 1.00f);
+    colors[ImGuiCol_ButtonActive] = ImVec4(0.26f, 0.30f, 0.43f, 1.00f);
+    colors[ImGuiCol_ResizeGrip] = ImVec4(0.52f, 0.52f, 0.52f, 0.25f);
+    colors[ImGuiCol_ResizeGripHovered] = ImVec4(0.78f, 0.81f, 0.87f, 0.67f);
+    colors[ImGuiCol_ResizeGripActive] = ImVec4(0.40f, 0.45f, 0.57f, 0.95f);
+    colors[ImGuiCol_Tab] = ImVec4(0.15f, 0.15f, 0.15f, 0.86f);
+    colors[ImGuiCol_TabHovered] = ImVec4(0.57f, 0.63f, 0.73f, 0.80f);
+    colors[ImGuiCol_TabActive] = ImVec4(0.20f, 0.60f, 0.29f, 1.00f);
+    colors[ImGuiCol_TextDisabled] = ImVec4(0.52f, 0.52f, 0.52f, 1.00f);
+    colors[ImGuiCol_PopupBg] = ImVec4(0.11f, 0.11f, 0.11f, 0.94f);
+    colors[ImGuiCol_MenuBarBg] = ImVec4(0.15f, 0.15f, 0.15f, 1.00f);
+    colors[ImGuiCol_Header] = ImVec4(0.20f, 0.60f, 0.29f, 0.31f);
+    colors[ImGuiCol_HeaderHovered] = ImVec4(0.35f, 0.77f, 0.31f, 0.80f);
+    colors[ImGuiCol_HeaderActive] = ImVec4(0.35f, 0.77f, 0.31f, 1.00f);
+    colors[ImGuiCol_Separator] = ImVec4(0.24f, 0.24f, 0.24f, 1.00f);
+    colors[ImGuiCol_TabUnfocused] = ImVec4(0.07f, 0.30f, 0.30f, 0.97f);
+    colors[ImGuiCol_TabUnfocusedActive] = ImVec4(0.12f, 0.44f, 0.31f, 1.00f);
+    colors[ImGuiCol_DockingPreview] = ImVec4(0.35f, 0.77f, 0.31f, 0.70f);
+    colors[ImGuiCol_DockingEmptyBg] = ImVec4(0.15f, 0.15f, 0.15f, 1.00f);
+    colors[ImGuiCol_PlotLines] = ImVec4(0.71f, 0.71f, 0.71f, 1.00f);
+    colors[ImGuiCol_PlotLinesHovered] = ImVec4(1.00f, 0.92f, 0.34f, 1.00f);
+    colors[ImGuiCol_PlotHistogram] = ImVec4(1.00f, 0.64f, 0.08f, 1.00f);
+    colors[ImGuiCol_PlotHistogramHovered] = ImVec4(1.00f, 0.92f, 0.34f, 1.00f);
+    colors[ImGuiCol_TextSelectedBg] = ImVec4(0.00f, 0.80f, 0.98f, 0.35f);
+    colors[ImGuiCol_DragDropTarget] = ImVec4(1.00f, 0.92f, 0.34f, 0.90f);
+}
+
 #endif
 
 void App::OnEventInternal(Event* event) {
@@ -178,11 +213,6 @@ void App::OnEventInternal(Event* event) {
         switch (we->type) {
             case WindowEventType::Close: {
                 Quit();
-                break;
-            }
-
-            case WindowEventType::MouseMove: {
-                mousePos = Vec2i(we->mouseMove.position.x, window.GetSize().y - we->mouseMove.position.y);
                 break;
             }
         }

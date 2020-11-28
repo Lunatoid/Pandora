@@ -7,6 +7,7 @@
 
 #include "Pandora/Graphics/Shader.h"
 
+#include "Pandora/Graphics/Backend/DirectX/DXComRef.h"
 
 namespace pd {
 
@@ -15,7 +16,7 @@ class DXVideoAPI;
 class DXShader final : public Shader {
 public:
     DXShader();
-    virtual ~DXShader();
+    virtual ~DXShader() = default;
 
     virtual bool Load(StringView name) override;
     virtual bool Load(Box& box, StringView name) override;
@@ -35,9 +36,9 @@ private:
 
     DXVideoAPI* video = nullptr;
 
-    ID3D11VertexShader* vertexShader = nullptr;
-    ID3D11PixelShader* pixelShader = nullptr;
-    ID3D11InputLayout* vertexLayout = nullptr;
+    DXComRef<ID3D11VertexShader> vertexShader;
+    DXComRef<ID3D11PixelShader> pixelShader;
+    DXComRef<ID3D11InputLayout> vertexLayout;
 
     Array<byte> vertexBytecode;
     Array<byte> pixelBytecode;

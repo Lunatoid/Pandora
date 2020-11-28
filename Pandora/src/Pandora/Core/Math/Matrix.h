@@ -1,9 +1,7 @@
 #pragma once
 
 #include "Pandora/Core/Types.h"
-
 #include "Pandora/Core/Math/Vector.h"
-
 #include "Pandora/Core/Logging/PrintType.h"
 
 namespace pd {
@@ -98,21 +96,21 @@ Mat4 LookAt(Vec3 eye, Vec3 center, Vec3 up);
 // Print
 
 template<>
-inline void PrintType(Mat4* type, FormatInfo* info) {
-    bool wasPretty = info->pretty;
-    info->pretty = false;
+inline void PrintType(Mat4& type, FormatInfo& info) {
+    bool wasPretty = info.pretty;
+    info.pretty = false;
 
-    PrintfToStream(info->output, "{%s", (wasPretty) ? "\n    " : " ");
-    PrintType(&type->elements[0], info);
-    PrintfToStream(info->output, ",%s", (wasPretty) ? "\n    " : " ");
-    PrintType(&type->elements[1], info);
-    PrintfToStream(info->output, ",%s", (wasPretty) ? "\n    " : " ");
-    PrintType(&type->elements[2], info);
-    PrintfToStream(info->output, ",%s", (wasPretty) ? "\n    " : " ");
-    PrintType(&type->elements[3], info);
-    PrintfToStream(info->output, "%s}", (wasPretty) ? "\n" : " ");
+    PrintfToStream(info.output, "{%s", (wasPretty) ? "\n    " : " ");
+    PrintType(type.elements[0], info);
+    PrintfToStream(info.output, ",%s", (wasPretty) ? "\n    " : " ");
+    PrintType(type.elements[1], info);
+    PrintfToStream(info.output, ",%s", (wasPretty) ? "\n    " : " ");
+    PrintType(type.elements[2], info);
+    PrintfToStream(info.output, ",%s", (wasPretty) ? "\n    " : " ");
+    PrintType(type.elements[3], info);
+    PrintfToStream(info.output, "%s}", (wasPretty) ? "\n" : " ");
 
-    info->pretty = wasPretty; // We don't really need to do this
+    info.pretty = wasPretty; // We don't really need to do this
 }
 
 // Operators

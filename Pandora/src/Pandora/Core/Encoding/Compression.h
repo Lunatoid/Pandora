@@ -20,7 +20,7 @@ void CompressData(Slice<byte> bytes, Array<byte>& out);
 /// <param name="bytes">The uncompressed input.</param>
 /// <param name="out">The destination for the compressed output.</param>
 /// <returns>How many bytes were written.</returns>
-int CompressData(Slice<byte> bytes, Stream* out);
+int CompressData(Slice<byte> bytes, Stream& out);
 
 /// <summary>
 /// Compresses data with DEFLATE.
@@ -42,7 +42,7 @@ void DecompressData(Slice<byte> bytes, Array<byte>& out);
 /// </summary>
 /// <param name="bytes">The compressed input.</param>
 /// <param name="out">The destination for the decompressed output.</param>
-void DecompressData(Slice<byte> bytes, Stream* out);
+void DecompressData(Slice<byte> bytes, Stream& out);
 
 /// <summary>
 /// Decompresses data with DEFLATE.

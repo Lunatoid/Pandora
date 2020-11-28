@@ -20,6 +20,7 @@ bool CompareKeys(K* a, K* b) {
     return DoHash(a) == DoHash(b);
 }
 
+
 template<typename K, typename V>
 struct DictEntry {
     static_assert(std::is_default_constructible<K>::value, "K must be default constructible.");
@@ -29,6 +30,7 @@ struct DictEntry {
     K key = K();
     V val = V();
 };
+
 
 template<typename K, typename V>
 class Dictionary {
@@ -151,6 +153,45 @@ public:
     inline Allocator Allocator() const ;
 
     V& operator[](const K& key);
+
+    template<typename K, typename V>
+    struct DictIt {
+        DictIt(const Dictionary<K, V>& parent, int i) : parent(parent), i(i) {
+            // If we pass in a value that is below zero that means we want to find
+            // the first filled bucket
+            if (i < 0) {
+                operator++();
+            }
+        }
+
+        const Entry& operator*() const {
+            return parent.Data()[i];
+        }
+
+        void operator++() {
+            do {
+                i += 1;
+
+                if (i >= parent.bufferSize / sizeof(Entry)) break;
+
+            } while (parent.Data()[i].dist < 0);
+        }
+
+        bool operator==(const DictIt<K, V>& other) {
+            return i == other.i && parent.Data() == other.parent.Data();
+        }
+
+        bool operator!=(const DictIt<K, V>& other) {
+            return !operator==(other);
+        }
+
+    private:
+        const Dictionary<K, V>& parent;
+        int i;
+    };
+
+    DictIt<K, V> begin() const;
+    DictIt<K, V> end() const;
 
 protected:
     /// <summary>
@@ -469,6 +510,16 @@ inline void Dictionary<K, V>::GrowAndRehash() {
     if (allocator == Allocator::Persistent) {
         Free(oldMemory);
     }
+}
+
+template<typename K, typename V>
+inline Dictionary<K, V>::DictIt<K, V> Dictionary<K, V>::begin() const {
+    return DictIt<K, V>(*this, -1);
+}
+
+template<typename K, typename V>
+inline Dictionary<K, V>::DictIt<K, V> Dictionary<K, V>::end() const {
+    return DictIt<K, V>(*this, (int)(bufferSize / sizeof(Entry)));
 }
 
 }

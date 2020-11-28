@@ -54,7 +54,7 @@ public:
     /// Returns the current clear color.
     /// </summary>
     /// <returns>The current clear color.</returns>
-    Color GetClearColor();
+    Color GetClearColor() const;
 
     /// <summary>
     /// Clears the color, depth and stencil buffer.

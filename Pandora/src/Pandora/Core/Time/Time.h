@@ -1,7 +1,6 @@
 #pragma once
 
 #include "Pandora/Core/Types.h"
-
 #include "Pandora/Core/Logging/PrintType.h"
 
 namespace pd {
@@ -41,6 +40,7 @@ enum class Weekday : byte {
     Friday,
     Saturday
 };
+
 
 struct Date {
     int year = 0;
@@ -98,27 +98,27 @@ u32 GetTicks();
 void SleepFor(u32 milliseconds);
 
 template<>
-inline void PrintType(Time* value, FormatInfo* info) {
+inline void PrintType(Time& type, FormatInfo& info) {
 
     // Pretty for nominal time notation, otherwise we'll use the dot since it can be accepted in file names
-    char seperator = (info->pretty) ? ':' : '.';
+    char seperator = (info.pretty) ? ':' : '.';
 
-    if (value->hours < 10) {
-        PrintfToStream(info->output, "0");
+    if (type.hours < 10) {
+        PrintfToStream(info.output, "0");
     }
 
-    PrintType(&value->hours, info);
-    PrintfToStream(info->output, "%c%s", seperator, (value->minutes < 10) ? "0" : "");
-    PrintType(&value->minutes, info);
-    PrintfToStream(info->output, "%c%s", seperator, (value->seconds < 10) ? "0" : "");
-    PrintType(&value->seconds, info);
+    PrintType(type.hours, info);
+    PrintfToStream(info.output, "%c%s", seperator, (type.minutes < 10) ? "0" : "");
+    PrintType(type.minutes, info);
+    PrintfToStream(info.output, "%c%s", seperator, (type.seconds < 10) ? "0" : "");
+    PrintType(type.seconds, info);
 }
 
-#define PRINT_MONTH(x) case Month::x: PrintfToStream(info->output, "%s", PD_STRINGIFY(x)); break;
+#define PRINT_MONTH(x) case Month::x: PrintfToStream(info.output, "%s", PD_STRINGIFY(x)); break;
 
-inline void PrintType(Month* month, FormatInfo* info) {
-    if (info->pretty) {
-        switch (*month) {
+inline void PrintType(Month& type, FormatInfo& info) {
+    if (info.pretty) {
+        switch (type) {
             PRINT_MONTH(January);
             PRINT_MONTH(February);
             PRINT_MONTH(March);
@@ -133,18 +133,18 @@ inline void PrintType(Month* month, FormatInfo* info) {
             PRINT_MONTH(December);
         }
     } else {
-        int m = (int)*month + 1;
-        PrintType(&m, info);
+        int m = (int)type + 1;
+        PrintType(m, info);
     }
 }
 
 #undef PRINT_MONTH
 
-#define PRINT_WEEKDAY(x) case Weekday::x: PrintfToStream(info->output, "%s", PD_STRINGIFY(x)); break;
+#define PRINT_WEEKDAY(x) case Weekday::x: PrintfToStream(info.output, "%s", PD_STRINGIFY(x)); break;
 
-inline void PrintType(Weekday* value, FormatInfo* info) {
-    if (info->pretty) {
-        switch (*value) {
+inline void PrintType(Weekday& type, FormatInfo& info) {
+    if (info.pretty) {
+        switch (type) {
             PRINT_WEEKDAY(Monday);
             PRINT_WEEKDAY(Tuesday);
             PRINT_WEEKDAY(Wednesday);
@@ -154,29 +154,29 @@ inline void PrintType(Weekday* value, FormatInfo* info) {
             PRINT_WEEKDAY(Sunday);
         }
     } else {
-        int m = (int)*value;
-        PrintType(&m, info);
+        int m = (int)type;
+        PrintType(m, info);
     }
 }
 
 #undef PRINT_WEEKDAY
 
 template<>
-inline void PrintType(Date* value, FormatInfo* info) {
-    if (info->pretty) {
-        PrintType(&value->weekday, info);
-        PrintfToStream(info->output, ", %s", ((int)value->day < 10) ? "0" : "");
-        PrintType(&value->day, info);
-        PrintfToStream(info->output, " ");
-        PrintType(&value->month, info);
-        PrintfToStream(info->output, " ");
-        PrintType(&value->year, info);
+inline void PrintType(Date& type, FormatInfo& info) {
+    if (info.pretty) {
+        PrintType(type.weekday, info);
+        PrintfToStream(info.output, ", %s", ((int)type.day < 10) ? "0" : "");
+        PrintType(type.day, info);
+        PrintfToStream(info.output, " ");
+        PrintType(type.month, info);
+        PrintfToStream(info.output, " ");
+        PrintType(type.year, info);
     } else {
-        PrintType(&value->year, info);
-        PrintfToStream(info->output, "-%s", ((int)value->month < 10) ? "0" : "");
-        PrintType(&value->month, info);
-        PrintfToStream(info->output, "-%s", ((int)value->day < 10) ? "0" : "");
-        PrintType(&value->day, info);
+        PrintType(type.year, info);
+        PrintfToStream(info.output, "-%s", ((int)type.month < 10) ? "0" : "");
+        PrintType(type.month, info);
+        PrintfToStream(info.output, "-%s", ((int)type.day < 10) ? "0" : "");
+        PrintType(type.day, info);
     }
 }
 

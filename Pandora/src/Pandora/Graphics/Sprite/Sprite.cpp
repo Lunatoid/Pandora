@@ -11,7 +11,6 @@ void GetSpriteVertexLayout(DataLayout& layout) {
     layout.Add("rotation", DataLayoutType::Float);
     layout.Add("size", DataLayoutType::Float2);
     layout.Finish();
-    
 }
 
 Sprite::Sprite(Sprite& other) {
@@ -23,30 +22,6 @@ Sprite::Sprite(Sprite& other) {
     rotation = other.rotation;
     material = other.material;
     uv = other.uv;
-}
-
-void Sprite::Load(StringView texName, StringView shaderName) {
-    DataLayout layout;
-    GetSpriteVertexLayout(layout);
-
-    material.Reset(New<Material>());
-    material->Load(shaderName, layout);
-
-    material->SetTexture(texName, 0);
-
-    size = (Vec2)material->GetTexture(0, RefType::Weak)->GetSize();
-}
-
-void Sprite::Load(Ref<Texture> texture, StringView shaderName) {
-    DataLayout layout;
-    GetSpriteVertexLayout(layout);
-
-    material.Reset(New<Material>());
-    material->Load(shaderName, layout);
-
-    material->SetTexture(texture, 0);
-
-    size = (Vec2)texture->GetSize();
 }
 
 void Sprite::GenerateVertices(SpriteVertex vertices[4]) {
@@ -111,6 +86,24 @@ void Sprite::SetClippingMask(Vec4 mask) {
 
 void Sprite::SetNormalizedClippingMask(Vec4 mask) {
     uv = mask;
+}
+
+void Sprite::SetAtlasMask(Vec2i position, Vec2 tileSize, Vec2 offset) {
+    Vec2 texSize = GetSize(0, false);
+    Vec2 maxIndex = texSize / tileSize;
+
+    if (position.x > 0) {
+        position.x %= (int)maxIndex.x;
+    }
+
+    if (position.y > 0) {
+        position.y %= (int)maxIndex.y;
+    }
+
+    Vec2 start = offset + (Vec2((f32)position.x, (f32)position.y + 1.0f) * tileSize);
+    start.y = texSize.y - start.y;
+
+    SetClippingMask(Vec4(start.x, start.y, tileSize.x, tileSize.y));
 }
 
 Vec4 Sprite::GetClippingMask() {

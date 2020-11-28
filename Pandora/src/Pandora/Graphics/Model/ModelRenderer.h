@@ -4,7 +4,6 @@
 
 #include "Pandora/Graphics/Renderer.h"
 #include "Pandora/Graphics/ConstantBuffer.h"
-
 #include "Pandora/Graphics/Model/Model.h"
 
 namespace pd {
@@ -17,8 +16,8 @@ public:
     /// Updates the projection.
     /// Call this before drawing.
     /// </summary>
-    /// <param name="mvp">The MVP matrix.</param>
-    void UpdateProjection(Mat4 mvp);
+    /// <param name="view_proj">The MVP matrix.</param>
+    void UpdateProjection(Mat4 view_proj);
     
     /// <summary>
     /// Draws the specified model.
@@ -27,7 +26,7 @@ public:
     void Draw(Model& model);
 
 private:
-    Mat4 mvp = Mat4(1.0f);
+    Mat4 view_proj = Mat4(1.0f);
 
     Ref<Renderer> renderer;
     Ref<ConstantBuffer> mvpBuffer;

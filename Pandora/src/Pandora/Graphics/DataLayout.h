@@ -5,7 +5,7 @@
 
 namespace pd {
 
-enum class DataLayoutType {
+enum class DataLayoutType : byte {
     None,
     Float,
     Float2,
@@ -19,6 +19,44 @@ enum class DataLayoutType {
     Count
 };
 
+// Size in bytes
+const int DataLayoutTypeSize[] = {
+    0,        // None
+    4,        // Float
+    4 * 2,    // Float2
+    4 * 3,    // Float3
+    4 * 4,    // Float4
+    4,        // Int
+    4 * 2,    // Int2
+    4 * 3,    // Int3
+    4 * 4,    // Int4
+    4 * 4 * 4 // Mat4
+};
+
+// Component count
+const int DataLayoutComponentCount[] = {
+    0, // None
+    1, // Float
+    2, // Float2
+    3, // Float3
+    4, // Float4
+    1, // Int
+    2, // Int2
+    3, // Int3
+    4, // Int4
+    0  // Mat4
+};
+
+/// <summary>
+/// How data should be packed.
+/// `Default`: Normal packing without padding.
+/// `Packed`: Packed rules for padding and with packing. Follows the HLSL rules.
+/// </summary>
+enum class DataPacking : byte {
+    Default,
+    Packed
+};
+
 struct DataElement {
     DataElement() = default;
     DataElement(StringView name, DataLayoutType type);
@@ -30,12 +68,9 @@ struct DataElement {
 };
 
 class DataLayout {
-public:    
-    /// <summary>
-    /// Initializes the alignment of the layout/
-    /// </summary>
-    /// <param name="hlslPacking">If <c>true</c> it will abide by HLSL packing rules.</param>
-    DataLayout(bool hlslPacking = false);
+public:
+    DataLayout() = default;
+    DataLayout(DataLayout& other);
     ~DataLayout();
     
     /// <summary>
@@ -53,14 +88,26 @@ public:
     /// <summary>
     /// Finalizes the layout.
     /// </summary>
-    void Finish();
+    /// <param name="packing">If <c>true</c> it will abide by Packed packing rules.</param>
+    void Finish(DataPacking packing = DataPacking::Default);
     
+    /// <summary>
+    /// Clears the layout's elements.
+    /// </summary>
+    void Clear();
+
     /// <summary>
     /// Returns the stride of the layout.
     /// </summary>
     /// <returns></returns>
     int GetStride() const;
-        
+
+    /// <summary>
+    /// Returns the stride of the layout with default packing rules.
+    /// </summary>
+    /// <returns></returns>
+    int GetDefaultStride() const;
+
     /// <summary>
     /// Returns how many elements are in this layout.
     /// </summary>
@@ -73,12 +120,19 @@ public:
     /// <returns>A slice of all the elements.</returns>
     Slice<DataElement> GetElements();
 
-private:
-    void CalculateOffsetAndStride();
+    DataLayout& operator=(DataLayout& other) {
+        CopyFromOther(other);
+        return *this;
+    }
 
+private:
+    int CalculateOffsetAndStride(DataPacking packing);
+    void CopyFromOther(DataLayout& other);
+
+    DataPacking lastPacking;
     Array<DataElement> elements;
     int stride = 0;
-    bool hlslPacking = false;
+    int defaultStride = 0;
 };
 
 }

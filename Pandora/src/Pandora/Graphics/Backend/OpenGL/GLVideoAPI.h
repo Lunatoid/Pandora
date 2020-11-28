@@ -38,7 +38,6 @@ protected:
 private:
     void InitOpenGLExtensions();
 
-
 #if defined(PD_WINDOWS)
     // These are void* to avoid including Windows.h in the header
     void* windowDevice = nullptr; // HDC

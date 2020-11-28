@@ -1,11 +1,11 @@
 #include "Folder.h"
 
-#include "Pandora/Core/IO/Path.h"
-
 #if defined(PD_WINDOWS)
 #include <Windows.h>
 #include <shellapi.h>
 #endif
+
+#include "Pandora/Core/IO/Path.h"
 
 namespace pd {
 

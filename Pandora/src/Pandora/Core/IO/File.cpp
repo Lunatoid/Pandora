@@ -1,12 +1,11 @@
 #include "File.h"
 
-#include "Pandora/Core/IO/FileStream.h"
-
-#include "Pandora/Core/Math/Math.h"
-
 #if defined(PD_WINDOWS)
 #include <Windows.h>
 #endif
+
+#include "Pandora/Core/IO/FileStream.h"
+#include "Pandora/Core/Math/Math.h"
 
 namespace pd {
 

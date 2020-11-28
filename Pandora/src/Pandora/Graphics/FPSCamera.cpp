@@ -1,9 +1,7 @@
 #include "FPSCamera.h"
 
 #include "Pandora/Core/Window/WindowEvent.h"
-
 #include "Pandora/Core/Input/Input.h"
-
 #include "Pandora/Core/Math/Math.h"
 
 namespace pd {
@@ -15,7 +13,7 @@ void FPSCamera::HandleInput(Event* event) {
         if (we->type == WindowEventType::MouseMove) {
             f32 finalSensitivity = sensitivity;
             yaw += we->mouseMove.delta.x * finalSensitivity;
-            pitch -= we->mouseMove.delta.y * finalSensitivity;
+            pitch += we->mouseMove.delta.y * finalSensitivity;
 
             pitch = Clamp(pitch, -89.0f, 89.0f);
         }

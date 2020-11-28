@@ -16,25 +16,38 @@ public:
     void Delete();
 
     /// <summary>
+    /// Stages a generic resource.
+    /// A generic resource is a resource that only needs a name and a path to export.
+    /// </summary>
+    /// <param name="name">The name that should be used in the archive.</param>
+    /// <param name="path">The path to the file.</param>
+    /// <param name="type">The type of the resource.</param>
+    /// <param name="compressed">Whether or not to compress the resource data.</param>
+    void StageGeneric(StringView name, StringView path, ResourceType type, bool compressed);
+
+    /// <summary>
     /// Stages a binary resource for exporting.
     /// </summary>
-    /// <param name="path">The path to the file.</param>
     /// <param name="name">The name that should be used in the archive.</param>
-    void StageBinary(StringView name, StringView path);
+    /// <param name="path">The path to the file.</param>
+    /// <param name="compressed">Whether or not to compress the resource data.</param>
+    void StageBinary(StringView name, StringView path, bool compressed);
 
     /// <summary>
     /// Stages a texture for exporting.
     /// </summary>
     /// <param name="name">The name that should be used in the archive.</param>
     /// <param name="path">The path to the file.</param>
-    void StageTexture(StringView name, StringView path, TextureFiltering filtering, TextureWrapping wrapping);
+    /// <param name="compressed">Whether or not to compress the resource data.</param>
+    void StageTexture(StringView name, StringView path, TextureFiltering filtering, TextureWrapping wrapping, bool compressed);
 
     /// <summary>
     /// Stages a mesh for exporting.
     /// </summary>
     /// <param name="name">The name that should be used in the archive.</param>
     /// <param name="path">The path to the file.</param>
-    void StageMesh(StringView name, StringView path);
+    /// <param name="compressed">Whether or not to compress the resource data.</param>
+    void StageMesh(StringView name, StringView path, bool compressed);
 
     /// <summary>
     /// Stages a shader of a specific backend for exporting.
@@ -44,21 +57,23 @@ public:
     /// <param name="backend">The backend.</param>
     /// <param name="vertexPath">The vertex path.</param>
     /// <param name="pixelPath">The pixel path.</param>
-    void StageShader(StringView name, VideoBackend backend, StringView vertexPath, StringView pixelPath);
+    /// <param name="compressed">Whether or not to compress the resource data.</param>
+    void StageShader(StringView name, VideoBackend backend, StringView vertexPath, StringView pixelPath, bool compressed);
 
     /// <summary>
     /// Stages a font resource for exporting.
     /// </summary>
     /// <param name="name">The name that should be used in the archive.</param>
     /// <param name="path">The path to the file.</param>
-    void StageFont(StringView name, StringView path);
+    void StageFont(StringView name, StringView path, bool compressed);
 
     /// <summary>
     /// Stages an audio resource for exporting.
     /// </summary>
     /// <param name="name">The name that should be used in the archive.</param>
     /// <param name="path">The path to the file.</param>
-    void StageAudio(StringView name, StringView path);
+    /// <param name="compressed">Whether or not to compress the resource data.</param>
+    void StageAudio(StringView name, StringView path, bool compressed);
 
     /// <summary>
     /// Exports all staged files.
@@ -84,7 +99,6 @@ public:
 
     bool logStatus = false;
 
-private:
     struct StagedShader {
         VideoBackend backend;
         String vertexPath;
@@ -92,7 +106,7 @@ private:
     };
 
     struct StagedFile {
-        StagedFile();
+        StagedFile() {};
         ~StagedFile();
 
         /// <summary>
@@ -106,8 +120,9 @@ private:
         /// <param name="type">The type.</param>
         void SetType(ResourceType type);
 
-        ResourceType type;
+        ResourceType type = ResourceType::Unknown;
         String name;
+        bool compressed = true;
 
         // Data definitions
         struct GenericData {
@@ -131,23 +146,27 @@ private:
             ShaderData shader;
         };
     };
-    
-    /// <summary>
-    /// Stages a generic resource.
-    /// </summary>
-    /// <param name="name">The name.</param>
-    /// <param name="path">The path.</param>
-    /// <param name="type">The type.</param>
-    void StageGenericResource(StringView name, StringView path, ResourceType type);
-    
+
+    Slice<StagedFile> GetStagedFiles();
+    bool EncodeResource(Stream& out, StagedFile& sf);
+
+private:
+    bool EncodeBinaryResource(Stream& out, StringView path, bool compressed);
+    bool EncodeFontResource(Stream& out, StringView path, bool compressed);
+    bool EncodeShaderResource(Stream& out, Slice<BoxBuilder::StagedShader> shaders, bool compressed);
+    bool EncodeTextureResource(Stream& out, StringView path, TextureFiltering filtering, TextureWrapping wrapping, bool compressed);
+    bool EncodeMeshResource(Stream& out, StringView path, bool compressed);
+    bool EncodeAudioResource(Stream& out, StringView path, bool compressed);
+
     /// <summary>
     /// Gets the staged file for the requested resource. If there is not it will add it.
     /// Also sets the name and type of the staged file.
     /// </summary>
     /// <param name="name">The name.</param>
     /// <param name="type">The type.</param>
+    /// <param name="compressed">Whether or not the resource data should be compressed.</param>
     /// <returns>The staged file.</returns>
-    BoxBuilder::StagedFile* GetOrCreateStagedFile(StringView name, ResourceType type);
+    BoxBuilder::StagedFile* GetOrCreateStagedFile(StringView name, ResourceType type, bool compressed);
 
     /// <summary>
     /// Finds a staged file.

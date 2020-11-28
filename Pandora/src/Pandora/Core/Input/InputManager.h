@@ -1,9 +1,7 @@
 #pragma once
 
 #include "Pandora/Core/Input/Key.h"
-
 #include "Pandora/Core/Math/Vector.h"
-
 #include "Pandora/Core/Event.h"
 
 namespace pd {
@@ -57,7 +55,7 @@ public:
     bool WasMouseDown(MouseButton button) const;
     
     /// <summary>
-    /// Returns the mouse position relative to the window.
+    /// Returns the mouse position relative to the window. (0, 0) is bottom left.
     /// </summary>
     /// <returns>The mouse position relative to the window.</returns>
     Vec2 GetMousePos() const;

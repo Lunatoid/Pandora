@@ -3,8 +3,6 @@
 #include "Pandora/Core/IO/Stream.h"
 #include "Pandora/Core/Data/String.h"
 
-#include <cstdio>
-
 namespace pd {
 
 /// <summary>
@@ -92,7 +90,7 @@ public:
     /// <returns>How many bytes were written.</returns>
     template<typename... Args>
     void WriteFormat(StringView fmt, const Args &... args) {
-        pd::Log(this, fmt, args...);
+        pd::Log(*this, fmt, args...);
     }
 
     /// <summary>

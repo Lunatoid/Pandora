@@ -5,7 +5,6 @@
 #include "Pandora/Core/Data/Array.h"
 #include "Pandora/Core/Data/Pair.h"
 #include "Pandora/Core/Data/Reference.h"
-
 #include "Pandora/Core/IO/Stream.h"
 #include "Pandora/Core/IO/Console.h"
 
@@ -23,6 +22,7 @@ enum class JsonType {
 class JsonValue;
 typedef Array<Pair<String, JsonValue>> JsonObject;
 typedef Array<JsonValue> JsonArray;
+
 
 struct JsonParseSettings {
     // Allow floating-point numbers in the number exponent e.g. 10e2.4
@@ -43,6 +43,13 @@ public:
     JsonValue(const uchar* string);
     JsonValue(f64 number);
     JsonValue(bool boolean);
+
+    ~JsonValue();
+
+    /// <summary>
+    /// Resets the internal value reference.
+    /// </summary>
+    void Delete();
 
     /// <summary>
     /// Sets the type and value to a string.
@@ -79,7 +86,7 @@ public:
     /// Parses JSON from a stream.
     /// </summary>
     /// <param name="stream">The stream.</param>
-    bool Parse(Stream* stream, JsonParseSettings settings = JsonParseSettings());
+    bool Parse(Stream& stream, JsonParseSettings settings = JsonParseSettings());
 
     /// <summary>
     /// Creates a deep copy of this value.
@@ -332,7 +339,7 @@ public:
     /// </summary>
     /// <param name="stream">The stream.</param>
     /// <param name="pretty">Whether or not to pretty-print it.</param>
-    void ToStream(Stream* stream, bool pretty = true);
+    void ToStream(Stream& stream, bool pretty = true);
 
     JsonValue& operator=(StringView string);
     JsonValue& operator=(const uchar* text);
@@ -369,7 +376,9 @@ private:
     };
 
     struct ParsingContext {
-        Stream* stream = nullptr;
+        ParsingContext(Stream& stream) : stream(stream) {}
+
+        Stream& stream;
         bool hasError = false;
 
         JsonParseSettings settings;
@@ -389,150 +398,150 @@ private:
 };
 
 template<>
-inline void PrintType(JsonType* type, FormatInfo* info) {
-    switch (*type) {
+inline void PrintType(JsonType& type, FormatInfo& info) {
+    switch (type) {
         case JsonType::Null:
-            PrintfToStream(info->output, "null");
+            PrintfToStream(info.output, "null");
             break;
 
         case JsonType::String:
-            PrintfToStream(info->output, "string");
+            PrintfToStream(info.output, "string");
             break;
 
         case JsonType::Number:
-            PrintfToStream(info->output, "number");
+            PrintfToStream(info.output, "number");
             break;
 
         case JsonType::Object:
-            PrintfToStream(info->output, "object");
+            PrintfToStream(info.output, "object");
             break;
 
         case JsonType::Array:
-            PrintfToStream(info->output, "array");
+            PrintfToStream(info.output, "array");
             break;
 
         case JsonType::Bool:
-            PrintfToStream(info->output, "bool");
+            PrintfToStream(info.output, "bool");
             break;
     }
 }
 
 template<>
-inline void PrintType(JsonValue* type, FormatInfo* info) {
+inline void PrintType(JsonValue& type, FormatInfo& info) {
     // Not sure if there's a sane way to make this specifiable without doing custom parsing of the raw
     const int INDENT_STEP = 2;
     const char INDENT_CHAR = ' ';
 
-    bool wasPretty = info->pretty;
+    bool wasPretty = info.pretty;
 
     // We abuse the precision field as our indentation
-    int oldPrecision = info->precision;
-    bool wasSpecified = info->precisionSpecified;
+    int oldPrecision = info.precision;
+    bool wasSpecified = info.precisionSpecified;
 
-    info->precisionSpecified = false;
+    info.precisionSpecified = false;
 
     auto printIndent = [&]() {
         if (wasPretty) {
             char ident = ' ';
-            info->precisionSpecified = true;
-            PrintType(&ident, info);
-            info->precisionSpecified = false;
+            info.precisionSpecified = true;
+            PrintType(ident, info);
+            info.precisionSpecified = false;
         }
     };
 
     auto setColor = [&](ConColor color) {
-        if (info->output == &console) {
+        if (&info.output == &console) {
             console.SetColor(color);
         }
     };
 
-    switch (type->Type()) {
+    switch (type.Type()) {
         case JsonType::Null:
             setColor(ConColor::Blue);
-            PrintfToStream(info->output, "null");
+            PrintfToStream(info.output, "null");
             setColor(ConColor::White);
             break;
 
         case JsonType::String:
             setColor(ConColor::Red);
-            info->pretty = true;
-            PrintType(&type->GetString(), info);
-            info->pretty = wasPretty;
+            info.pretty = true;
+            PrintType(type.GetString(), info);
+            info.pretty = wasPretty;
             setColor(ConColor::White);
             break;
 
         case JsonType::Number:
             setColor(ConColor::Yellow);
-            PrintType(&type->GetNumber(), info);
+            PrintType(type.GetNumber(), info);
             setColor(ConColor::White);
             break;
 
         case JsonType::Object:
-            PrintfToStream(info->output, "{%s", (wasPretty) ? "\n" : "");
+            PrintfToStream(info.output, "{%s", (wasPretty) ? "\n" : "");
 
-            info->precision += INDENT_STEP;
+            info.precision += INDENT_STEP;
 
-            for (int i = 0; i < type->Count(); i++) {
+            for (int i = 0; i < type.Count(); i++) {
                 printIndent();
 
-                info->pretty = true;
+                info.pretty = true;
                 setColor(ConColor::Cyan);
-                PrintType(&type->GetKey(i), info);
+                PrintType(type.GetKey(i), info);
                 setColor(ConColor::White);
-                PrintfToStream(info->output, ":%s", (wasPretty) ? " " : "");
+                PrintfToStream(info.output, ":%s", (wasPretty) ? " " : "");
 
-                info->pretty = wasPretty;
-                PrintType(&type->GetElement(i), info);
+                info.pretty = wasPretty;
+                PrintType(type.GetElement(i), info);
 
-                if (i + 1 < type->Count()) {
-                    PrintfToStream(info->output, ",%s", (wasPretty) ? "\n" : "");
+                if (i + 1 < type.Count()) {
+                    PrintfToStream(info.output, ",%s", (wasPretty) ? "\n" : "");
                 }
             }
 
             if (wasPretty) {
-                PrintfToStream(info->output, "\n");
+                PrintfToStream(info.output, "\n");
             }
 
-            info->precision -= INDENT_STEP;
+            info.precision -= INDENT_STEP;
 
             printIndent();
-            PrintfToStream(info->output, "}");
+            PrintfToStream(info.output, "}");
             break;
 
         case JsonType::Array:
-            PrintfToStream(info->output, "[%s", (wasPretty) ? "\n" : "");
+            PrintfToStream(info.output, "[%s", (wasPretty) ? "\n" : "");
 
-            info->precision += INDENT_STEP;
+            info.precision += INDENT_STEP;
 
-            for (int i = 0; i < type->Count(); i++) {
+            for (int i = 0; i < type.Count(); i++) {
                 printIndent();
-                PrintType(&type->GetElement(i), info);
+                PrintType(type.GetElement(i), info);
 
-                if (i + 1 < type->Count()) {
-                    PrintfToStream(info->output, ",%s", (wasPretty) ? "\n" : "");
+                if (i + 1 < type.Count()) {
+                    PrintfToStream(info.output, ",%s", (wasPretty) ? "\n" : "");
                 }
             }
 
             if (wasPretty) {
-                PrintfToStream(info->output, "\n");
+                PrintfToStream(info.output, "\n");
             }
 
-            info->precision -= INDENT_STEP;
+            info.precision -= INDENT_STEP;
 
             printIndent();
-            PrintfToStream(info->output, "]");
+            PrintfToStream(info.output, "]");
             break;
 
         case JsonType::Bool:
             setColor(ConColor::Blue);
-            PrintType(&type->GetBool(), info);
+            PrintType(type.GetBool(), info);
             setColor(ConColor::White);
             break;
     }
 
-    info->pretty = wasPretty;
-    info->precisionSpecified = wasSpecified;
-    info->precision = oldPrecision;
+    info.pretty = wasPretty;
+    info.precisionSpecified = wasSpecified;
+    info.precision = oldPrecision;
 }
 
 }

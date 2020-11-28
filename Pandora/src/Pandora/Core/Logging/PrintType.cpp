@@ -6,15 +6,16 @@
 
 namespace pd {
 
-void PrintfToStream(Stream* out, const char* fmt, ...) {
-    char buffer[1024];
+void PrintfToStream(Stream& out, const char* fmt, ...) {
+    const int BUFFER_SIZE = 8192;
+    char buffer[BUFFER_SIZE];
 
     va_list args;
     va_start(args, fmt);
-    int written = vsprintf_s(buffer, 1024, fmt, args);
+    int written = vsprintf_s(buffer, BUFFER_SIZE, fmt, args);
     va_end(args);
 
-    out->WriteBytes(Slice<byte>((byte*)buffer, written));
+    out.WriteBytes(Slice<byte>((byte*)buffer, written));
 }
 
 }

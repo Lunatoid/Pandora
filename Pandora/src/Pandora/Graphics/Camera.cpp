@@ -1,8 +1,7 @@
 #include "Camera.h"
 
-#include "Pandora/Core/Math/Math.h"
-
 #include "Pandora/Core/Assert.h"
+#include "Pandora/Core/Math/Math.h"
 
 namespace pd {
 
@@ -41,8 +40,28 @@ void Camera::UpdateProjection() {
     view *= LookAt(position, position + forward, up);
 }
 
-Mat4 Camera::GetMatrix() {
+Vec3 Camera::ScreenToWorld(Vec2 screen) {
+    switch (projection) {
+        case Projection::Orthographic: {
+            screen -= (Vec2)size / 2.0f;
+            screen /= Vec2(scale);
+            screen += Vec2(position.x, position.y);
+            return screen;
+        }
+
+        default:
+            PD_ASSERT_D(false, "Unhandled case: ScreenToWorld [ {} ]", projection);
+    }
+
+    return Vec2(0.0f);
+}
+
+Mat4 Camera::GetMatrix() const {
     return view;
+}
+
+Vec2i Camera::GetSize() const {
+    return size;
 }
 
 }

@@ -169,20 +169,6 @@ const GLenum DATA_FORMATS[] = {
     GL_INVALID_ENUM  // Mat4
 };
 
-// Component count
-const int VertexDataTypeCount[] = {
-    0, // None
-    1, // Float
-    2, // Float2
-    3, // Float3
-    4, // Float4
-    1, // Int
-    2, // Int2
-    3, // Int3
-    4, // Int4
-    0  // Mat4
-};
-
 void GLShader::SetLayout(DataLayout& layout) {
     // If our new layout is shorter than our old layout, disable the excess elements
     if (this->layout.Count() > layout.Count()) {
@@ -203,7 +189,7 @@ void GLShader::SetLayout(DataLayout& layout) {
         this->layout.Add(e->name, e->type);
 
         glEnableVertexAttribArray(i);
-        glVertexAttribPointer(i, VertexDataTypeCount[(int)e->type],
+        glVertexAttribPointer(i, DataLayoutComponentCount[(int)e->type],
                               DATA_FORMATS[(int)e->type], GL_FALSE, stride, (void*)(u64)e->offset);
     }
 
@@ -408,7 +394,7 @@ void GLShader::ActivateLayout() {
         DataElement* e = &elements.Data()[i];
 
         glEnableVertexAttribArray(i);
-        glVertexAttribPointer(i, VertexDataTypeCount[(int)e->type],
+        glVertexAttribPointer(i, DataLayoutComponentCount[(int)e->type],
             DATA_FORMATS[(int)e->type], GL_FALSE, stride, (void*)(u64)e->offset);
     }
 

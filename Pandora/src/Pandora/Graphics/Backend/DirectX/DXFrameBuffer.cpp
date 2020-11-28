@@ -5,10 +5,6 @@
 
 namespace pd {
 
-DXFrameBuffer::~DXFrameBuffer() {
-    Delete();
-}
-
 void DXFrameBuffer::Create(Vec2i size) {
     video = (DXVideoAPI*)VideoAPI::Get();
 
@@ -22,30 +18,24 @@ void DXFrameBuffer::Create(Vec2i size) {
 
     // Create color buffer
     colorBuffer = video->CreateTexture();
-    colorBuffer.As<DXTexture>()->CreateRenderTarget(&renderTargetDesc, &renderTarget, size);
+    colorBuffer.As<DXTexture>()->CreateRenderTarget(&renderTargetDesc, &renderTarget.AsOut(), size);
 
     // Create depth/stencil buffer
     depthStencilBuffer = video->CreateTexture();
-    depthStencilBuffer.As<DXTexture>()->CreateDepthStencil(&depthStencilDesc, &depthStencilView, size);
+    depthStencilBuffer.As<DXTexture>()->CreateDepthStencil(&depthStencilDesc, &depthStencilView.AsOut(), size);
 
     video->BindDefaultFrameBuffer();
 
 }
 
 void DXFrameBuffer::Delete() {
-    if (renderTarget) {
-        renderTarget->Release();
-        renderTarget = nullptr;
-    }
-
-    if (depthStencilView) {
-        depthStencilView->Release();
-        depthStencilView = nullptr;
-    }
+    renderTarget.Reset();
+    depthStencilBuffer.Reset();
+    depthStencilView.Reset();
 }
 
 void DXFrameBuffer::Bind() {
-    video->GetDeviceContext()->OMSetRenderTargets(1, &renderTarget, depthStencilView);
+    video->GetDeviceContext()->OMSetRenderTargets(1, &renderTarget.Get(), depthStencilView.Get());
 
     Vec2i size = colorBuffer->GetSize();
     VideoAPI::Get()->SetViewport(size);
@@ -53,8 +43,8 @@ void DXFrameBuffer::Bind() {
 
 void DXFrameBuffer::BindAndClear(Color clearColor) {
     Bind();
-    video->GetDeviceContext()->ClearRenderTargetView(renderTarget, clearColor.elements);
-    video->GetDeviceContext()->ClearDepthStencilView(depthStencilView, D3D11_CLEAR_DEPTH | D3D11_CLEAR_STENCIL, 1.0f, 0);
+    video->GetDeviceContext()->ClearRenderTargetView(renderTarget.Get(), clearColor.elements);
+    video->GetDeviceContext()->ClearDepthStencilView(depthStencilView.Get(), D3D11_CLEAR_DEPTH | D3D11_CLEAR_STENCIL, 1.0f, 0);
 }
 
 }

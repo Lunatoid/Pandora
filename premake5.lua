@@ -173,10 +173,10 @@ project "Pandora"
     configuration "Release"
         buildoptions "/MT"
         
+        
 project "PBox"
     location "PBox"
     dependson "Pandora"
-    kind "ConsoleApp"
     
     files {
         "%{prj.name}/src/**.h",
@@ -192,11 +192,17 @@ project "PBox"
     defines {
         "PD_BOX_BUILDER"
     }
+    
+    configuration "Debug"
+        kind "ConsoleApp"
+
+    configuration "Release"
+        kind "WindowedApp"
+    
 
 project "Sandbox"
     location "Sandbox"
     dependson "Pandora"
-    kind "ConsoleApp"
     
     files {
         "%{prj.name}/src/**.h",
@@ -207,11 +213,17 @@ project "Sandbox"
     includedirs "Pandora/src"
     libdirs "%{lib_dirs.pandora}"
     links "Pandora.lib"
+    
+    configuration "Debug"
+        kind "ConsoleApp"
+
+    configuration "Release"
+        kind "WindowedApp"
+    
 
 project "Tetro"
     location "Tetro"
     dependson "Pandora"
-    kind "ConsoleApp"
     
     files {
         "%{prj.name}/src/**.h",
@@ -222,3 +234,32 @@ project "Tetro"
     includedirs "Pandora/src"
     libdirs "%{lib_dirs.pandora}"
     links "Pandora.lib"
+    
+    configuration "Debug"
+        kind "ConsoleApp"
+
+    configuration "Release"
+        kind "WindowedApp"
+    
+
+project "Nomad"
+    location "Nomad"
+    dependson "Pandora"
+    
+    files {
+        "%{prj.name}/src/**.h",
+        "%{prj.name}/src/**.c",
+        "%{prj.name}/src/**.cpp",
+    }
+
+    includedirs "Pandora/src"
+    libdirs "%{lib_dirs.pandora}"
+    links "Pandora.lib"
+    prebuildcommands "tt src/TypeTitan/ src/*.h"
+    
+    configuration "Debug"
+        kind "ConsoleApp"
+
+    configuration "Release"
+        kind "WindowedApp"
+    

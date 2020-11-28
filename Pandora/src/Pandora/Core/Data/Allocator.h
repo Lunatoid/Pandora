@@ -1,8 +1,8 @@
 #pragma once
 
-#include "Pandora/Core/Types.h"
-
 #include <new>
+
+#include "Pandora/Core/Types.h"
 
 namespace pd {
 

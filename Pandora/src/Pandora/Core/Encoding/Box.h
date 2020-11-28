@@ -6,6 +6,10 @@
 
 namespace pd {
 
+#if defined(PD_BOX_BUILDER)
+class BoxBuilder;
+#endif
+
 // File constants
 const byte BOX_FILE_MAGIC_RAW[] = { 'B', 'O', 'X', '\n' };
 const Slice<byte> BOX_FILE_MAGIC = Slice<byte>((byte*)BOX_FILE_MAGIC_RAW, sizeof(BOX_FILE_MAGIC_RAW));
@@ -30,7 +34,15 @@ public:
     /// <param name="path">The path.</param>
     /// <returns>Whether or not it loaded successfully</returns>
     bool Load(StringView path);
-    
+
+    /// <summary>
+    /// Loads the resources from a config file instead of a .box file.
+    /// This is the same config file as the one the BoxBuilder uses.
+    /// </summary>
+    /// <param name="configPath">The path of the config file.</param>
+    /// <returns>Whether or not it loaded successfully</returns>
+    bool LoadFromConfig(StringView configPath);
+
     /// <summary>
     /// Frees all memory related to this box. This is called on destruction.
     /// </summary>
@@ -45,10 +57,10 @@ public:
     
     /// <summary>
     /// Returns the header for the specified resource.
-    /// Will return <c>nullptr</c> if the resource does not exist.
+    /// Will return <c>nullptr</c> if the resource does not exist or if it's loaded from a config file.
     /// </summary>
     /// <param name="name">The resource name.</param>
-    /// <returns>The header. <c>nullptr</c> if the resource does not exist.</returns>
+    /// <returns>The header. <c>nullptr</c> if the resource does not exist or if it's loaded from a config file.</returns>
     BoxHeader* GetResourceHeader(StringView name);
     
     /// <summary>
@@ -97,17 +109,26 @@ public:
     
     /// <summary>
     /// Returns a slice of all headers.
+    /// Does not work in config mode.
     /// </summary>
     /// <returns>A slice of all headers.</returns>
     Slice<BoxHeader> GetHeaders();
 
 private:
+    // BOX mode
     FileStream file;
 
     Array<BoxHeader> headers;
 
     byte iv[16];
     bool isEncrypted = false;
+
+    // Config mode
+#if defined(PD_BOX_BUILDER)
+    BoxBuilder* builder = nullptr;
+#else
+    void* builder = nullptr;
+#endif
 };
 
 }

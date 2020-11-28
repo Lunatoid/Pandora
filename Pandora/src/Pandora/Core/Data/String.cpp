@@ -3,11 +3,10 @@
 #include <cstdio>
 #include <cstdarg>
 
-#include "Pandora/Libs/utf8/utf8.h"
-
 #include "Pandora/Core/Assert.h"
-
 #include "Pandora/Core/Data/Memory.h"
+
+#include "Pandora/Libs/utf8/utf8.h"
 
 namespace pd {
 
@@ -316,14 +315,14 @@ void String::Split(const uchar* seperator, Array<String>* out, pd::Allocator str
 }
 
 void String::ToUpper() {
-    if (memory) {
-        utf8upr(memory);
+    if (Data()) {
+        utf8upr(Data());
     }
 }
 
 void String::ToLower() {
-    if (memory) {
-        utf8lwr(memory);
+    if (Data()) {
+        utf8lwr(Data());
     }
 }
 
@@ -356,7 +355,7 @@ bool String::IsValid() {
     return bufferSize > 0 && IsValidUTF8(Data()) == 0;
 }
 
-codepoint String::At(int index) {
+codepoint String::At(int index) const {
     PD_ASSERT_D(index >= 0 && index < Count(),
                u8"index out of range, valid: 0:%d, given: %d", Count(), index);
 
@@ -377,7 +376,7 @@ codepoint String::Back() {
     return At(Count() - 1);
 }
 
-StringView String::View(int offset, int count) {
+StringView String::View(int offset, int count) const {
     if (count <= 0) {
         count = Count() - offset;
     }
@@ -388,11 +387,11 @@ StringView String::View(int offset, int count) {
     return StringView(ByteData() + byteOffset, count, viewSize);
 }
 
-int String::ByteOffset(int index) {
+int String::ByteOffset(int index) const {
     return ByteOffset(0, index);
 }
 
-int String::ByteOffset(int index, int count) {
+int String::ByteOffset(int index, int count) const {
     if (index == 0 && count == 0 && Count() == 0) return 0;
 
     PD_ASSERT_D(index >= 0 && index < Count() && index + count <= Count(),
@@ -413,11 +412,11 @@ int String::ByteOffset(int index, int count) {
     return offset;
 }
 
-uchar* String::Data() {
+uchar* String::Data() const {
     return ByteData();
 }
 
-byte* String::ByteData() {
+byte* String::ByteData() const {
     return memory;
 }
 
@@ -426,18 +425,18 @@ Allocator String::Allocator() const {
 }
 
 int String::Count() const {
-    return (memory) ? UTF8Count(memory) : 0;
+    return (Data()) ? UTF8Count(Data()) : 0;
 }
 
 u64 String::SizeInBytes() const {
-    return (memory) ? UTF8Size(memory) : 0;
+    return (Data()) ? UTF8Size(Data()) : 0;
 }
 
 u64 String::BufferSize() const {
     return bufferSize;
 }
 
-codepoint String::operator[](int index) {
+codepoint String::operator[](int index) const {
     return At(index);
 }
 
@@ -451,21 +450,45 @@ String& String::operator=(String& other) {
     return *this;
 }
 
-bool String::operator==(String& other) {
+bool String::operator==(const String& other) const {
     if (SizeInBytes() == other.SizeInBytes()) {
-        return utf8cmp(memory, other.memory) == 0;
+        return utf8cmp(Data(), other.Data()) == 0;
     } else {
         return false;
     }
 }
 
-bool String::operator==(StringView other) {
+bool String::operator==(StringView other) const {
     // -1 to not include our null terminator
     if (SizeInBytes() - 1 == other.SizeInBytes()) {
         return utf8ncmp(Data(), other.Data(), other.SizeInBytes()) == 0;
     } else {
         return false;
     }
+}
+
+bool String::operator==(const char* other) const {
+    return operator==(StringView(other));
+}
+
+bool String::operator!=(const String& other) const {
+    return !operator==(other);
+}
+
+bool String::operator!=(StringView other) const {
+    return !operator==(other);
+}
+
+bool String::operator!=(const char* other) const {
+    return !operator==(other);
+}
+
+StringViewIt String::begin() const {
+    return View().begin();
+}
+
+StringViewIt String::end() const {
+    return View().end();
 }
 
 void String::Grow(int bytes) {

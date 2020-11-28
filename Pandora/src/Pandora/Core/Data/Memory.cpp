@@ -3,7 +3,6 @@
 #include <memory.h>
 
 #include "Pandora/Core/Math/Math.h"
-
 #include "Pandora/Core/Data/Allocator.h"
 
 namespace pd {

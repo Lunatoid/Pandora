@@ -2,27 +2,15 @@
 
 namespace pd {
 
-// Size in bytes
-const int VertexDataTypeSize[] = {
-    0,        // None
-    4,        // Float
-    4 * 2,    // Float2
-    4 * 3,    // Float3
-    4 * 4,    // Float4
-    4,        // Int
-    4 * 2,    // Int2
-    4 * 3,    // Int3
-    4 * 4,    // Int4
-    4 * 4 * 4 // Mat4
-};
-
 DataElement::DataElement(StringView name, DataLayoutType type) {
     this->name.Set(name);
     this->type = type;
-    size = VertexDataTypeSize[(int)type];
+    size = DataLayoutTypeSize[(int)type];
 }
 
-DataLayout::DataLayout(bool hlslPacking) : hlslPacking(hlslPacking) {}
+DataLayout::DataLayout(DataLayout& other) {
+    CopyFromOther(other);
+}
 
 DataLayout::~DataLayout() {
     Delete();
@@ -36,12 +24,26 @@ void DataLayout::Add(StringView name, DataLayoutType type) {
     elements.Add(name, type);
 }
 
-void DataLayout::Finish() {
-    CalculateOffsetAndStride();
+void DataLayout::Finish(DataPacking packing) {
+    defaultStride = CalculateOffsetAndStride(DataPacking::Default);
+
+    if (packing == DataPacking::Default) {
+        stride = defaultStride;
+    } else {
+        stride = CalculateOffsetAndStride(packing);
+    }
+}
+
+void DataLayout::Clear() {
+    elements.Clear();
 }
 
 int DataLayout::GetStride() const {
     return stride;
+}
+
+int DataLayout::GetDefaultStride() const {
+    return defaultStride;
 }
 
 int DataLayout::Count() const {
@@ -52,34 +54,75 @@ Slice<DataElement> DataLayout::GetElements() {
     return elements.Slice();
 }
 
-void DataLayout::CalculateOffsetAndStride() {
+int DataLayout::CalculateOffsetAndStride(DataPacking packing) {
     int offset = 0;
 
+    auto isAnyVector = [](DataLayoutType type) {
+        return (int)type >= (int)DataLayoutType::Float &&
+            (int)type <= (int)DataLayoutType::Int4;
+    };
+
+    auto getComponentCount = [](DataLayoutType type) {
+        return DataLayoutComponentCount[(int)type];
+    };
+
+    int currentComponent = 0;
     for (int i = 0; i < elements.Count(); i++) {
-        elements[i].offset = offset;
+        int offsetForCurrent = offset;
 
-        if (hlslPacking && i + 1 < elements.Count()) {
-            DataLayoutType current = elements[i].type;
-            DataLayoutType next = elements[i + 1].type;
-
-            // AlignUp to an 8-byte boundary if the current value is a Float3/Int3 and
-            // the next value is NOT a Float/Int, this means we can't interleave the
-            // next Float/Int as the W component so we need to skip 4 bytes as padding.
-            if ((current == DataLayoutType::Float3 && next != DataLayoutType::Float) ||
-                (current == DataLayoutType::Int3 && next != DataLayoutType::Int)) {
-                // We need to pad
-                offset += AlignUp(elements[i].size, 8);
-            } else {
-                // We can pack as normal
+        DataLayoutType current = elements[i].type;
+        switch (packing) {
+            case DataPacking::Default:
                 offset += elements[i].size;
-            }
+                break;
 
-        } else {
-            offset += elements[i].size;
+            case DataPacking::Packed:
+                if (isAnyVector(current)) {
+                    if (currentComponent + getComponentCount(current) > 4) {
+                        // Align to nearest 16-byte boundary
+                        int difference = 4 * (4 - currentComponent);
+                        offsetForCurrent += difference;
+
+                        // This is the new component to count
+                        currentComponent = getComponentCount(current);
+                        offset += difference + elements[i].size;
+                    } else {
+                        // We can pack this in the current component
+                        currentComponent += getComponentCount(current);
+                        offset += elements[i].size;
+
+                        if (currentComponent == 4) {
+                            currentComponent = 0;
+                        }
+                    }
+                } else {
+                    offset += elements[i].size;
+                    currentComponent = 0;
+                }
+                break;
         }
+
+        elements[i].offset = offsetForCurrent;
     }
 
-    stride = offset;
+    // Align up to nearest 16-byte boundary
+    if (packing == DataPacking::Packed && currentComponent != 0) {
+        int difference = 4 * (4 - currentComponent);
+        offset += difference;
+    }
+
+    lastPacking = packing;
+    return offset;
+}
+
+void DataLayout::CopyFromOther(DataLayout& other) {
+    elements.Delete();
+
+    for (int i = 0; i < other.elements.Count(); i++) {
+        Add(other.elements[i].name, other.elements[i].type);
+    }
+
+    Finish(other.lastPacking);
 }
 
 }

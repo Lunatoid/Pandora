@@ -6,20 +6,8 @@
 #include "Pandora/Graphics/Backend/DirectX/DXVideoAPI.h"
 
 namespace pd {
+
 DXShader::DXShader() : video((DXVideoAPI*)VideoAPI::Get()) {}
-DXShader::~DXShader() {
-    if (vertexShader) {
-        vertexShader->Release();
-    }
-
-    if (pixelShader) {
-        pixelShader->Release();
-    }
-
-    if (vertexLayout) {
-        vertexLayout->Release();
-    }
-}
 
 bool DXShader::Load(StringView name) {
     String vertexPath(Allocator::Temporary);
@@ -161,6 +149,8 @@ const DXGI_FORMAT DX_FORMATS[] = {
 };
 
 void DXShader::SetLayout(DataLayout& layout) {
+    PD_ASSERT_D(vertexBytecode.Count() != 0, "No vertex bytecode loaded");
+
     this->layout.Delete();
 
     Array<D3D11_INPUT_ELEMENT_DESC> elemDesc(Allocator::Temporary);
@@ -188,8 +178,8 @@ void DXShader::SetLayout(DataLayout& layout) {
     ID3D11Device* d = video->GetDevice();
     ID3D11DeviceContext* c = video->GetDeviceContext();
 
-    CheckDXError(d->CreateInputLayout(elemDesc.Data(), elemDesc.Count(), vertexBytecode.Data(), vertexBytecode.Count(), &vertexLayout));
-    c->IASetInputLayout(vertexLayout);
+    CheckDXError(d->CreateInputLayout(elemDesc.Data(), elemDesc.Count(), vertexBytecode.Data(), vertexBytecode.Count(), &vertexLayout.AsOut()));
+    c->IASetInputLayout(vertexLayout.Get());
 }
 
 DataLayout& DXShader::GetLayout() {
@@ -199,10 +189,10 @@ DataLayout& DXShader::GetLayout() {
 void DXShader::Bind() {
     ID3D11DeviceContext* c = video->GetDeviceContext();
 
-    c->VSSetShader(vertexShader, nullptr, 0);
-    c->PSSetShader(pixelShader, nullptr, 0);
+    c->VSSetShader(vertexShader.Get(), nullptr, 0);
+    c->PSSetShader(pixelShader.Get(), nullptr, 0);
 
-    c->IASetInputLayout(vertexLayout);
+    c->IASetInputLayout(vertexLayout.Get());
 }
 
 void DXShader::ActivateTextureSlot(int slot) {
@@ -228,8 +218,8 @@ void DXShader::CreateFromBytecode() {
 
     hash = DoHash(hashes, sizeof(hashes));
 
-    CheckDXError(d->CreateVertexShader(vertexBytecode.Data(), vertexBytecode.Count(), nullptr, &vertexShader));
-    CheckDXError(d->CreatePixelShader(pixelBytecode.Data(), pixelBytecode.Count(), nullptr, &pixelShader));
+    CheckDXError(d->CreateVertexShader(vertexBytecode.Data(), vertexBytecode.Count(), nullptr, &vertexShader.AsOut()));
+    CheckDXError(d->CreatePixelShader(pixelBytecode.Data(), pixelBytecode.Count(), nullptr, &pixelShader.AsOut()));
 }
 
 }

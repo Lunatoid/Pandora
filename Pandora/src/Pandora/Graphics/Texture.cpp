@@ -1,7 +1,6 @@
 #include "Texture.h"
 
 #include "Pandora/Core/Data/Memory.h"
-
 #include "Pandora/Core/IO/File.h"
 #include "Pandora/Core/IO/Console.h"
 
@@ -72,8 +71,8 @@ bool Texture::Load(Box& box, StringView name) {
     return false;
 }
 
-void Texture::Create(Vec2i size) {
-    CreateBlankPixels(size);
+void Texture::Create(Vec2i size, bool white) {
+    CreateBlankPixels(size, (white) ? 0xFF : 0x00);
     CreateTextureData();
     Upload(false);
 }
@@ -150,7 +149,7 @@ void Texture::Export(StringView path, TextureExportFormat exportFormat) {
 }
 
 Color Texture::GetPixel(Vec2i position) {
-    if (!pixels) return Color();
+    if (!pixels || position.x < 0 || position.x >= size.x || position.y < 0 || position.y >= size.y) return Color();
 
     int index = (position.y * size.x + position.x) * 4;
 
@@ -161,8 +160,9 @@ Color Texture::GetPixel(Vec2i position) {
 
     return Color((f32)r / 255.0f, (f32)g / 255.0f, (f32)b / 255.0f, (f32)a / 255.0f);
 }
+
 void Texture::SetPixel(Vec2i position, Color color) {
-    if (!pixels) return;
+    if (!pixels || position.x < 0 || position.x >= size.x || position.y < 0 || position.y >= size.y) return;
 
     int index = (position.y * size.x + position.x) * 4;
 
@@ -175,6 +175,49 @@ void Texture::SetPixel(Vec2i position, Color color) {
     pixels[index + 1] = g;
     pixels[index + 2] = b;
     pixels[index + 3] = a;
+}
+
+void Texture::SetPixels(Vec2i position, const Ref<Texture>& texture) {
+    // @TODO: switch this to something faster, like getting/setting rows
+    // of pixels instead of per-pixel
+    for (int y = 0; y < texture->GetSize().y; y++) {
+        for (int x = 0; x < texture->GetSize().x; x++) {
+            Color c = texture->GetPixel(Vec2i(x, y));
+            SetPixel(position + Vec2i(x, y), c);
+        }
+    }
+}
+
+void Texture::SetPixels(Vec2i position, Slice<byte> pixels, int stride) {
+    int width = stride;
+    int height = pixels.Count() / (stride * 4);
+
+    for (int y = 0; y < height; y++) {
+        for (int x = 0; x < width; x++) {
+            int index = (y * width + x) * 4;
+
+            Color c = Color();
+            c.r = (f32)pixels[index + 0] / 255.0f;
+            c.g = (f32)pixels[index + 1] / 255.0f;
+            c.b = (f32)pixels[index + 2] / 255.0f;
+            c.a = (f32)pixels[index + 3] / 255.0f;
+
+            SetPixel(position + Vec2i(x, y), c);
+        }
+    }
+}
+
+void Texture::SetPixels(Vec2i position, Slice<Color> pixels, int stride) {
+    int width = stride;
+    int height = pixels.Count() / stride;
+
+    for (int y = 0; y < height; y++) {
+        for (int x = 0; x < width; x++) {
+            int index = (y * width + x);
+
+            SetPixel(position + Vec2i(x, y), pixels[index]);
+        }
+    }
 }
 
 Vec2i Texture::GetSize() const {
@@ -219,7 +262,7 @@ bool Texture::LoadPixelsFromMemory(Slice<byte> data) {
     return pixels != nullptr;
 }
 
-void Texture::CreateBlankPixels(Vec2i size) {
+void Texture::CreateBlankPixels(Vec2i size, byte value) {
     // Delete any old data
     Delete();
 
@@ -228,8 +271,7 @@ void Texture::CreateBlankPixels(Vec2i size) {
     u64 sizeInBytes = (u64)size.x * (u64)size.y * 4;
     pixels = (byte*)Alloc(sizeInBytes);
 
-    // Initialize the pixels to white
-    MemorySet(pixels, sizeInBytes, 0xFF);
+    MemorySet(pixels, sizeInBytes, value);
 }
 
 }

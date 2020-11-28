@@ -2,7 +2,6 @@
 
 #include "Pandora/Core/IO/File.h"
 #include "Pandora/Core/IO/FileStream.h"
-
 #include "Pandora/Core/Math/Math.h"
 
 namespace pd {
@@ -71,7 +70,7 @@ void MemoryStream::Resize(u64 newSize) {
 }
 
 int MemoryStream::ReadByte(byte* out) {
-    if (!CanRead() && !EndOfStream()) return 0;
+    if (!CanRead() || EndOfStream()) return 0;
 
     *out = memory[position];
     position++;
@@ -80,7 +79,7 @@ int MemoryStream::ReadByte(byte* out) {
 }
 
 int MemoryStream::ReadBytes(byte* data, u64 length) {
-    if (!CanRead() && !EndOfStream()) return 0;
+    if (!CanRead() || EndOfStream()) return 0;
 
     u64 copySize = Min(length, bufferSize - position);
     MemoryCopy(data, memory + position, copySize);

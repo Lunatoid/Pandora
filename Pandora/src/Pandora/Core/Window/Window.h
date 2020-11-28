@@ -3,9 +3,7 @@
 #include "Pandora/Core/Data/StringView.h"
 #include "Pandora/Core/Data/Array.h"
 #include "Pandora/Core/Data/Optional.h"
-
 #include "Pandora/Core/Math/VectorInt.h"
-
 #include "Pandora/Core/Window/WindowEvent.h"
 
 namespace pd {
@@ -129,6 +127,13 @@ public:
 
 #if !defined(PD_NO_IMGUI)
     /// <summary>
+    /// When <c>true</c> it will not pass any input events that are on top
+    /// of ImGui windows.
+    /// </summary>
+    /// <param name="shouldEat">Whether or not to eat the input events for ImGui windows.</param>
+    void SetImGuiEatInputs(bool shouldEat);
+
+    /// <summary>
     /// Starts a new ImGui frame for the window implementation.
     /// </summary>
     void ImGuiNewFrame();
@@ -145,6 +150,8 @@ public:
 #endif
 
 private:
+    void CalculateSize();
+
     Vec2i windowSize;
 
     bool isOpen = false;
@@ -153,6 +160,10 @@ private:
     bool isCursorVisible = true;
     bool isCapturingCursor = false;
     bool isRelativeMouseMode = false;
+
+#if !defined(PD_NO_IMGUI)
+    bool eatImGuiInputs = true;
+#endif
 
     Array<WindowEvent> events;
 

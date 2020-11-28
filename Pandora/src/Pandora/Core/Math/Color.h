@@ -1,7 +1,6 @@
 #pragma once
 
 #include "Pandora/Core/Types.h"
-
 #include "Pandora/Core/Math/Vector.h"
 
 namespace pd {
@@ -12,6 +11,9 @@ struct Color {
 
     Color(f32 r, f32 g, f32 b, f32 a = 1.0f) :
         r(r), g(g), b(b), a(a) {}
+
+    Color(int r, int g, int b, int a = 255) :
+        r((f32)r / 255.0f), g((f32)g / 255.0f), b((f32)b / 255.0f), a((f32)a / 255.0f) {}
 
     Color(Vec2 rg) :
         r(rg.x), g(rg.y), b(0.0f), a(1.0f) {}
@@ -57,14 +59,14 @@ struct Color {
 // Print
 
 template<>
-inline void PrintType(Color* type, FormatInfo* info) {
-    if (info->base == DisplayBase::Hexadecimal) {
-        PrintfToStream(info->output, "0x%X%X%X%X", (int)(type->r * 255.0f), (int)(type->g * 255.0f),
-                       (int)(type->b * 255.0f), (int)(type->a * 255.0f));
-    } else if (info->pretty) {
-        PrintfToStream(info->output, "{\n    R: %g,\n    G: %g\n    B: %g\n    A: %g\n}", type->r, type->g, type->b, type->a);
+inline void PrintType(Color& type, FormatInfo& info) {
+    if (info.base == DisplayBase::Hexadecimal) {
+        PrintfToStream(info.output, "0x%X%X%X%X", (int)(type.r * 255.0f), (int)(type.g * 255.0f),
+                       (int)(type.b * 255.0f), (int)(type.a * 255.0f));
+    } else if (info.pretty) {
+        PrintfToStream(info.output, "{\n    R: %g,\n    G: %g\n    B: %g\n    A: %g\n}", type.r, type.g, type.b, type.a);
     } else {
-        PrintType(&type->rgba, info);
+        PrintType(type.rgba, info);
     }
 }
 

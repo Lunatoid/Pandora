@@ -49,6 +49,8 @@ void InputManager::Update() {
     for (int i = 0; i < (int)MouseButton::Count; i++) {
         buttons[i].wasDown = buttons[i].isDown;
     }
+
+    mouseWheel = Vec2(0.0f);
 }
 
 void InputManager::OnEvent(Event* event) {

@@ -23,21 +23,6 @@ DXTexture::~DXTexture() {
 }
 
 void DXTexture::Delete() {
-    if (texture) {
-        texture->Release();
-        texture = nullptr;
-    }
-
-    if (textureView) {
-        textureView->Release();
-        textureView = nullptr;
-    }
-
-    if (samplerState) {
-        samplerState->Release();
-        samplerState = nullptr;
-    }
-
     if (pixels) {
         Free(pixels);
         pixels = nullptr;
@@ -54,7 +39,7 @@ void DXTexture::Upload(bool releasePixelData) {
     data.pSysMem = pixels;
     data.SysMemPitch = size.x * 4;
 
-    video->GetDeviceContext()->UpdateSubresource(texture, D3D11CalcSubresource(0, 0, 1), nullptr, pixels, size.x * 4, 0);
+    video->GetDeviceContext()->UpdateSubresource(texture.Get(), D3D11CalcSubresource(0, 0, 1), nullptr, pixels, size.x * 4, 0);
 
     if (releasePixelData) {
         ReleasePixelData();
@@ -64,8 +49,8 @@ void DXTexture::Upload(bool releasePixelData) {
 void DXTexture::Bind(int textureSlot) {
     if (!textureView) return;
 
-    video->GetDeviceContext()->PSSetShaderResources(textureSlot, 1, &textureView);
-    video->GetDeviceContext()->PSSetSamplers(textureSlot, 1, &samplerState);
+    video->GetDeviceContext()->PSSetShaderResources(textureSlot, 1, &textureView.Get());
+    video->GetDeviceContext()->PSSetSamplers(textureSlot, 1, &samplerState.Get());
 }
 
 bool DXTexture::ShouldFlipVertically() {
@@ -75,7 +60,7 @@ bool DXTexture::ShouldFlipVertically() {
 
 #if !defined(PD_NO_IMGUI)
 ImTextureID DXTexture::GetImGuiTextureID() {
-    return (ImTextureID)textureView;
+    return (ImTextureID)textureView.Get();
 }
 #endif
 
@@ -85,7 +70,7 @@ void DXTexture::CreateRenderTarget(D3D11_RENDER_TARGET_VIEW_DESC* renderTargetDe
     bindFlags |= D3D11_BIND_RENDER_TARGET;
     CreateTextureData();
 
-    CheckDXError(video->GetDevice()->CreateRenderTargetView(texture, renderTargetDesc, renderTarget));
+    CheckDXError(video->GetDevice()->CreateRenderTargetView(texture.Get(), renderTargetDesc, renderTarget));
 
     // Create unique hash
     struct {
@@ -103,7 +88,7 @@ void DXTexture::CreateDepthStencil(D3D11_DEPTH_STENCIL_VIEW_DESC* depthStencilDe
     format = DXGI_FORMAT_D24_UNORM_S8_UINT;
     CreateTextureData();
 
-    CheckDXError(video->GetDevice()->CreateDepthStencilView(texture, depthStencilDesc, depthStencilView));
+    CheckDXError(video->GetDevice()->CreateDepthStencilView(texture.Get(), depthStencilDesc, depthStencilView));
 
     // Create unique hash
     struct {
@@ -125,7 +110,7 @@ void DXTexture::CreateTextureData() {
     texDesc.Usage = D3D11_USAGE_DEFAULT;
     texDesc.BindFlags = bindFlags;
 
-    CheckDXError(video->GetDevice()->CreateTexture2D(&texDesc, nullptr, &texture));
+    CheckDXError(video->GetDevice()->CreateTexture2D(&texDesc, nullptr, &texture.AsOut()));
 
     if (bindFlags & D3D11_BIND_SHADER_RESOURCE) {
         D3D11_SHADER_RESOURCE_VIEW_DESC viewDesc = {};
@@ -133,7 +118,7 @@ void DXTexture::CreateTextureData() {
         viewDesc.ViewDimension = D3D11_SRV_DIMENSION_TEXTURE2D;
         viewDesc.Texture2D.MipLevels = 1;
 
-        CheckDXError(video->GetDevice()->CreateShaderResourceView(texture, &viewDesc, &textureView));
+        CheckDXError(video->GetDevice()->CreateShaderResourceView(texture.Get(), &viewDesc, &textureView.AsOut()));
     }
 
     D3D11_TEXTURE_ADDRESS_MODE wrapMode = D3D11_TEXTURE_ADDRESS_CLAMP;
@@ -176,7 +161,7 @@ void DXTexture::CreateTextureData() {
     samplerDesc.AddressV = wrapMode;
     samplerDesc.AddressW = wrapMode;
 
-    CheckDXError(video->GetDevice()->CreateSamplerState(&samplerDesc, &samplerState));
+    CheckDXError(video->GetDevice()->CreateSamplerState(&samplerDesc, &samplerState.AsOut()));
 }
 
 }

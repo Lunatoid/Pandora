@@ -34,15 +34,24 @@ public:
     Projection GetProjectionType() const;
 
     /// <summary>
-    /// Returns the scaled, translated projection matrix.
-    /// </summary>
-    /// <returns>The scaled, translated projection matrix.</returns>
-    Mat4 GetMatrix();
-    
-    /// <summary>
     /// Updates the projection.
     /// </summary>
     void UpdateProjection();
+
+    /// <summary>
+    /// Returns the scaled, translated projection matrix.
+    /// </summary>
+    /// <returns>The scaled, translated projection matrix.</returns>
+    Mat4 GetMatrix() const;
+
+    /// <summary>
+    /// Converts a screen point to a world point.
+    /// </summary>
+    /// <param name="screen">The screen point.</param>
+    /// <returns>The world point.</returns>
+    Vec3 ScreenToWorld(Vec2 screen);
+
+    Vec2i GetSize() const;
 
     Vec3 up = Vec3(0.0f, 1.0f, 0.0f);
     Vec3 forward = Vec3(0.0f, 0.0f, -1.0f);

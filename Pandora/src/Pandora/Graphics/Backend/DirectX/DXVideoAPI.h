@@ -3,6 +3,8 @@
 
 #include "Pandora/Graphics/VideoAPI.h"
 
+#include "Pandora/Graphics/Backend/DirectX/DXComRef.h"
+
 // Forward declare all this dumb shit because I really don't want
 // to polute the global namespace with all the dumbass Windows macros
 struct ID3D11Device;
@@ -48,9 +50,9 @@ public:
     virtual void SetShaderRequestHandler(ResourceCatalog& catalog) override;
     void DXVideoAPI::SetFontRequestHandler(ResourceCatalog& catalog) override;
 
-    ID3D11Device* GetDevice() const;
-    ID3D11DeviceContext* GetDeviceContext() const;
-    ID3D11RenderTargetView* GetBackBuffer() const;
+    ID3D11Device* GetDevice();
+    ID3D11DeviceContext* GetDeviceContext();
+    ID3D11RenderTargetView* GetBackBuffer();
 
 protected:
     virtual void Init() override;
@@ -58,20 +60,18 @@ protected:
 private:
     void UnbindAllTextures();
 
-    Color clearColor;
+    DXComRef<ID3D11Device> device;
+    DXComRef<ID3D11DeviceContext> context;
 
-    ID3D11Device* device = nullptr;
-    ID3D11DeviceContext* context = nullptr;
+    DXComRef<IDXGISwapChain> swapChain;
+    DXComRef<ID3D11RenderTargetView> target;
+    DXComRef<ID3D11RasterizerState> rasterizer;
+    DXComRef<ID3D11BlendState> alphaBlend;
+    DXComRef<ID3D11DepthStencilState> depthState;
+    DXComRef<ID3D11Texture2D> depthStencilTex;
+    DXComRef<ID3D11DepthStencilView> depthStencilView;
 
-    IDXGISwapChain* swapChain = nullptr;
-    ID3D11RenderTargetView* target = nullptr;
-    ID3D11RasterizerState* rasterizer = nullptr;
-    ID3D11BlendState* alphaBlend = nullptr;
-    ID3D11DepthStencilState* depthState = nullptr;
-    ID3D11Texture2D* depthStencilTex = nullptr;
-    ID3D11DepthStencilView* depthStencilView = nullptr;
-
-    ID3D11InputLayout* vertexLayout = nullptr;
+    DXComRef<ID3D11InputLayout> vertexLayout;
 
     bool vsyncEnabled = false;
 };

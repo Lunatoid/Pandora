@@ -1,10 +1,8 @@
 #pragma once
 
 #include "Pandora/Core/Event.h"
-
 #include "Pandora/Core/Input/Key.h"
 #include "Pandora/Core/Input/InputManager.h"
-
 #include "Pandora/Core/Window/Window.h"
 
 #include "Pandora/Graphics/Camera.h"

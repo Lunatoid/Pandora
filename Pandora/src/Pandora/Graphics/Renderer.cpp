@@ -17,7 +17,7 @@ void Renderer::DrawQuads(void* data, int quadCount) {
 
 void Renderer::DrawIndexed(void* vertexData, int vertexCount, Slice<u32> indexData, bool relativeIndices) {
 
-    int vertexSize = shader->GetLayout().GetStride();
+    int vertexSize = shader->GetLayout().GetDefaultStride();
 
     if (relativeIndices && indices.Count() > 0) {
         Array<u32> absIndices(Allocator::Temporary);
@@ -36,7 +36,7 @@ void Renderer::DrawIndexed(void* vertexData, int vertexCount, Slice<u32> indexDa
     vertices.AddRange((byte*)vertexData, vertexCount * vertexSize);
 }
 
-void Renderer::SetShader(Ref<Shader> shader) {
+void Renderer::SetShader(const Ref<Shader>& shader) {
     this->shader = shader;
 }
 

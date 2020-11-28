@@ -11,7 +11,7 @@ template <typename T>
 class Slice {
 public:
     Slice() = default;
-    Slice(T* memory, int count) : memory(memory), count(count) {}
+    Slice(const T* memory, int count) : memory((T*)memory), count(count) {}
     Slice(const char* str) : memory((T*)str), count((int)strlen(str) / sizeof(T)) {}
     Slice(Array<T>& array);
 
@@ -49,9 +49,37 @@ public:
     /// </summary>
     /// <param name="index">The index.</param>
     /// <returns>The element at that index.</returns>
-    const T& At(int index);
+    const T& At(int index) const;
 
-    const T& operator[](int index);
+    const T& operator[](int index) const;
+
+    template<typename T>
+    struct SliceIt {
+        SliceIt(const Slice<T>& parent, int i) : parent(parent), i(i) {}
+
+        const T& operator*() const {
+            return parent.At(i);
+        }
+
+        void operator++() {
+            i += 1;
+        }
+
+        bool operator==(const SliceIt<T>& other) {
+            return i == other.i && parent.Data() == other.parent.Data();
+        }
+
+        bool operator!=(const SliceIt<T>& other) {
+            return !operator==(other);
+        }
+
+    private:
+        int i;
+        const Slice<T>& parent;
+    };
+
+    SliceIt<T> begin() const;
+    SliceIt<T> end() const;
 
 protected:
     T* memory = nullptr;
@@ -93,13 +121,23 @@ inline Array<T>& Slice<T>::ToArray(Allocator allocator) {
 }
 
 template<typename T>
-inline const T& Slice<T>::At(int index) {
+inline const T& Slice<T>::At(int index) const {
     return Data()[index];
 }
 
 template<typename T>
-const T& Slice<T>::operator[](int index) {
+const T& Slice<T>::operator[](int index) const {
     return At(index);
+}
+
+template<typename T>
+inline Slice<T>::SliceIt<T> Slice<T>::begin() const {
+    return SliceIt<T>(*this, 0);
+}
+
+template<typename T>
+inline Slice<T>::SliceIt<T> Slice<T>::end() const {
+    return SliceIt<T>(*this, Count());
 }
 
 template<typename T>

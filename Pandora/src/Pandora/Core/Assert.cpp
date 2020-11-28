@@ -33,8 +33,9 @@ char* GetWin32LastErrorMessage() {
 void Crash(bool expr, const char* file, const char* function, int line, const char* fmt, ...) {
     if (expr) return;
 
-    const int BUFFER_SIZE = 4096;
+    const int BUFFER_SIZE = 8192;
     char buffer[BUFFER_SIZE];
+
     buffer[0] = '\0';
 
     va_list args;
@@ -44,7 +45,7 @@ void Crash(bool expr, const char* file, const char* function, int line, const ch
 
     String message;
     message.Format("A crash has occurred at:\n{}:{}(...):{}\n\nMessage: {}\n\nA crash log has been generated.",
-                   file, function, line, buffer);
+                   file, function, line, &buffer[0]);
     
     MessageBoxW(NULL, message.ToWide(), L"A crash has occurred!", MB_OK | MB_ICONERROR);
 

@@ -1,13 +1,11 @@
 #pragma once
 
-#include "Pandora/Core/Data/StringView.h"
-
-#include "Pandora/Core/IO/Stream.h"
-
-#include "Pandora/Core/Logging/PrintType.h"
-
 #include <cstdio>
 #include <cstdlib>
+
+#include "Pandora/Core/Data/StringView.h"
+#include "Pandora/Core/IO/Stream.h"
+#include "Pandora/Core/Logging/PrintType.h"
 
 //
 // The base:
@@ -28,31 +26,29 @@
 
 namespace pd {
 
-void LogInternal(Stream* out, wchar* remainingFormat);
+void LogInternal(Stream& out, wchar* remainingFormat);
 
 template<typename Arg0, typename... Args>
-inline void LogInternal(Stream* out, wchar* remainingFormat, const Arg0& arg0, const Args&... args) {
+inline void LogInternal(Stream& out, wchar* remainingFormat, const Arg0& arg0, const Args&... args) {
     int formatLength = (int)wcslen(remainingFormat);
 
-    FormatInfo info;
+    FormatInfo info(out);
     bool parsingParam = false;
     for (int i = 0; i < formatLength; i++) {
         if (remainingFormat[i] == L'{') {
             if (i + 1 < formatLength && remainingFormat[i + 1] == L'{') {
-                out->WriteByte('{');
+                out.WriteByte('{');
                 i += 1;
                 continue;
             }
 
-            info = FormatInfo();
-            info.output = out;
             info.raw = remainingFormat + i;
             info.rawLength = i;
 
             parsingParam = true;
         } else if (remainingFormat[i] == L'}') {
             if (i + 1 < formatLength && remainingFormat[i + 1] == L'}') {
-                out->WriteByte('}');
+                out.WriteByte('}');
                 i += 1;
                 continue;
             }
@@ -61,7 +57,7 @@ inline void LogInternal(Stream* out, wchar* remainingFormat, const Arg0& arg0, c
                 info.rawLength = i - info.rawLength;
 
                 parsingParam = false;
-                PrintType((Arg0*)&arg0, &info);
+                PrintType((Arg0&)arg0, info);
                 LogInternal(out, remainingFormat + i + 1, args...);
                 return;
             }
@@ -125,20 +121,20 @@ inline void LogInternal(Stream* out, wchar* remainingFormat, const Arg0& arg0, c
 
             buffer[1] = '\0';
 
-            out->WriteByte(buffer[0]);
+            out.WriteByte(buffer[0]);
         }
     }
 }
 
 template<typename... Args>
-inline void Log(Stream* out, StringView fmt) {
+inline void Log(Stream& out, StringView fmt) {
     wchar* wideFormat = fmt.ToWide();
 
     LogInternal(out, wideFormat);
 }
 
 template<typename... Args>
-inline void Log(Stream* out, StringView fmt, const Args&... args) {
+inline void Log(Stream& out, StringView fmt, const Args&... args) {
     wchar* wideFormat = fmt.ToWide();
 
     LogInternal(out, wideFormat, args...);

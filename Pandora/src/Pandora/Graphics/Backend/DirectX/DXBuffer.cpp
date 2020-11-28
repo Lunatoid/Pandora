@@ -5,13 +5,6 @@
 
 namespace pd {
 
-DXBuffer::~DXBuffer() {
-    if (buffer) {
-        buffer->Release();
-        buffer = nullptr;
-    }
-}
-
 void DXBuffer::Init(DXBufferType type) {
     this->video = (DXVideoAPI*)VideoAPI::Get();
     this->type = type;
@@ -21,10 +14,7 @@ void DXBuffer::Resize(int newSize) {
     // The dimensions must be a multiple of 16
     newSize = AlignUp(newSize, 16);
 
-    if (buffer) {
-        buffer->Release();
-        buffer = nullptr;
-    }
+    buffer.Reset();
 
     const int BIND_BUFFER[] = {
         D3D11_BIND_VERTEX_BUFFER,
@@ -38,7 +28,7 @@ void DXBuffer::Resize(int newSize) {
     desc.CPUAccessFlags = D3D11_CPU_ACCESS_WRITE;
     desc.BindFlags = BIND_BUFFER[(int)type];
 
-    CheckDXError(video->GetDevice()->CreateBuffer(&desc, nullptr, &buffer));
+    CheckDXError(video->GetDevice()->CreateBuffer(&desc, nullptr, &buffer.AsOut()));
 
     size = newSize;
 }
@@ -49,15 +39,15 @@ void DXBuffer::SetData(Slice<byte> bytes) {
     }
 
     D3D11_MAPPED_SUBRESOURCE mappedRes = {};
-    CheckDXError(video->GetDeviceContext()->Map(buffer, 0, D3D11_MAP_WRITE_DISCARD, 0, &mappedRes));
+    CheckDXError(video->GetDeviceContext()->Map(buffer.Get(), 0, D3D11_MAP_WRITE_DISCARD, 0, &mappedRes));
 
     MemoryCopy(mappedRes.pData, bytes.Data(), bytes.Count());
 
-    video->GetDeviceContext()->Unmap(buffer, 0);
+    video->GetDeviceContext()->Unmap(buffer.Get(), 0);
 }
 
 ID3D11Buffer* DXBuffer::GetBuffer() {
-    return buffer;
+    return buffer.Get();
 }
 
 }

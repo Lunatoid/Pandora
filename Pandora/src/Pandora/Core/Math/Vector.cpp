@@ -70,24 +70,27 @@ f32 SquareMagnitude(Vec4 v) {
 }
 
 Vec2 Normalize(Vec2 v) {
-    return v * Vec2(1.0f / Magnitude(v));
+    float m = 1.0f / Magnitude(v);
+    return v * Vec2((isnan(m) || isinf(m)) ? 0.0f : m);
 }
 
 Vec3 Normalize(Vec3 v) {
-    return v * Vec3(1.0f / Magnitude(v));
+    float m = 1.0f / Magnitude(v);
+    return v * Vec3((isnan(m) || isinf(m)) ? 0.0f : m);
 }
 
 Vec4 Normalize(Vec4 v) {
-    return v * Vec4(1.0f / Magnitude(v));
+    float m = 1.0f / Magnitude(v);
+    return v * Vec4((isnan(m) || isinf(m)) ? 0.0f : m);
 }
 
 Vec2 Reflect(Vec2 inDir, Vec2 inNormal) {
-    f32 num = -2.0f * Dot(inDir, inNormal);
+    f32 num = -2.0f * Dot(inNormal, inDir);
     return Vec2(num) * inNormal + inDir;
 }
 
 Vec3 Reflect(Vec3 inDir, Vec3 inNormal) {
-    f32 num = -2.0f * Dot(inDir, inNormal);
+    f32 num = -2.0f * Dot(inNormal, inDir);
     return Vec3(num) * inNormal + inDir;
 }
 

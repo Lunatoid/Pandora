@@ -162,6 +162,8 @@ void Window::Open(StringView title, Vec2i size, u32 style) {
         SetFullscreen(true, size);
     }
 
+    CalculateSize();
+
 #if !defined(PD_NO_IMGUI)
     ImGui::CreateContext();
 
@@ -223,7 +225,7 @@ void Window::SetMousePosition(Vec2i position) {
 
     POINT pt;
     pt.x = position.x;
-    pt.y = position.y;
+    pt.y = GetSize().y - position.y;
     ClientToScreen(NATIVE_DATA->handle, &pt);
     SetCursorPos(pt.x, pt.y);
 }
@@ -245,12 +247,7 @@ void Window::SetRelativeMouseMode(bool enabled) {
 }
 
 Vec2i Window::GetSize() {
-    if (!IsOpen()) return Vec2i(0, 0);
-
-    RECT rect;
-    GetClientRect(NATIVE_DATA->handle, &rect);
-
-    return Vec2i(rect.right - rect.left, rect.bottom - rect.top);
+    return windowSize;
 }
 
 bool Window::IsOpen() const {
@@ -293,6 +290,8 @@ void Window::Win32InternalHandleEvent(u32 message, u64 wparam, i64 lparam) {
         case WM_SIZE: {
             if (wparam != SIZE_MINIMIZED && !NATIVE_DATA->isResizing && NATIVE_DATA->lastResizeSize != GetSize()) {
                 NATIVE_DATA->lastResizeSize = GetSize();
+
+                CalculateSize();
 
                 WindowEvent event;
                 event.type = WindowEventType::Resize;
@@ -348,7 +347,7 @@ void Window::Win32InternalHandleEvent(u32 message, u64 wparam, i64 lparam) {
         case WM_KEYDOWN:
         case WM_SYSKEYDOWN: {
 #if !defined(PD_NO_IMGUI)
-            if (ImGui::GetIO().WantCaptureKeyboard) return;
+            if (ImGui::GetIO().WantCaptureKeyboard && eatImGuiInputs) return;
 #endif
 
             Key targetKey = VKeyToKey(wparam, lparam);
@@ -375,7 +374,7 @@ void Window::Win32InternalHandleEvent(u32 message, u64 wparam, i64 lparam) {
         case WM_KEYUP:
         case WM_SYSKEYUP: {
 #if !defined(PD_NO_IMGUI)
-            if (ImGui::GetIO().WantCaptureKeyboard) return;
+            if (ImGui::GetIO().WantCaptureKeyboard && eatImGuiInputs) return;
 #endif
 
             WindowEvent event;
@@ -390,7 +389,7 @@ void Window::Win32InternalHandleEvent(u32 message, u64 wparam, i64 lparam) {
         case WM_CHAR:
         case WM_SYSCHAR: {
 #if !defined(PD_NO_IMGUI)
-            if (ImGui::GetIO().WantCaptureKeyboard) return;
+            if (ImGui::GetIO().WantCaptureKeyboard && eatImGuiInputs) return;
 #endif
 
             u32 character = (u32)wparam;
@@ -429,7 +428,7 @@ void Window::Win32InternalHandleEvent(u32 message, u64 wparam, i64 lparam) {
 
         case WM_LBUTTONDOWN: {
 #if !defined(PD_NO_IMGUI)
-            if (ImGui::GetIO().WantCaptureMouse) return;
+            if (ImGui::GetIO().WantCaptureMouse && eatImGuiInputs) return;
 #endif
 
             WindowEvent event;
@@ -444,7 +443,7 @@ void Window::Win32InternalHandleEvent(u32 message, u64 wparam, i64 lparam) {
 
         case WM_LBUTTONUP: {
 #if !defined(PD_NO_IMGUI)
-            if (ImGui::GetIO().WantCaptureMouse) return;
+            if (ImGui::GetIO().WantCaptureMouse && eatImGuiInputs) return;
 #endif
 
             WindowEvent event;
@@ -459,7 +458,7 @@ void Window::Win32InternalHandleEvent(u32 message, u64 wparam, i64 lparam) {
 
         case WM_RBUTTONDOWN: {
 #if !defined(PD_NO_IMGUI)
-            if (ImGui::GetIO().WantCaptureMouse) return;
+            if (ImGui::GetIO().WantCaptureMouse && eatImGuiInputs) return;
 #endif
 
             WindowEvent event;
@@ -474,7 +473,7 @@ void Window::Win32InternalHandleEvent(u32 message, u64 wparam, i64 lparam) {
 
         case WM_RBUTTONUP: {
 #if !defined(PD_NO_IMGUI)
-            if (ImGui::GetIO().WantCaptureMouse) return;
+            if (ImGui::GetIO().WantCaptureMouse && eatImGuiInputs) return;
 #endif
 
             WindowEvent event;
@@ -489,7 +488,7 @@ void Window::Win32InternalHandleEvent(u32 message, u64 wparam, i64 lparam) {
 
         case WM_MBUTTONDOWN: {
 #if !defined(PD_NO_IMGUI)
-            if (ImGui::GetIO().WantCaptureMouse) return;
+            if (ImGui::GetIO().WantCaptureMouse && eatImGuiInputs) return;
 #endif
 
             WindowEvent event;
@@ -504,7 +503,7 @@ void Window::Win32InternalHandleEvent(u32 message, u64 wparam, i64 lparam) {
 
         case WM_MBUTTONUP: {
 #if !defined(PD_NO_IMGUI)
-            if (ImGui::GetIO().WantCaptureMouse) return;
+            if (ImGui::GetIO().WantCaptureMouse && eatImGuiInputs) return;
 #endif
 
             WindowEvent event;
@@ -519,7 +518,7 @@ void Window::Win32InternalHandleEvent(u32 message, u64 wparam, i64 lparam) {
 
         case WM_MOUSEWHEEL: {
 #if !defined(PD_NO_IMGUI)
-            if (ImGui::GetIO().WantCaptureMouse) return;
+            if (ImGui::GetIO().WantCaptureMouse && eatImGuiInputs) return;
 #endif
 
             WindowEvent event;
@@ -535,7 +534,7 @@ void Window::Win32InternalHandleEvent(u32 message, u64 wparam, i64 lparam) {
 
         case WM_MOUSEHWHEEL: {
 #if !defined(PD_NO_IMGUI)
-            if (ImGui::GetIO().WantCaptureMouse) return;
+            if (ImGui::GetIO().WantCaptureMouse && eatImGuiInputs) return;
 #endif
 
             WindowEvent event;
@@ -551,15 +550,17 @@ void Window::Win32InternalHandleEvent(u32 message, u64 wparam, i64 lparam) {
 
         case WM_MOUSEMOVE: {
 #if !defined(PD_NO_IMGUI)
-            if (ImGui::GetIO().WantCaptureMouse) return;
+            if (ImGui::GetIO().WantCaptureMouse && eatImGuiInputs) return;
 #endif
 
             WindowEvent event;
             event.type = WindowEventType::MouseMove;
 
+            Vec2i size = GetSize();
+
             Vec2i position;
             position.x = (int)GET_X_LPARAM(lparam);
-            position.y = (int)GET_Y_LPARAM(lparam);
+            position.y = size.y - (int)GET_Y_LPARAM(lparam);
 
             event.mouseMove.position = position;
             event.mouseMove.delta = position - NATIVE_DATA->lastMove;
@@ -578,6 +579,15 @@ void Window::Win32InternalHandleEvent(u32 message, u64 wparam, i64 lparam) {
             break;
         }
     }
+}
+
+void Window::CalculateSize() {
+    if (!IsOpen()) return;
+
+    RECT rect;
+    GetClientRect(NATIVE_DATA->handle, &rect);
+
+    windowSize = Vec2i(rect.right - rect.left, rect.bottom - rect.top);
 }
 
 #endif
@@ -654,9 +664,15 @@ void* Window::GetNativeHandle() {
 }
 
 #if !defined(PD_NO_IMGUI)
+
+void Window::SetImGuiEatInputs(bool shouldEat) {
+    eatImGuiInputs = shouldEat;
+}
+
 void Window::ImGuiNewFrame() {
     ImGui_ImplWin32_NewFrame();
 }
+
 #endif
 
 Key VKeyToKey(WPARAM vkey, LPARAM flags) {

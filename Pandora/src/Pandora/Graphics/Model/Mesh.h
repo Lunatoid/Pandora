@@ -1,9 +1,7 @@
 #pragma once
 
 #include "Pandora/Core/Math/Vector.h"
-
 #include "Pandora/Core/Data/Array.h"
-
 #include "Pandora/Core/Resources/Resource.h"
 
 #include "Pandora/Graphics/Renderer.h"
@@ -12,8 +10,9 @@ namespace pd {
 
 struct MeshVertex {
     Vec3 position;
-    Vec2 uv;
     Vec3 normal;
+    Vec2 uv;
+    Vec3 tangent;
 };
 
 /// <summary>

@@ -6,11 +6,11 @@ namespace pd {
 
 class Lock {
 public:
-    Lock(Mutex* mutex);
+    Lock(Mutex& mutex);
     ~Lock();
 
 private:
-    Mutex* mutex = nullptr;
+    Mutex& mutex;
 };
 
 }

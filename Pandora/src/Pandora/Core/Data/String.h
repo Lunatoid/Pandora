@@ -1,11 +1,8 @@
 #pragma once
 
 #include "Pandora/Core/Math/Math.h"
-
 #include "Pandora/Core/Data/Array.h"
-
 #include "Pandora/Core/IO/MemoryStream.h"
-
 #include "Pandora/Core/Logging/Logging.h"
 
 namespace pd {
@@ -47,7 +44,7 @@ public:
     template<typename... Args>
     void Format(StringView fmt, const Args&... args) {
         MemoryStream stream(32, true, pd::Allocator::Temporary);
-        pd::Log(&stream, fmt, args...);
+        pd::Log(stream, fmt, args...);
         stream.WriteByte('\0');
         Set(stream.Data());
     }
@@ -204,7 +201,7 @@ public:
     /// </summary>
     /// <param name="index">The index.</param>
     /// <returns>The codepoint.</returns>
-    codepoint At(int index);
+    codepoint At(int index) const;
     
     /// <summary>
     /// </summary>
@@ -222,14 +219,14 @@ public:
     /// <param name="offset">The offset in codepoints.</param>
     /// <param name="count">The count in codepointss.</param>
     /// <returns>The created view.</returns>
-    StringView View(int offset = 0, int count = -1);
+    StringView View(int offset = 0, int count = -1) const;
     
     /// <summary>
     /// Calculates how many bytes there are between the Start and <c>index</c>.
     /// </summary>
     /// <param name="index">The index in codepoints.</param>
     /// <returns>How many bytes there are.</returns>
-    int ByteOffset(int index);
+    int ByteOffset(int index) const;
     
     /// <summary>
     /// Calculates how many bytes there are starting from <c>index</c> to <c>count</c>. 
@@ -237,17 +234,17 @@ public:
     /// <param name="index">The index in codepoints.</param>
     /// <param name="count">The count in codepoints.</param>
     /// <returns>How many bytes there are.</returns>
-    int ByteOffset(int index, int count);
+    int ByteOffset(int index, int count) const;
     
     /// <summary>
     /// </summary>
     /// <returns>The raw data of the string.</returns>
-    virtual uchar* Data();
+    virtual uchar* Data() const;
     
     /// <summary>
     /// </summary>
     /// <returns>The raw data of the string as a byte pointer.</returns>
-    virtual byte* ByteData();
+    virtual byte* ByteData() const;
     
     /// <summary>
     /// </summary>
@@ -271,15 +268,23 @@ public:
     /// <returns>How many bytes long the buffer is.</returns>
     u64 BufferSize() const;
 
-    codepoint operator[](int index);
+    codepoint operator[](int index) const;
 
     String& operator=(const uchar* other);
 
     String& operator=(String& other);
 
-    bool operator==(String& other);
+    bool operator==(const String& other) const;
+    bool operator==(StringView other) const;
+    bool operator==(const char* other) const;
 
-    bool operator==(StringView other);
+    bool operator!=(const String& other) const;
+    bool operator!=(StringView other) const;
+    bool operator!=(const char* other) const;
+
+    // Ranged for begin/end functions
+    StringViewIt begin() const;
+    StringViewIt end() const;
 
 protected:    
     /// <summary>
@@ -314,9 +319,8 @@ public:
         // Not allowed
     }
 
-    virtual inline byte* ByteData() override {
-        memory = &stackMemory[0];
-        return memory;
+    virtual inline byte* ByteData() const override {
+        return (byte*)&stackMemory[0];
     }
 
 private:
@@ -326,29 +330,30 @@ private:
 // Print
 
 template<>
-inline void PrintType(StringView* type, FormatInfo* info) {
+inline void PrintType(StringView& type, FormatInfo& info) {
 
-    int size = (int)type->SizeInBytes();
-    if (info->precisionSpecified) {
-        size = info->precision;
+    int size = (int)type.SizeInBytes();
+    if (info.precisionSpecified) {
+        size = info.precision;
     }
 
-    size = Clamp(size, 0, (int)type->SizeInBytes());
+    size = Clamp(size, 0, (int)type.SizeInBytes());
 
-    if (info->pretty) {
-        PrintfToStream(info->output, "\"");
+    if (info.pretty) {
+        PrintfToStream(info.output, "\"");
     }
 
-    PrintfToStream(info->output, "%.*s", size, (char*)type->Data());
+    PrintfToStream(info.output, "%.*s", size, (char*)type.Data());
 
-    if (info->pretty) {
-        PrintfToStream(info->output, "\"");
+    if (info.pretty) {
+        PrintfToStream(info.output, "\"");
     }
 }
+
 template<>
-inline void PrintType(String* type, FormatInfo* info) {
-    StringView view = type->View();
-    PrintType(&view, info);
+inline void PrintType(String& type, FormatInfo& info) {
+    StringView view = type.View();
+    PrintType(view, info);
 }
 
 }

@@ -5,11 +5,9 @@
 
 #include "Pandora/Core/Assert.h"
 #include "Pandora/Core/Types.h"
-
 #include "Pandora/Core/Data/Allocator.h"
 #include "Pandora/Core/Data/Memory.h"
 #include "Pandora/Core/Data/Slice.h"
-
 #include "Pandora/Core/Logging/PrintType.h"
 
 namespace pd {
@@ -24,12 +22,12 @@ public:
     Array(Allocator allocator = Allocator::Persistent);
 
     virtual ~Array();
-    
+
     /// <summary>
     /// Destructs all elements and frees the memory. This is called on destruction.
     /// </summary>
     void Delete();
-    
+
     /// <summary>
     /// Resizes the memory to hold <c>newCount</c> elements.
     /// If <c>newCount</c> is larger than the current count it will grow the memory.
@@ -37,7 +35,7 @@ public:
     /// </summary>
     /// <param name="newCount">The new count.</param>
     void Resize(int newCount);
-    
+
     /// <summary>
     /// Adds a new elements to the end of the array.
     /// </summary>
@@ -59,7 +57,7 @@ public:
     /// <returns>The index of the element.</returns>
     template<typename ...Args>
     int Add(Args ...args);
-    
+
     /// <summary>
     /// Adds a range of elements to the end of the array.
     /// </summary>
@@ -74,7 +72,7 @@ public:
     /// <param name="elements">The elements.</param>
     /// <returns>The starting index of the new elements.</returns>
     int AddRange(const Slice<T>& elements);
-    
+
     /// <summary>
     /// Inserts an element into the specified index. This operation is ordered.
     /// </summary>
@@ -102,20 +100,20 @@ public:
     /// <param name="index">The index.</param>
     /// <param name="t">The element.</param>
     void InsertUnordered(int index, const T* t);
-    
+
     /// <summary>
     /// Swaps two elements
     /// </summary>
     /// <param name="a">The first index to swap.</param>
     /// <param name="b">The seconds index to swap.</param>
     void Swap(int a, int b);
-    
+
     /// <summary>
     /// Resizes the memory and constructs <c>reservationCount</c> elements. Also increases the count.
     /// </summary>
     /// <param name="reservationCount">How many elements to reserve.</param>
     void Reserve(int reservationCount);
-    
+
     /// <summary>
     /// Removes the element at the specified index. This operation is ordered.
     /// </summary>
@@ -134,12 +132,12 @@ public:
     /// <param name="index">The index.</param>
     /// <param name="index">The count.</param>
     void RemoveRange(int index, int count);
-    
+
     /// <summary>
     /// Destructs all elements and resets the count.
     /// </summary>
     inline void Clear();
-    
+
     /// <summary>
     /// Uses quicksort to sort <c>count</c> elements starting from <c>offset</c>.
     /// </summary>
@@ -148,7 +146,7 @@ public:
     /// <param name="count">The count. -1 for remaining elements.</param>
     template<typename LessLambda>
     void Sort(LessLambda func, int offset = 0, int count = -1);
-    
+
     /// <summary>
     /// Searches through <c>count</c> elements starting from <c>offset</c>.
     /// </summary>
@@ -167,14 +165,14 @@ public:
     /// </summary>
     /// <param name="allocator">The allocator.</param>
     virtual void ChangeAllocator(pd::Allocator allocator);
-    
+
     /// <summary>
     /// Returns the element at the specified index. This operation is O(1).
     /// </summary>
     /// <param name="index">The index.</param>
     /// <returns>The element at that index.</returns>
-    inline T& At(int index);
-    
+    inline T& At(int index) const;
+
     /// <summary>
     /// </summary>
     /// <returns>The first element.</returns>
@@ -188,7 +186,7 @@ public:
     /// <summary>
     /// </summary>
     /// <returns>The raw data of the array.</returns>
-    virtual inline T* Data();
+    virtual inline T* Data() const;
 
     /// <summary>
     /// </summary>
@@ -199,17 +197,17 @@ public:
     /// </summary>
     /// <returns>How many bytes long the memory is.</returns>
     inline u64 BufferSize() const;
-    
+
     /// <summary>
     /// </summary>
     /// <returns>How many elements long the array is.</returns>
     inline int Count() const;
-    
+
     /// <summary>
     /// </summary>
     /// <returns>The allocator of the array.</returns>
     inline Allocator Allocator() const;
-    
+
     /// <summary>
     /// Returns a slice of <c>count</c> elements starting at <c>offset</c>.
     /// </summary>
@@ -227,10 +225,39 @@ public:
     template<typename U>
     inline pd::Slice<U> SliceAs(int offset = 0, int count = -1);
 
-    T& operator[](int i);
+    T& operator[](int i) const;
 
     // Delete memory and Copy by reference
     void operator=(Array<T>& other);
+
+    template<typename T>
+    struct ArrayIt {
+        ArrayIt(const Array<T>& parent, int i) : parent(parent), i(i) {}
+
+        T& operator*() const {
+            return parent.At(i);
+        }
+
+        void operator++() {
+            i += 1;
+        }
+
+        bool operator==(const ArrayIt<T>& other) const {
+            return i == other.i && parent.Data() == other.parent.Data();
+        }
+
+        bool operator!=(const ArrayIt<T>& other) const {
+            return !operator==(other);
+        }
+
+    private:
+        int i = 0;
+        const Array<T>& parent;
+    };
+
+    // Ranged for begin/end functions
+    inline ArrayIt<T> begin() const;
+    inline ArrayIt<T> end() const;
 
 protected:
     /// <summary>
@@ -239,14 +266,14 @@ protected:
     /// <param name="newCount">The new count.</param>
     /// <param name="construct">If <c>true</c> it will call the constructor on each new element.</param>
     void Grow(int newCount, bool construct = true);
-    
+
     /// <summary>
     /// Constructs <c>count</c> elements starting from <c>index</c>
     /// </summary>
     /// <param name="index">The index.</param>
     /// <param name="count">The count.</param>
     void Construct(int index, int count);
-    
+
     /// <summary>
     /// Destructs <c>count</c> elements starting from <c>index</c>
     /// </summary>
@@ -267,9 +294,14 @@ public:
         bufferSize = maxCapacity * sizeof(T);
     }
 
-    virtual inline T* Data() {
-        memory = (T*)&stackMemory[0];
-        return memory;
+    virtual ~BoundedArray() {
+        // For some reason when ~Array() calls Data() it calls it's own version
+        // and not the overloaded version
+        memory = Data();
+    }
+
+    virtual inline T* Data() const {
+        return (T*)&stackMemory[0];
     }
 
     virtual void ChangeAllocator(pd::Allocator allocator) {
@@ -284,30 +316,30 @@ private:
 // Print
 
 template<typename U>
-inline void PrintType(Slice<U>* type, FormatInfo* info) {
-    PrintfToStream(info->output, "{%s", (info->pretty) ? "\n    " : " ");
+inline void PrintType(Slice<U>& type, FormatInfo& info) {
+    PrintfToStream(info.output, "{%s", (info.pretty) ? "\n    " : " ");
 
-    int count = type->Count();
+    int count = type.Count();
 
-    if (info->precisionSpecified && info->precision >= 0 && info->precision < count) {
-        count = info->precision;
+    if (info.precisionSpecified && info.precision >= 0 && info.precision < count) {
+        count = info.precision;
     }
 
     for (int i = 0; i < count; i++) {
-        PrintType((U*)&type->At(i), info);
+        PrintType((U&)type.At(i), info);
 
         if (i + 1 < count) {
-            PrintfToStream(info->output, ",%s", (info->pretty) ? "\n    " : " ");
+            PrintfToStream(info.output, ",%s", (info.pretty) ? "\n    " : " ");
         }
     }
 
-    PrintfToStream(info->output, "%s}", (info->pretty) ? "\n" : " ");
+    PrintfToStream(info.output, "%s}", (info.pretty) ? "\n" : " ");
 }
 
 template<typename U>
-inline void PrintType(Array<U>* type, FormatInfo* info) {
-    Slice<U> slice = type->Slice();
-    PrintType(&slice, info);
+inline void PrintType(Array<U>& type, FormatInfo& info) {
+    Slice<U> slice = type.Slice();
+    PrintType(slice, info);
 }
 
 //
@@ -324,18 +356,20 @@ inline Array<T>::~Array() {
 
 template<typename T>
 inline void Array<T>::Delete() {
-    Destruct(0, count);
+    Destruct(0, Count());
 
-    Free(memory, allocator);
+    if (memory) {
+        Free(memory, allocator);
+        memory = nullptr;
+    }
 
-    memory = nullptr;
     count = 0;
     bufferSize = 0;
 }
 
 template<typename T>
 inline void Array<T>::Resize(int newCount) {
-    if (newCount > count) {
+    if (newCount > Count()) {
         Grow(newCount, false);
     } else if (newCount < count) {
         // Shrink and destruct any elements necessary
@@ -352,7 +386,7 @@ inline int Array<T>::Add(const T& t) {
 template<typename T>
 inline int Array<T>::Add(const T* t) {
     Grow(count + 1);
-    memory[count] = *((T*)t);
+    Data()[count] = *((T*)t);
 
     return count++;
 }
@@ -361,7 +395,7 @@ template<typename T>
 template<typename ...Args>
 inline int Array<T>::Add(Args ...args) {
     Grow(count + 1);
-    new (&memory[count]) T(args...);
+    new (&Data()[count]) T(args...);
 
     return count++;
 }
@@ -378,7 +412,7 @@ inline int Array<T>::AddRange(T* memory, int count) {
 
     Grow(startIndex + count);
     for (int i = 0; i < count; i++) {
-        this->memory[startIndex + i] = memory[i];
+        Data()[startIndex + i] = memory[i];
     }
 
     this->count += count;
@@ -602,7 +636,7 @@ inline void Array<T>::ChangeAllocator(pd::Allocator allocator) {
 }
 
 template<typename T>
-inline T& Array<T>::At(int index) {
+inline T& Array<T>::At(int index) const {
     return Data()[index];
 }
 
@@ -617,7 +651,7 @@ inline T& Array<T>::Last() {
 }
 
 template<typename T>
-inline T* Array<T>::Data() {
+inline T* Array<T>::Data() const {
     return memory;
 }
 
@@ -651,7 +685,17 @@ inline Slice<T> Array<T>::Slice(int offset, int count) {
 }
 
 template<typename T>
-inline T& Array<T>::operator[](int i) {
+inline Array<T>::ArrayIt<T> Array<T>::begin() const {
+    return ArrayIt<T>(*this, 0);
+}
+
+template<typename T>
+inline Array<T>::ArrayIt<T> Array<T>::end() const {
+    return ArrayIt<T>(*this, Count());
+}
+
+template<typename T>
+inline T& Array<T>::operator[](int i) const {
     return At(i);
 }
 
@@ -702,10 +746,10 @@ inline void Array<T>::Construct(int index, int count) {
 template<typename T>
 inline void Array<T>::Destruct(int index, int count) {
     if (count == 1) {
-        Data()[index].~T();
+        At(index).~T();
     } else {
-        for (int i = 0; i < count; i++) {
-            Data()[i].~T();
+        for (int i = index; i < count; i++) {
+            At(i).~T();
         }
     }
 }

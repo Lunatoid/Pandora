@@ -2,7 +2,6 @@
 
 #include "Pandora/Core/Data/Array.h"
 #include "Pandora/Core/Data/Reference.h"
-
 #include "Pandora/Core/Math/Matrix.h"
 
 #include "Pandora/Graphics/Shader.h"
@@ -49,7 +48,7 @@ public:
     /// Sets the active shader.
     /// </summary>
     /// <param name="shader">The shader.</param>
-    void SetShader(Ref<Shader> shader);
+    void SetShader(const Ref<Shader>& shader);
         
     /// <summary>
     /// Returns a reference to the shader.

@@ -2,7 +2,7 @@
 
 #include "Pandora/Core/Math/Color.h"
 #include "Pandora/Core/Math/VectorInt.h"
-
+#include "Pandora/Core/Data/Reference.h"
 #include "Pandora/Core/Resources/Resource.h"
 
 #if !defined(PD_NO_IMGUI)
@@ -69,10 +69,11 @@ public:
     virtual bool Load(Box& box, StringView name) override;
 
     /// <summary>
-    /// Creates a white texture with the specified size and format.
+    /// Creates a blank texture with the specified size and format.
     /// </summary>
     /// <param name="size">The size.</param>
-    void Create(Vec2i size);
+    /// <param name="white">Creates a white texture if <c>true</c>, creates a transparent texture if <c>false</c>.</param>
+    void Create(Vec2i size, bool white = true);
 
     /// <summary>
     /// Creates a texture from the specified RGBA pixels.
@@ -124,14 +125,37 @@ public:
     /// <param name="position">The position.</param>
     /// <returns>The color of the pixel.</returns>
     Color GetPixel(Vec2i position);
-        
+    
     /// <summary>
     /// Sets the pixel at the specified position. Pixel data must not have been released.
     /// </summary>
     /// <param name="position">The position.</param>
     /// <param name="color">The color.</param>
     void SetPixel(Vec2i position, Color color);
-    
+
+    /// <summary>
+    /// Writes a texture to the position of this texture
+    /// </summary>
+    /// <param name="position">The position.</param>
+    /// <param name="texture">The texture.</param>
+    void SetPixels(Vec2i position, const Ref<Texture>& texture);
+
+    /// <summary>
+    /// Writes a texture to the position of this texture
+    /// </summary>
+    /// <param name="position">The position.</param>
+    /// <param name="pixels">The pixels in RGBA format.</param>
+    /// <param name="stride">The stride in pixels.</param>
+    void SetPixels(Vec2i position, Slice<byte> pixels, int stride);
+
+    /// <summary>
+    /// Writes a texture to the position of this texture
+    /// </summary>
+    /// <param name="position">The position.</param>
+    /// <param name="pixels">The pixel colors.</param>
+    /// <param name="stride">The stride in pixels.</param>
+    void SetPixels(Vec2i position, Slice<Color> pixels, int stride);
+
     /// <summary>
     /// Returns the size of the texture.
     /// </summary>
@@ -185,8 +209,8 @@ protected:
     /// Creates a white texture with the specified size and format.
     /// </summary>
     /// <param name="size">The size.</param>
-    /// <param name="format">The format.</param>
-    void CreateBlankPixels(Vec2i size);
+    /// <param name="value">The pixel value.</param>
+    void CreateBlankPixels(Vec2i size, byte value);
     
     /// <summary>
     /// Creates the platform-specific texture data.
@@ -200,13 +224,13 @@ protected:
 };
 
 template<>
-inline void PrintType(TextureFiltering* type, FormatInfo* info) {
-    PrintType((StringView*)&TEXTURE_FILTERING_NAMES[(int)*type], info);
+inline void PrintType(TextureFiltering& type, FormatInfo& info) {
+    PrintType(TEXTURE_FILTERING_NAMES[(int)type], info);
 }
 
 template<>
-inline void PrintType(TextureWrapping* type, FormatInfo* info) {
-    PrintType((StringView*)&TEXTURE_WRAPPING_NAMES[(int)*type], info);
+inline void PrintType(TextureWrapping& type, FormatInfo& info) {
+    PrintType(TEXTURE_WRAPPING_NAMES[(int)type], info);
 }
 
 }

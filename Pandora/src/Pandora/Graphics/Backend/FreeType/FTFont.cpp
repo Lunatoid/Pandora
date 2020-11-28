@@ -137,9 +137,8 @@ Glyph* FTFont::GetGlyph(codepoint point) {
             }
         }
 
-        // @TODO: rect packing glyphs
-        glyph.texture = VideoAPI::Get()->CreateTexture();
-        glyph.texture->Create(Slice<Color>(colors, size.x * size.y), size.x);
+        PackGlyph(Slice<Color>(colors, size.x * size.y), size.x, glyph);
+        glyph.size = size;
         glyph.bearing = Vec2((f32)face->glyph->metrics.horiBearingX, (f32)face->glyph->metrics.horiBearingY) / 64.0f;
         glyph.advance = (f32)face->glyph->metrics.horiAdvance / 64.0f;
 

@@ -4,29 +4,10 @@ namespace pd {
 
 void GetMeshVertexLayout(DataLayout& layout) {
     layout.Add("position", DataLayoutType::Float3);
-    layout.Add("uv", DataLayoutType::Float2);
     layout.Add("normal", DataLayoutType::Float3);
+    layout.Add("uv", DataLayoutType::Float2);
+    layout.Add("tangent", DataLayoutType::Float3);
     layout.Finish();
-}
-
-void Model::Load(StringView meshName, StringView shaderName) {
-    DataLayout layout;
-    GetMeshVertexLayout(layout);
-
-    material.Reset(New<Material>());
-    material->Load(shaderName, layout);
-
-    mesh = ResourceCatalog::Get().Get<Mesh>(meshName);
-}
-
-void Model::Load(Ref<Mesh> mesh, StringView shaderName) {
-    DataLayout layout;
-    GetMeshVertexLayout(layout);
-
-    material.Reset(New<Material>());
-    material->Load(shaderName, layout);
-
-    this->mesh = mesh;
 }
 
 void Model::SetMaterial(StringView matName, bool clearTextures) {

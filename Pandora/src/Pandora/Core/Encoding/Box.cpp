@@ -2,10 +2,12 @@
 
 #include "Pandora/Core/IO/Console.h"
 #include "Pandora/Core/IO/File.h"
-
 #include "Pandora/Core/Encoding/Compression.h"
 #include "Pandora/Core/Encoding/Encryption.h"
-#include "Pandora/Core/Encoding/JSON.h"
+
+#if defined(PD_BOX_BUILDER)
+#include "Pandora/Core/Encoding/BoxBuilder.h"
+#endif
 
 namespace pd {
 
@@ -18,33 +20,33 @@ bool Box::Load(StringView path) {
 
     if (!file.Open(path, FileMode::Read)) {
         CONSOLE_LOG_DEBUG("[{}Box Error{}] Failed to open file '{}' for reading\n",
-            ConColor::Red, ConColor::White, path);
+                          ConColor::Red, ConColor::White, path);
         return false;
     }
 
     if (!file.SkipIfEqual(BOX_FILE_MAGIC)) {
         CONSOLE_LOG_DEBUG("[{}Box Error{}] Invalid format (file magic does not match)\n",
-            ConColor::Red, ConColor::White);
+                          ConColor::Red, ConColor::White);
         return false;
     }
 
     byte version;
     if (file.ReadByte(&version) != 1) {
         CONSOLE_LOG_DEBUG("[{}Box Error{}] Unexpected end-of-file\n",
-            ConColor::Red, ConColor::White);
+                          ConColor::Red, ConColor::White);
         return false;
     }
 
     if (version > BOX_SUPPORTED_VERSION) {
         CONSOLE_LOG_DEBUG("[{}Error{}] Unsupported version (archive version: {}, supported: {})\n",
-            ConColor::Red, ConColor::White, version, BOX_SUPPORTED_VERSION);
+                          ConColor::Red, ConColor::White, version, BOX_SUPPORTED_VERSION);
         return false;
     }
 
     // Read IV
     if (file.ReadBytes(iv, 16) != 16) {
         CONSOLE_LOG_DEBUG("[{}Error{}] Unexpected end-of-file\n",
-            ConColor::Red, ConColor::White);
+                          ConColor::Red, ConColor::White);
         return false;
     }
 
@@ -53,14 +55,14 @@ bool Box::Load(StringView path) {
         // We're using encryption!
         isEncrypted = true;
         CONSOLE_LOG_DEBUG("[{}Error{}] Encrypted archives are not yet supported\n",
-            ConColor::Red, ConColor::White);
+                          ConColor::Red, ConColor::White);
         return false;
     }
 
     u32 fileCount;
     if (file.Read<u32>(&fileCount) != sizeof(fileCount)) {
         CONSOLE_LOG_DEBUG("[{}Error{}] Unexpected end-of-file\n",
-            ConColor::Red, ConColor::White);
+                          ConColor::Red, ConColor::White);
         return false;
     }
 
@@ -69,28 +71,28 @@ bool Box::Load(StringView path) {
         ResourceType type;
         if (file.Read(&type) != sizeof(type)) {
             CONSOLE_LOG_DEBUG("[{}Error{}] Unexpected end-of-file\n",
-                ConColor::Red, ConColor::White);
+                              ConColor::Red, ConColor::White);
             return false;
         }
 
         u16 fileNameLen = 0;
         if (file.Read<u16>(&fileNameLen) != sizeof(fileNameLen)) {
             CONSOLE_LOG_DEBUG("[{}Error{}] Unexpected end-of-file\n",
-                ConColor::Red, ConColor::White);
+                              ConColor::Red, ConColor::White);
             return false;
         }
 
         byte* fileName = (byte*)Alloc(fileNameLen, Allocator::Temporary);
         if (file.ReadBytes(fileName, fileNameLen) != fileNameLen) {
             CONSOLE_LOG_DEBUG("[{}Error{}] Unexpected end-of-file\n",
-                ConColor::Red, ConColor::White);
+                              ConColor::Red, ConColor::White);
             return false;
         }
 
         u64 dataPosition;
         if (file.Read<u64>(&dataPosition) != sizeof(dataPosition)) {
             CONSOLE_LOG_DEBUG("[{}Error{}] Unexpected end-of-file\n",
-                ConColor::Red, ConColor::White);
+                              ConColor::Red, ConColor::White);
             return false;
         }
 
@@ -103,17 +105,47 @@ bool Box::Load(StringView path) {
     return true;
 }
 
+bool Box::LoadFromConfig(StringView configPath) {
+#if defined(PD_BOX_BUILDER)
+    Delete();
+
+    builder = New<BoxBuilder>();
+    return builder->AddFromConfig(configPath);
+#else
+    PD_ASSERT_D(false, "Can't load box from config because the box builder is not enabled");
+    return false;
+#endif
+}
+
 void Box::Delete() {
     headers.Delete();
     file.Close();
+
+#if defined(PD_BOX_BUILDER)
+    if (builder) {
+        pd::Delete(builder);
+        builder = nullptr;
+    }
+#endif
 }
 
 bool Box::HasResource(StringView name) {
-    return GetResourceHeader(name) != nullptr;
+    if (!builder) {
+        return GetResourceHeader(name) != nullptr;
+    } else {
+        Slice<BoxBuilder::StagedFile> files = builder->GetStagedFiles();
+        for (int i = 0; i < files.Count(); i++) {
+            if (files[i].name == name) {
+                return true;
+            }
+        }
+
+        return false;
+    }
 }
 
 BoxHeader* Box::GetResourceHeader(StringView name) {
-    if (!IsOpen()) return nullptr;
+    if (!IsOpen() || builder) return nullptr;
 
     for (int i = 0; i < headers.Count(); i++) {
         if (headers[i].name == name) {
@@ -125,48 +157,94 @@ BoxHeader* Box::GetResourceHeader(StringView name) {
 }
 
 ResourceType Box::GetResourceType(StringView name) {
-    if (!IsOpen()) return ResourceType::Unknown;
+    if (!IsOpen() && !builder) return ResourceType::Unknown;
 
-    BoxHeader* header = GetResourceHeader(name);
+    if (!builder) {
+        BoxHeader* header = GetResourceHeader(name);
 
-    return (header) ? header->type : ResourceType::Unknown;
+        return (header) ? header->type : ResourceType::Unknown;
+    } else {
+        Slice<BoxBuilder::StagedFile> files = builder->GetStagedFiles();
+        for (int i = 0; i < files.Count(); i++) {
+            if (files[i].name == name) {
+                return files[i].type;
+            }
+        }
+
+        return ResourceType::Unknown;
+    }
 }
 
 bool Box::GetResourceData(StringView name, Array<byte>& out) {
-    if (!IsOpen()) return false;
+    if (!IsOpen() && !builder) return false;
 
-    BoxHeader* header = GetResourceHeader(name);
+    auto getData = [](Stream& in, Array<byte>& out) {
+        u64 uncompressedSize;
+        if (in.Read(&uncompressedSize) != sizeof(uncompressedSize)) {
+            CONSOLE_LOG_DEBUG("[{}Box Error{}] Unexpected end-of-file\n",
+                              ConColor::Red, ConColor::White);
+            return false;
+        }
 
-    if (!header) return false;
+        u64 compressedSize;
+        if (in.Read(&compressedSize) != sizeof(compressedSize)) {
+            CONSOLE_LOG_DEBUG("[{}Box Error{}] Unexpected end-of-file\n",
+                              ConColor::Red, ConColor::White);
+            return false;
+        }
 
-    file.Seek(header->position, SeekOrigin::Start);
+        if (compressedSize > 0) {
+            Array<byte> compressed;
+            compressed.Reserve((int)compressedSize);
 
-    u64 uncompressedSize;
-    if (file.Read(&uncompressedSize) != sizeof(uncompressedSize)) {
-        CONSOLE_LOG_DEBUG("[{}Box Error{}] Unexpected end-of-file\n",
-            ConColor::Red, ConColor::White);
-        return false;
+            if (in.ReadBytes(compressed.Data(), compressedSize) != compressedSize) {
+                CONSOLE_LOG_DEBUG("[{}Error{}] Unexpected end-of-file\n",
+                                  ConColor::Red, ConColor::White);
+                return false;
+            }
+
+            DecompressData(compressed, out);
+        } else {
+            out.Reserve((int)uncompressedSize);
+            if (in.ReadBytes(out.Data(), uncompressedSize) != uncompressedSize) {
+                CONSOLE_LOG_DEBUG("[{}Error{}] Unexpected end-of-file\n",
+                                  ConColor::Red, ConColor::White);
+                return false;
+            }
+        }
+        return true;
+    };
+
+    if (!builder) {
+        BoxHeader* header = GetResourceHeader(name);
+
+        if (!header) return false;
+
+        file.Seek(header->position, SeekOrigin::Start);
+        return getData(file, out);
+    } else {
+        MemoryStream data;
+
+        Slice<BoxBuilder::StagedFile> files = builder->GetStagedFiles();
+        BoxBuilder::StagedFile* sf = nullptr;
+        for (int i = 0; i < files.Count(); i++) {
+            if (files[i].name == name) {
+                sf = (BoxBuilder::StagedFile*) & files[i];
+                break;
+            }
+        }
+
+        if (!sf) return false;
+
+        // Don't unnecessarily compress it
+        sf->compressed = false;
+
+        builder->EncodeResource(data, *sf);
+        data.Seek(0, SeekOrigin::Start);
+        return getData(data, out);
     }
 
-    u64 compressedSize;
-    if (file.Read(&compressedSize) != sizeof(compressedSize)) {
-        CONSOLE_LOG_DEBUG("[{}Box Error{}] Unexpected end-of-file\n",
-            ConColor::Red, ConColor::White);
-        return false;
-    }
-
-    Array<byte> compressed;
-    compressed.Reserve((int)compressedSize);
-
-    if (file.ReadBytes(compressed.Data(), compressedSize) != compressedSize) {
-        CONSOLE_LOG_DEBUG("[{}Error{}] Unexpected end-of-file\n",
-            ConColor::Red, ConColor::White);
-        return false;
-    }
-
-    DecompressData(compressed, out);
-
-    return true;
+    return false;
 }
 
 u64 Box::GetCompressedSize(StringView name) {
@@ -181,14 +259,14 @@ u64 Box::GetCompressedSize(StringView name) {
     u64 decompressedSize;
     if (file.Read(&decompressedSize) != sizeof(decompressedSize)) {
         CONSOLE_LOG_DEBUG("[{}Box Error{}] Unexpected end-of-file\n",
-            ConColor::Red, ConColor::White);
+                          ConColor::Red, ConColor::White);
         return false;
     }
 
     u64 compressedSize;
     if (file.Read(&compressedSize) != sizeof(compressedSize)) {
         CONSOLE_LOG_DEBUG("[{}Box Error{}] Unexpected end-of-file\n",
-            ConColor::Red, ConColor::White);
+                          ConColor::Red, ConColor::White);
         return false;
     }
 
@@ -207,14 +285,14 @@ u64 Box::GetUncompressedSize(StringView name) {
     u64 uncompressedSize;
     if (file.Read(&uncompressedSize) != sizeof(uncompressedSize)) {
         CONSOLE_LOG_DEBUG("[{}Box Error{}] Unexpected end-of-file\n",
-            ConColor::Red, ConColor::White);
+                          ConColor::Red, ConColor::White);
         return false;
     }
 
     u64 compressedSize;
     if (file.Read(&compressedSize) != sizeof(compressedSize)) {
         CONSOLE_LOG_DEBUG("[{}Box Error{}] Unexpected end-of-file\n",
-            ConColor::Red, ConColor::White);
+                          ConColor::Red, ConColor::White);
         return false;
     }
 
@@ -232,9 +310,5 @@ bool Box::IsOpen() {
 Slice<BoxHeader> Box::GetHeaders() {
     return headers;
 }
-
-#if defined(PD_BOX_BUILDER)
-
-#endif
 
 }

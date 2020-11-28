@@ -1,16 +1,15 @@
 #include "JSON.h"
 
+#include <cctype>
+
 #include "Pandora/Core/IO/FileStream.h"
 #include "Pandora/Core/IO/Console.h"
-
 #include "Pandora/Core/Math/Math.h"
-
-#include <cctype>
 
 // @TODO: currently the JSON parser is not particularly fast or memory-efficient
 
 #define VALIDATE_EXPR(expr, msg) if (!(expr)) {\
-    CONSOLE_LOG_DEBUG("{}JSON Error{}: {}\n", ConColor::Red, ConColor::White, msg);\
+    CONSOLE_LOG_DEBUG("{}JSON Error{}: {}\n", ConColor::Red, ConColor::White, (const char*)msg);\
     c->hasError = true;\
     \
     PD_ASSERT_D(false, "JSON error: %s", msg);\
@@ -44,6 +43,14 @@ JsonValue::JsonValue(f64 number) {
 JsonValue::JsonValue(bool boolean) {
     value = Ref<InternalValue>::Create();
     Set(boolean);
+}
+
+JsonValue::~JsonValue() {
+    Delete();
+}
+
+void JsonValue::Delete() {
+    value.Reset();
 }
 
 void JsonValue::Set(StringView string) {
@@ -168,7 +175,7 @@ bool JsonValue::TryGetNumber(f64& target) {
         return true;
     }
 
-     return false;
+    return false;
 }
 
 bool JsonValue::TryGetBool(bool& target) {
@@ -406,13 +413,13 @@ bool JsonValue::WriteToFile(StringView path, bool pretty) {
 
     if (!file.IsOpen()) return false;
 
-    ToStream(&file, pretty);
+    ToStream(file, pretty);
 
     return true;
 }
 
-void JsonValue::ToStream(Stream* stream, bool pretty) {
-    if (!stream->CanWrite()) return;
+void JsonValue::ToStream(Stream& stream, bool pretty) {
+    if (!stream.CanWrite()) return;
 
     if (pretty) {
         Log(stream, "{#}", *this);
@@ -470,20 +477,19 @@ bool JsonValue::Parse(StringView source, bool sourceIsPath, JsonParseSettings se
 
         if (!file.IsOpen()) return false;
 
-        return Parse(&file, settings);
+        return Parse(file, settings);
     }
 
     MemoryStream stream(source.ToSlice());
-    return Parse(&stream, settings);
+    return Parse(stream, settings);
 }
 
-bool JsonValue::Parse(Stream* stream, JsonParseSettings settings) {
-    ParsingContext c;
-    c.stream = stream;
-    c.stream->SkipBOMIfPresent();
+bool JsonValue::Parse(Stream& stream, JsonParseSettings settings) {
+    ParsingContext c(stream);
+    c.stream.SkipBOMIfPresent();
     c.settings = settings;
 
-    if (!c.stream->CanRead()) return false;
+    if (!c.stream.CanRead()) return false;
 
     ParseValue(&c, this);
     return !c.hasError;
@@ -494,7 +500,7 @@ void JsonValue::ParseValue(ParsingContext* c, JsonValue* value) {
     TryParseComment(c);
 
     codepoint peek;
-    c->stream->PeekCodepoint(&peek);
+    c->stream.PeekCodepoint(&peek);
 
     switch (peek) {
         case '{':
@@ -523,17 +529,17 @@ void JsonValue::ParseValue(ParsingContext* c, JsonValue* value) {
 
                 do {
                     codepoint point;
-                    c->stream->ReadCodepoint(&point);
+                    c->stream.ReadCodepoint(&point);
 
                     // Keywords need to be lower case
                     if (!(point >= 'a' && point <= 'z')) {
-                        c->stream->Seek(-CodepointSize(point));
+                        c->stream.Seek(-CodepointSize(point));
                         break;
                     }
 
                     word.Append(point);
 
-                } while (c->stream->CanRead());
+                } while (c->stream.CanRead());
 
                 bool isTrue = word == "true";
                 if (isTrue || word == "false") {
@@ -551,18 +557,18 @@ void JsonValue::ParseValue(ParsingContext* c, JsonValue* value) {
 }
 
 void JsonValue::ParseString(ParsingContext* c, String* value) {
-    c->stream->Seek(1); // Consume starting quote
+    c->stream.Seek(1); // Consume starting quote
 
-    u64 position = c->stream->Position();
+    u64 position = c->stream.Position();
 
     codepoint point;
-    while (c->stream->CanRead()) {
-        VALIDATE_EXPR(c->stream->ReadCodepoint(&point) != 0, "unexpected end-of-stream");
+    while (c->stream.CanRead()) {
+        VALIDATE_EXPR(c->stream.ReadCodepoint(&point) != 0, "unexpected end-of-stream");
 
         if (point == '\\') {
             codepoint escaped;
 
-            VALIDATE_EXPR(c->stream->ReadCodepoint(&escaped) != 0, "unexpected end-of-stream");
+            VALIDATE_EXPR(c->stream.ReadCodepoint(&escaped) != 0, "unexpected end-of-stream");
 
             switch (escaped) {
                 case '"':
@@ -604,20 +610,20 @@ void JsonValue::ParseString(ParsingContext* c, String* value) {
 
                     // Read the 4 characters
                     codepoint tmp;
-                    VALIDATE_EXPR(c->stream->ReadCodepoint(&tmp) == 1, "illegal hex character");
+                    VALIDATE_EXPR(c->stream.ReadCodepoint(&tmp) == 1, "illegal hex character");
                     hex[0] = (char)tmp;
-                    VALIDATE_EXPR(c->stream->ReadCodepoint(&tmp) == 1, "illegal hex character");
+                    VALIDATE_EXPR(c->stream.ReadCodepoint(&tmp) == 1, "illegal hex character");
                     hex[1] = (char)tmp;
-                    VALIDATE_EXPR(c->stream->ReadCodepoint(&tmp) == 1, "illegal hex character");
+                    VALIDATE_EXPR(c->stream.ReadCodepoint(&tmp) == 1, "illegal hex character");
                     hex[2] = (char)tmp;
-                    VALIDATE_EXPR(c->stream->ReadCodepoint(&tmp) == 1, "illegal hex character");
+                    VALIDATE_EXPR(c->stream.ReadCodepoint(&tmp) == 1, "illegal hex character");
                     hex[3] = (char)tmp;
 
                     // Validate the ascii characters
                     for (int i = 0; i < 4; i++) {
                         VALIDATE_EXPR((hex[i] >= 'A' && hex[i] <= 'F') ||
-                            (hex[i] >= 'a' && hex[i] <= 'f') ||
-                            isdigit(hex[i]), "illegal hex character");
+                                      (hex[i] >= 'a' && hex[i] <= 'f') ||
+                                      isdigit(hex[i]), "illegal hex character");
                     }
 
                     // Finally, append the codepoint
@@ -637,7 +643,7 @@ void JsonValue::ParseString(ParsingContext* c, String* value) {
 }
 
 void JsonValue::ParseNumber(ParsingContext* c, f64* value) {
-    bool negative = c->stream->SkipIfEqual("-");
+    bool negative = c->stream.SkipIfEqual("-");
 
     int radixCount = 0;
     bool hasExponent = false;
@@ -645,7 +651,7 @@ void JsonValue::ParseNumber(ParsingContext* c, f64* value) {
 
     String number(Allocator::Temporary);
     do {
-        if (c->stream->ReadCodepoint(&point) == 0) break;
+        if (c->stream.ReadCodepoint(&point) == 0) break;
 
         if (point == 'e' || point == 'E') {
             hasExponent = true;
@@ -656,7 +662,7 @@ void JsonValue::ParseNumber(ParsingContext* c, f64* value) {
             radixCount += 1;
         } else if (!isdigit(point)) {
             // We're reading things we're not supposed to, abort
-            c->stream->Seek(-CodepointSize(point));
+            c->stream.Seek(-CodepointSize(point));
             break;
         }
 
@@ -670,11 +676,11 @@ void JsonValue::ParseNumber(ParsingContext* c, f64* value) {
     number.Set("");
 
     if (hasExponent) {
-        VALIDATE_EXPR(c->stream->ReadCodepoint(&point) != 0, "unexpected end-of-stream");
+        VALIDATE_EXPR(c->stream.ReadCodepoint(&point) != 0, "unexpected end-of-stream");
         VALIDATE_EXPR(point == '+' || point == '-' || isdigit(point), "illegal base sign");
 
         if (isdigit(point)) {
-            c->stream->Seek(-1);
+            c->stream.Seek(-1);
         }
 
         bool basePositive = true;
@@ -684,14 +690,14 @@ void JsonValue::ParseNumber(ParsingContext* c, f64* value) {
 
         radixCount = 0;
         do {
-            if (c->stream->ReadCodepoint(&point) == 0) break;
+            if (c->stream.ReadCodepoint(&point) == 0) break;
 
             if (c->settings.allowExponentDecimals && point == '.') {
                 radixCount += 1;
             } else if (point == '.') {
                 break;
             } else if (!isdigit(point)) {
-                c->stream->Seek(-CodepointSize(point));
+                c->stream.Seek(-CodepointSize(point));
                 break;
             }
 
@@ -714,7 +720,7 @@ void JsonValue::ParseNumber(ParsingContext* c, f64* value) {
 
 void JsonValue::ParseObject(ParsingContext* c, JsonObject* value) {
     // Consume starting brace
-    c->stream->Seek(1);
+    c->stream.Seek(1);
 
     SkipWhitespace(c);
 
@@ -726,36 +732,36 @@ void JsonValue::ParseObject(ParsingContext* c, JsonObject* value) {
         SkipWhitespace(c);
         TryParseComment(c);
 
-        VALIDATE_EXPR(c->stream->PeekCodepoint(&point) != 0, "unexpected end-of-stream");
+        VALIDATE_EXPR(c->stream.PeekCodepoint(&point) != 0, "unexpected end-of-stream");
         VALIDATE_EXPR(point == '"', "object field key must be a string");
 
         ParseString(c, &value->Last().key);
 
         SkipWhitespace(c);
-        VALIDATE_EXPR(c->stream->ReadCodepoint(&point) != 0, "unexpected end-of-stream");
+        VALIDATE_EXPR(c->stream.ReadCodepoint(&point) != 0, "unexpected end-of-stream");
         VALIDATE_EXPR(point == ':', "illegal token after field key");
 
         ParseValue(c, &value->Last().val);
     };
 
     codepoint point;
-    VALIDATE_EXPR(c->stream->PeekCodepoint(&point) != 0, "unexpected end-of-stream");
+    VALIDATE_EXPR(c->stream.PeekCodepoint(&point) != 0, "unexpected end-of-stream");
     if (point != '}') {
         parseField();
         SkipWhitespace(c);
 
-        VALIDATE_EXPR(c->stream->ReadCodepoint(&point) != 0, "unexpected end-of-stream");
+        VALIDATE_EXPR(c->stream.ReadCodepoint(&point) != 0, "unexpected end-of-stream");
 
         if (point != ',') {
             VALIDATE_EXPR(point == '}', "illegal token after field");
             return;
         }
 
-        while (c->stream->CanRead()) {
+        while (c->stream.CanRead()) {
             parseField();
 
             SkipWhitespace(c);
-            VALIDATE_EXPR(c->stream->ReadCodepoint(&point) != 0, "unexpected end-of-stream");
+            VALIDATE_EXPR(c->stream.ReadCodepoint(&point) != 0, "unexpected end-of-stream");
             if (point == '}') break;
             VALIDATE_EXPR(point == ',', "illegal token after field");
         }
@@ -763,25 +769,31 @@ void JsonValue::ParseObject(ParsingContext* c, JsonObject* value) {
     } else {
         // Consume closing brace
         SkipWhitespace(c);
-        c->stream->Seek(1);
+        c->stream.Seek(1);
     }
 }
 
 void JsonValue::ParseArray(ParsingContext* c, JsonArray* value) {
     // Consume starting bracket
-    c->stream->Seek(1);
+    c->stream.Seek(1);
 
     SkipWhitespace(c);
 
     codepoint point;
-    VALIDATE_EXPR(c->stream->PeekCodepoint(&point) != 0, "unexpected end-of-stream");
+    VALIDATE_EXPR(c->stream.PeekCodepoint(&point) != 0, "unexpected end-of-stream");
     if (point != ']') {
-        while (c->stream->CanRead()) {
+        while (c->stream.CanRead()) {
             value->Reserve(1);
             ParseValue(c, &value->Last());
 
             SkipWhitespace(c);
-            VALIDATE_EXPR(c->stream->ReadCodepoint(&point) != 0, "unexpected end-of-stream");
+            VALIDATE_EXPR(c->stream.ReadCodepoint(&point) != 0, "unexpected end-of-stream");
+
+            if (c->settings.allowComments && point == '/') {
+                c->stream.Seek(-1);
+                TryParseComment(c);
+                VALIDATE_EXPR(c->stream.ReadCodepoint(&point) != 0, "unexpected end-of-stream");
+            }
 
             if (point == ']') break;
 
@@ -789,27 +801,27 @@ void JsonValue::ParseArray(ParsingContext* c, JsonArray* value) {
         }
     } else {
         // Consume closing bracket
-        c->stream->Seek(1);
+        c->stream.Seek(1);
     }
 }
 
 void JsonValue::TryParseComment(ParsingContext* c) {
     if (c->settings.allowComments) {
         codepoint peek;
-        c->stream->PeekCodepoint(&peek);
+        c->stream.PeekCodepoint(&peek);
 
         while (peek == '/') {
             // Check if next character is also a '/'
-            c->stream->ReadCodepoint(&peek);
-            c->stream->PeekCodepoint(&peek);
+            c->stream.ReadCodepoint(&peek);
+            c->stream.PeekCodepoint(&peek);
             if (peek == '/') {
                 String dummy(Allocator::Temporary);
-                c->stream->ReadLine(dummy);
+                c->stream.ReadLine(dummy);
                 SkipWhitespace(c);
-                c->stream->PeekCodepoint(&peek);
+                c->stream.PeekCodepoint(&peek);
             } else {
                 // Nope, seek backwards and stop
-                c->stream->Seek(-1);
+                c->stream.Seek(-1);
                 break;
             }
         }
@@ -818,14 +830,14 @@ void JsonValue::TryParseComment(ParsingContext* c) {
 
 void JsonValue::SkipWhitespace(ParsingContext* c) {
     codepoint point;
-    while (c->stream->CanRead()) {
-        if (c->stream->ReadCodepoint(&point) == 0) return;
+    while (c->stream.CanRead()) {
+        if (c->stream.ReadCodepoint(&point) == 0) return;
 
         if (point != ' ' &&
             point != '\n' &&
             point != '\r' &&
             point != '\t') {
-            c->stream->Seek(-CodepointSize(point));
+            c->stream.Seek(-CodepointSize(point));
             return;
         }
     }

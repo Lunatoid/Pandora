@@ -2,8 +2,6 @@
 
 #include "Pandora/Core/IO/Path.h"
 
-#include <cstdio>
-
 #define FIND_WATCH_ENTRY [&](WatchEntry& entry) {\
     return entry.path == path;\
 }

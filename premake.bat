@@ -1,2 +1,2 @@
 @echo off
-premake5\premake5.exe --no-assimp vs2019
+premake5\premake5.exe --box-builder vs2019

@@ -45,7 +45,7 @@ void Material::SetTexture(StringView name, int slot) {
     AfterSetTexture(slot);
 }
 
-void Material::SetTexture(Ref<Texture> texture, int slot) {
+void Material::SetTexture(const Ref<Texture>& texture, int slot) {
     if (slot < 0 || slot >= PD_MAX_TEXTURE_UNITS) {
         CONSOLE_LOG_DEBUG("[{}Material Error{}] {} is not a valid texture slot (min. 0, max. {})\n",
             ConColor::Red, ConColor::White, slot, PD_MAX_TEXTURE_UNITS);

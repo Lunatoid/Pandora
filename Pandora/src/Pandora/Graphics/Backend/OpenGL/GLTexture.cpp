@@ -92,7 +92,7 @@ void GLTexture::AttachFramebuffer(u32 fbo, Vec2i size, bool asColor) {
 
 #if !defined(PD_NO_IMGUI)
 ImTextureID GLTexture::GetImGuiTextureID() {
-    return (ImTextureID)GetID();
+    return (ImTextureID)(u64)GetID();
 }
 #endif
 

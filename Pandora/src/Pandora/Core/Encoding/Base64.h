@@ -2,7 +2,6 @@
 
 #include "Pandora/Core/Data/Array.h"
 #include "Pandora/Core/Data/String.h"
-
 #include "Pandora/Core/IO/Stream.h"
 
 namespace pd {
@@ -42,7 +41,7 @@ const int BASE64_DECODING_TABLE[128] = {
 /// <param name="padding">The padding character.</param>
 /// <returns>A null-terminated string encoded in base64.</returns>
 void Base64Encode(Slice<byte> input,
-                  String* out,
+                  String& out,
                   const char* table = BASE64_ENCODING_TABLE,
                   char padding = BASE64_PADDING_CHAR);
 
@@ -55,7 +54,7 @@ void Base64Encode(Slice<byte> input,
 /// <param name="padding">The padding character.</param>
 /// <returns>A null-terminated string encoded in base64.</returns>
 void Base64Encode(Slice<byte> input,
-                  Stream* out,
+                  Stream& out,
                   const char* table = BASE64_ENCODING_TABLE,
                   char padding = BASE64_PADDING_CHAR);
 
@@ -68,7 +67,7 @@ void Base64Encode(Slice<byte> input,
 /// <param name="padding">The padding character.</param>
 /// <returns>The decoded bytes.</returns>
 void Base64Decode(const char* input,
-                  Array<byte>* out,
+                  Array<byte>& out,
                   const int* table = BASE64_DECODING_TABLE,
                   char padding = BASE64_PADDING_CHAR);
 
@@ -81,7 +80,7 @@ void Base64Decode(const char* input,
 /// <param name="padding">The padding character.</param>
 /// <returns>The decoded bytes.</returns>
 void Base64Decode(const char* input,
-                  Stream* out,
+                  Stream& out,
                   const int* table = BASE64_DECODING_TABLE,
                   char padding = BASE64_PADDING_CHAR);
 }

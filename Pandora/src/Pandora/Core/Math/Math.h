@@ -1,7 +1,6 @@
 #pragma once
 
 #include "Pandora/Core/Types.h"
-
 #include "Pandora/Core/Math/Lerp.h"
 
 namespace pd {

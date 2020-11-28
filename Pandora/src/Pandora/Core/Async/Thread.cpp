@@ -1,10 +1,10 @@
 #include "Thread.h"
 
-#include "Pandora/Core/Data/Allocator.h"
-
 #if defined(PD_WINDOWS)
 #include <Windows.h>
 #endif
+
+#include "Pandora/Core/Data/Allocator.h"
 
 #define DATA ((ThreadNativeData*)nativeData)
 
@@ -19,8 +19,8 @@ struct ThreadNativeData {
 
 static DWORD ThreadExec(void* data) {
     Thread* thread = (Thread*)data;
-    thread->ExecuteFunc();
-    thread->SetDone(true);
+    thread->InternalExecuteFunc();
+    thread->InternalSetDone(true);
     return 0;
 }
 
@@ -53,7 +53,7 @@ void Thread::Init(ThreadFunc func, void* data, int stack_size) {
 
 void Thread::Start() {
 #if defined(PD_WINDOWS)
-    SetDone(false);
+    InternalSetDone(false);
     ResumeThread(DATA->handle);
 #else
 #error Implement me!
@@ -99,11 +99,11 @@ bool Thread::IsDone() {
 }
 
 #if defined(PD_WINDOWS)
-void Thread::ExecuteFunc() {
+void Thread::InternalExecuteFunc() {
     func(data);
 }
 
-void Thread::SetDone(bool val) {
+void Thread::InternalSetDone(bool val) {
     done = val;
 }
 #endif

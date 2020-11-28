@@ -2,19 +2,16 @@
 #include "SLAudioAPI.h"
 
 #include "Pandora/Core/IO/Console.h"
+#include "Pandora/Core/Input/Input.h"
 
 #include "Pandora/Audio/Backend/SoLoud/SLAudio.h"
-
-#include <SoLoud/soloud_speech.h>
-
-#include "Pandora/Core/Input/Input.h"
 
 namespace pd {
 
 SLAudioAPI::SLAudioAPI() {
     soloud.init();
 
-    CONSOLE_LOG_DEBUG("  {}> SoLoud: {}, {}\n", ConColor::Grey, soloud.getVersion(), soloud.getBackendString(), ConColor::White);
+    CONSOLE_LOG_DEBUG("  {}> SoLoud: {}, {}{}\n", ConColor::Grey, soloud.getVersion(), soloud.getBackendString(), ConColor::White);
 }
 
 SLAudioAPI::~SLAudioAPI() {

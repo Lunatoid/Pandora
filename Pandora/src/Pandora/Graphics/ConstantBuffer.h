@@ -47,7 +47,7 @@ public:
     virtual void Upload() = 0;
 
 protected:
-    DataLayout layout = DataLayout(true);
+    DataLayout layout;
 };
 
 }

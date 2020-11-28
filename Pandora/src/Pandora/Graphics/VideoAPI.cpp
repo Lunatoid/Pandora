@@ -53,7 +53,7 @@ void VideoAPI::Delete() {
     }
 }
 
-Color VideoAPI::GetClearColor() {
+Color VideoAPI::GetClearColor() const {
     return clearColor;
 }
 
@@ -65,7 +65,7 @@ void VideoAPI::SetMeshRequestHandler(ResourceCatalog& catalog) {
         Mesh* mesh = New<Mesh>();
 
         if (!mesh->Load(box, name)) {
-            CONSOLE_LOG_DEBUG("[{}Resource Error{}] could not load shader {#} from box\n", ConColor::Red, ConColor::White, name);
+            CONSOLE_LOG_DEBUG("[{}Resource Error{}] could not load mesh {#} from box\n", ConColor::Red, ConColor::White, name);
         }
 
         return (Resource*)mesh;

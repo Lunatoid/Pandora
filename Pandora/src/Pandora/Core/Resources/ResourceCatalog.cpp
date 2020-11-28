@@ -30,11 +30,33 @@ ResourceCatalog::ResourceCatalog() {
 }
 
 ResourceCatalog::~ResourceCatalog() {
+    // The hackiest of @HACK's
+    // Since we're explicitly calling the
+    // destructor it will get called again
+    // on static destruction
+    if (catalogs.Count() == 0) return;
+
     Delete();
+
+#if defined(PD_DEBUG)
+    Sweep();
+    for (int i = 0; i < (int)ResourceType::Count; i++) {
+        TypeCatalog& catalog = catalogs[i];
+
+        for (const auto& rsc : catalog) {
+            console.Log("[{}Resource Error{}] resource '{}' has {} strong references at the end of it's lifecycle\n",
+                ConColor::Red, ConColor::White, rsc.key, rsc.val.Count(RefType::Strong));
+        }
+    }
+#endif
 }
 
 bool ResourceCatalog::Load(StringView boxPath) {
     return box.Load(boxPath);
+}
+
+bool ResourceCatalog::LoadFromConfig(StringView configPath) {
+    return box.LoadFromConfig(configPath);
 }
 
 void ResourceCatalog::Delete() {
@@ -46,25 +68,44 @@ void ResourceCatalog::DeleteResource(ResourceType type, StringView name, bool fo
 
     String nameStr = name.ToString();
     Ref<Resource>& rscPtr = catalog->Get(&nameStr);
+
+    if (forceFree) {
+        rscPtr.Delete();
+    } else {
+        rscPtr.ChangeType(RefType::Weak);
+    }
+
+    if (!rscPtr) {
+        catalog->Remove(&name);
+    }
 }
 
-void ResourceCatalog::Sweep() {
+int ResourceCatalog::Sweep() {
+    int removeCount = 0;
     for (int typeI = 0; typeI < (int)ResourceType::Count; typeI++) {
         ResourceType type = (ResourceType)typeI;
-        TypeCatalog* catalog = &catalogs[typeI];
+        TypeCatalog& catalog = catalogs[typeI];
 
-        DictEntry<String, Ref<Resource>>* data = catalog->Data();
-        if (!data) continue;
-
-        for (int i = 0; i < catalog->Capacity(); i++) {
-            if (data[i].dist < 0) continue;
-
+        Array<String> toDelete;
+        for (const auto& rsc : catalog) {
             // If it has only 1 strong reference then that's probably us
-            if (data->val.Count(RefType::Strong) <= 1) {
-                catalog->Remove(data[i].key);
+            if (rsc.val.Count(RefType::Strong) <= 1) {
+                toDelete.Add(rsc.key);
             }
         }
+
+        for (const auto& key : toDelete) {
+            catalog.Remove(key);
+        }
+
+        removeCount += toDelete.Count();
     }
+
+    return removeCount;
+}
+
+bool ResourceCatalog::GetResourceData(StringView name, Array<byte>& out) {
+    return box.GetResourceData(name, out);;
 }
 
 void ResourceCatalog::SetResourceRequestHandler(ResourceType type, OnRequestResource* handler, void* data) {

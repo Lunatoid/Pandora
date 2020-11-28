@@ -42,7 +42,6 @@ void DXConstantBuffer::SetElement(StringView name, bool data) {
 void DXConstantBuffer::SetElement(StringView name, f32 data) {
     CheckLayoutSize();
     SetElement(FindElementOffset(name), ToBytes(&data));
-
 }
 
 void DXConstantBuffer::SetElement(StringView name, Vec2 data) {

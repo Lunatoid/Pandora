@@ -41,7 +41,7 @@ public:
     /// <param name="dt">The render delta time.</param>
     virtual void OnRender(f32 dt) {}
 
-#if !defined(PD_NO_IMGUI)    
+#if !defined(PD_NO_IMGUI)
     /// <summary>
     /// Called on each ImGui frame.
     /// </summary>

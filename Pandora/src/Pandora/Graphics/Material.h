@@ -1,7 +1,6 @@
 #pragma once
 
 #include "Pandora/Core/Data/Reference.h"
-
 #include "Pandora/Core/Resources/ResourceCatalog.h"
 
 #include "Pandora/Graphics/Shader.h"
@@ -45,7 +44,7 @@ public:
     /// </summary>
     /// <param name="name">The texture name.</param>
     /// <param name="slot">The slot.</param>
-    void SetTexture(Ref<Texture> texture, int slot);
+    void SetTexture(const Ref<Texture>& texture, int slot);
     
     /// <summary>
     /// Gets a reference of the texture in the specified slot.

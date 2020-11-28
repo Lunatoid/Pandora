@@ -2,24 +2,27 @@
 
 #include "Pandora/Core/Data/Reference.h"
 #include "Pandora/Core/Data/Dictionary.h"
-
 #include "Pandora/Core/Resources/Resource.h"
 
-#include "Pandora/Graphics/Texture.h"
+#include "Pandora/Graphics/TexturePacker.h"
 
 namespace pd {
 
 struct Glyph {
-    Ref<Texture> texture;
     Vec2 bearing;
     f32 advance = 0.0f;
     bool hasColor = false;
+    Vec2i size;
+    Vec4 uv;
+    int index;
 };
 
 class Font : public Resource {
 public:
     static ResourceType GetType() { return ResourceType::Font; }
     
+    virtual ~Font() = default;
+
     /// <summary>
     /// Loads the font from a file.
     /// </summary>
@@ -69,10 +72,22 @@ public:
     /// <returns>The hash.</returns>
     virtual u64 GetHash() { return hash; }
 
+    /// <summary>
+    /// Gets the texture for the corresponding glyph.
+    /// </summary>
+    /// <param name="g">The glyph.</param>
+    /// <param name="type">The reference type.</param>
+    /// <returns>A reference of the desired type to the texture.</returns>
+    Ref<Texture> GetGlyphTexture(const Glyph& g, RefType type = RefType::Strong);
+
+    // @TODO: add to box config
+    TextureFiltering filtering = TextureFiltering::Anisotropic;
+
 protected:
-    // @TODO: convert this to TextureFiltering and add this to the box import settings.
-    bool filtering = true;
+    void PackGlyph(Slice<Color> pixels, int stride, Glyph& glyph);
+
     Dictionary<codepoint, Glyph> glyphs;
+    Array<TexturePacker> packed;
 };
 
 }

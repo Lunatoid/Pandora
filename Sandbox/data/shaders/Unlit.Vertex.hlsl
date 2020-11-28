@@ -1,18 +1,19 @@
 
-cbuffer ShaderData {
-    matrix u_mvp;
+#include "LitData.hlsl"
+
+cbuffer ShaderData : register(b0) {
+    matrix u_view_proj;
     matrix u_model;
 };
 
-struct VSOut {
-    float2 uv : UV;
-    float4 pos : SV_POSITION;
-};
-
-VSOut main(float3 pos : POSITION, float2 uv : UV, float3 norm : NORMAL) {
+VSOut main(VSIn vsi) {
     VSOut vso;
-    vso.uv = uv;
-    vso.pos = mul(mul(u_mvp, u_model), float4(pos, 1.0f));
+    vso.pos = mul(mul(u_view_proj, u_model), float4(vsi.position, 1.0f));
+    vso.fragPos = (float3)vso.pos;
+    vso.uv = vsi.uv;
+    vso.tangentLightPos = float3(0.0, 0.0, 0.0);
+    vso.tangentViewPos = float3(0.0, 0.0, 0.0);
+    vso.tangentFragPos = float3(0.0, 0.0, 0.0);
 
     return vso;
 }

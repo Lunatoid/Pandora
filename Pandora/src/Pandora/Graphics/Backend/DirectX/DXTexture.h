@@ -3,9 +3,9 @@
 
 #include <d3d11.h>
 
-#include "Pandora/Graphics/Backend/DirectX/DXVideoAPI.h"
-
 #include "Pandora/Graphics/Texture.h"
+
+#include "Pandora/Graphics/Backend/DirectX/DXVideoAPI.h"
 
 namespace pd {
 
@@ -34,9 +34,9 @@ private:
     virtual void CreateTextureData() override;
 
     DXVideoAPI* video = nullptr;
-    ID3D11Texture2D* texture = nullptr;
-    ID3D11ShaderResourceView* textureView = nullptr;
-    ID3D11SamplerState* samplerState = nullptr;
+    DXComRef<ID3D11Texture2D> texture;
+    DXComRef<ID3D11ShaderResourceView> textureView;
+    DXComRef<ID3D11SamplerState> samplerState;
 
     // @HACK:
     // This is kinda a hacky workaround to get

@@ -19,6 +19,10 @@ int main(int argc, char** argv) {
     app->Run();
     pd::Delete(app);
 
+    // Call destructor manually (ew) because it's a static object and we want
+    // to check if all memory got free'd
+    pd::ResourceCatalog::Get().~ResourceCatalog();
+
     pd::u64 allocated = pd::GetAllocatedBytes();
     PD_ASSERT_D(allocated == 0, "we're leaking %llu bytes", allocated);
 

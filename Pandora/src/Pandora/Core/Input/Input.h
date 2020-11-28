@@ -1,7 +1,6 @@
 #pragma once
 
 #include "Pandora/Core/Input/Key.h"
-
 #include "Pandora/Core/Math/VectorInt.h"
 
 namespace pd {

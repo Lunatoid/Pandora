@@ -1,7 +1,6 @@
 #pragma once
 
 #include "Pandora/Graphics/Text/Font.h"
-
 #include "Pandora/Graphics/Sprite/SpriteRenderer.h"
 
 namespace pd {

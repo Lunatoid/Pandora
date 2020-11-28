@@ -1,12 +1,12 @@
 #include "Console.h"
 
-#include "Pandora/Core/Data/String.h"
-
 #include <cstdio>
 
 #if defined(PD_WINDOWS)
 #include <Windows.h>
 #endif
+
+#include "Pandora/Core/Data/String.h"
 
 namespace pd {
 

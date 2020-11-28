@@ -1,9 +1,7 @@
 #pragma once
 
 #include "Pandora/Core/Data/StringView.h"
-
 #include "Pandora/Core/Resources/Resource.h"
-
 #include "Pandora/Graphics/DataLayout.h"
 
 namespace pd {

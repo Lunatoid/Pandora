@@ -45,6 +45,8 @@ uchar* WideToUTF8(const wchar* text, int size, Allocator allocator = Allocator::
 
 #endif
 
+class StringViewIt;
+
 class StringView {
 public:
     StringView() = default;
@@ -85,7 +87,7 @@ public:
     /// <param name="count">The new count.</param>
     void Adjust(int start, int count);
 
-    codepoint At(int index);
+    codepoint At(int index) const;
 
     const uchar* ToString(Allocator allocator = Allocator::Temporary);
 
@@ -104,6 +106,9 @@ public:
 
     codepoint operator[](int index);
 
+    StringViewIt begin() const;
+    StringViewIt end() const;
+
 private:
     byte* memory = nullptr;
 
@@ -112,6 +117,30 @@ private:
 
     // How many codepoints are in the view
     int count = 0;
+};
+
+struct StringViewIt {
+    StringViewIt(StringView parent, int i) : parent(parent), i(i) {}
+
+    codepoint operator*() const {
+        return parent.At(i);
+    }
+
+    void operator++() {
+        i += 1;
+    }
+
+    bool operator==(const StringViewIt& other) {
+        return i == other.i && parent.Data() == other.parent.Data();
+    }
+
+    bool operator!=(const StringViewIt& other) {
+        return !operator==(other);
+    }
+
+private:
+    int i = 0;
+    StringView parent;
 };
 
 }

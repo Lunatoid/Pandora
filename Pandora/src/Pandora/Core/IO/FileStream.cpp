@@ -1,8 +1,5 @@
 #include "FileStream.h"
 
-#include <cstdarg>
-#include <cstdio>
-
 #if defined(PD_WINDOWS)
 #include <Windows.h>
 #endif

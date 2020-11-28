@@ -7,6 +7,7 @@
 
 namespace pd {
 
+
 class App {
 public:
     App(int argc, char** argv, VideoBackend backend, StringView title, Vec2i size, u32 style = WindowDefault);
@@ -27,23 +28,16 @@ public:
     f32 renderTimescale = 1.0f;
     
     /// <summary>
-    /// Sets a fixed framerate for the update and render loop.
-    /// </summary>
-    /// <param name="isOn">Whether or not to use a fixed framerate.</param>
-    /// <param name="fps">The FPS.</param>
-    void SetFixedFramerate(bool isOn, f32 fps = 0.0f);
-
-    /// <summary>
     /// Returns the mouse position relative to the window. Position is normalized from -1 to 1.
     /// </summary>
     /// <returns>The mouse position relative to the window. Position is normalized from -1 to 1.</returns>
     Vec2 GetNormalizedMousePos();
-    
+
     /// <summary>
-    /// Returns the mouse position relative to the window in pixels.
+    /// Returns the mouse position relative to the window. (0, 0) is bottom left.
     /// </summary>
-    /// <returns>The mouse position relative to the window in pixels.</returns>
-    Vec2i GetMousePosition() const;
+    /// <returns>The mouse position relative to the window.</returns>
+    Vec2 GetMousePos() const;
     
     /// <summary>
     /// Returns the window.
@@ -97,17 +91,13 @@ private:
 
 #if !defined(PD_NO_IMGUI)
     void OnImGuiInternal();
+    void LoadImGuiTheme();
 #endif
 
     void OnEventInternal(Event* event);
     
     f32 rawDelta = 0.0f;
     bool isRunning = false;
-
-    bool fixedFramerate = false;
-    f32 fixedFps = 0.0f;
-
-    Vec2i mousePos;
 };
 
 pd::App* CreateApp(int argc, char** argv);

@@ -1,8 +1,7 @@
 #pragma once
 
-#include "Pandora/Graphics/Model/Mesh.h"
-
 #include "Pandora/Graphics/Material.h"
+#include "Pandora/Graphics/Model/Mesh.h"
 
 namespace pd {
 
@@ -13,14 +12,22 @@ public:
     /// </summary>
     /// <param name="meshName">Name of the mesh.</param>
     /// <param name="shaderName">Name of the shader.</param>
-    void Load(StringView meshName, StringView shaderName = "Shaders/Diffuse");
+    template<typename T = Material>
+    void Load(StringView meshName, StringView shaderName = "Shaders/Diffuse") {
+        CreateNewMaterial<T>(shaderName);
+        mesh = ResourceCatalog::Get().Get<Mesh>(meshName);
+    }
     
     /// <summary>
     /// Loads the model.
     /// </summary>
     /// <param name="meshName">Reference to the mesh.</param>
     /// <param name="shaderName">Name of the shader.</param>
-    void Load(Ref<Mesh> mesh, StringView shaderName = "Shaders/Diffuse");
+    template<typename T = Material>
+    void Load(Ref<Mesh> mesh, StringView shaderName = "Shaders/Diffuse") {
+        CreateNewMaterial<T>(shaderName);
+        this->mesh = mesh;
+    }
 
     /// <summary>
     /// Loads a new shader into the current material.

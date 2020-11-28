@@ -1,7 +1,6 @@
 #pragma once
 
 #include "Pandora/Core/Data/Allocator.h"
-
 #include "Pandora/Core/Assert.h"
 
 namespace pd {
@@ -50,6 +49,11 @@ public:
     Ref<T> NewRef(RefType type = RefType::Strong);
 
     /// <summary>
+    /// Delets the reference data despite how many references it still has.
+    /// </summary>
+    void Delete();
+
+    /// <summary>
     /// Resets the reference. If <c>newData != nullptr</c> it will initialize it with new data.
     /// </summary>
     /// <param name="newData">The new data to set it to. Can be <c>nullptr</c>. Must be allocated with <c>Allocator::New</c>.</param>
@@ -87,7 +91,7 @@ public:
     template<typename U>
     U* As();
 
-    Ref<T>& operator=(Ref<T>& other);
+    Ref<T>& operator=(const Ref<T>& other);
 
     T* operator->() const;
 
@@ -100,7 +104,7 @@ private:
     /// Copies the reference, increasing the reference count for the desired type.
     /// </summary>
     /// <param name="other">The other reference.</param>
-    void Copy(Ref<T>& other) {
+    void Copy(const Ref<T>& other) {
         // If you do something like `ref = ref;` we don't want to increase the count
         // This can lead to things having an infinite lifespan. Bad!
         if (data == other.data) return;
@@ -132,16 +136,12 @@ private:
 
             if (count->strong <= 0) {
                 PD_ASSERT_D(count->strong == 0, "negative reference count (strong: %d)", count->strong);
-                Reset();
+                Delete();
             }
         } else {
             count->weak -= 1;
         }
     }
-
-    RefType type = RefType::Weak;
-
-    T* data = nullptr;
 
     struct RefCount {
         RefCount() = default;
@@ -153,6 +153,8 @@ private:
     };
 
     RefCount* count = nullptr;
+    RefType type = RefType::Weak;
+    T* data = nullptr;
 };
 
 template<typename T>
@@ -184,7 +186,7 @@ inline Ref<T>::Ref(T* data) {
 
 template<typename T>
 inline Ref<T>::~Ref() {
-    DecCount(type);
+    Reset();
 }
 
 template<typename T>
@@ -206,19 +208,22 @@ inline Ref<T> Ref<T>::NewRef(RefType type) {
 }
 
 template<typename T>
-inline void Ref<T>::Reset(T* newData) {
-    // Delete the old
-    if (count && !newData) {
-        Delete(count);
-        count = nullptr;
-    }
-
+inline void Ref<T>::Delete() {
     if (data) {
-        Delete(data);
+        pd::Delete(data);
         data = nullptr;
     }
 
-    // Rise out of the ashes
+    if (count) {
+        pd::Delete(count);
+        count = nullptr;
+    }
+}
+
+template<typename T>
+inline void Ref<T>::Reset(T* newData) {
+    DecCount(type);
+
     if (newData) {
         if (!count) {
             count = New<RefCount>(1, 0);
@@ -229,6 +234,9 @@ inline void Ref<T>::Reset(T* newData) {
 
         data = newData;
         type = RefType::Strong;
+    } else {
+        data = nullptr;
+        count = nullptr;
     }
 }
 
@@ -269,7 +277,7 @@ inline T* Ref<T>::Get() const {
 }
 
 template<typename T>
-inline Ref<T>& Ref<T>::operator=(Ref<T>& other) {
+inline Ref<T>& Ref<T>::operator=(const Ref<T>& other) {
     Copy(other);
     return *this;
 }

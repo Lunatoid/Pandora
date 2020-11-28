@@ -56,15 +56,15 @@ DXVideoAPI::DXVideoAPI(Window* window) :
         nullptr, flags, nullptr, 0,
         D3D11_SDK_VERSION,
         &swapDesc,
-        &swapChain,
-        &device,
+        &swapChain.AsOut(),
+        &device.AsOut(),
         nullptr,
-        &context));
+        &context.AsOut()));
 
     // Get RenderTargetView
     ID3D11Resource* backBuffer = nullptr;
     CheckDXError(swapChain->GetBuffer(0, __uuidof(ID3D11Resource), (void**)&backBuffer));
-    CheckDXError(device->CreateRenderTargetView(backBuffer, nullptr, &target));
+    CheckDXError(device->CreateRenderTargetView(backBuffer, nullptr, &target.AsOut()));
 
     backBuffer->Release();
 
@@ -75,9 +75,9 @@ DXVideoAPI::DXVideoAPI(Window* window) :
     rasterDesc.FrontCounterClockwise = true;
     rasterDesc.DepthClipEnable = true;
 
-    CheckDXError(device->CreateRasterizerState(&rasterDesc, &rasterizer));
+    CheckDXError(device->CreateRasterizerState(&rasterDesc, &rasterizer.AsOut()));
 
-    context->RSSetState(rasterizer);
+    context->RSSetState(rasterizer.Get());
 
     // Enable alpha blending
     D3D11_BLEND_DESC blendDesc = {};
@@ -91,8 +91,8 @@ DXVideoAPI::DXVideoAPI(Window* window) :
     blendDesc.RenderTarget[0].SrcBlendAlpha = D3D11_BLEND_ONE;
     blendDesc.RenderTarget[0].DestBlendAlpha = D3D11_BLEND_INV_SRC_ALPHA;
 
-    CheckDXError(device->CreateBlendState(&blendDesc, &alphaBlend));
-    context->OMSetBlendState(alphaBlend, nullptr, 0xFFFFFFFF);
+    CheckDXError(device->CreateBlendState(&blendDesc, &alphaBlend.AsOut()));
+    context->OMSetBlendState(alphaBlend.Get(), nullptr, 0xFFFFFFFF);
 
     // Enable depth-testing
     D3D11_DEPTH_STENCIL_DESC stencilDesc = {};
@@ -100,8 +100,8 @@ DXVideoAPI::DXVideoAPI(Window* window) :
     stencilDesc.DepthWriteMask = D3D11_DEPTH_WRITE_MASK_ALL;
     stencilDesc.DepthFunc = D3D11_COMPARISON_LESS;
 
-    CheckDXError(device->CreateDepthStencilState(&stencilDesc, &depthState));
-    context->OMSetDepthStencilState(depthState, 1);
+    CheckDXError(device->CreateDepthStencilState(&stencilDesc, &depthState.AsOut()));
+    context->OMSetDepthStencilState(depthState.Get(), 1);
 
     // @TODO: switch to eventually using our FrameBuffer class
     // Create depth stencil texture
@@ -114,18 +114,18 @@ DXVideoAPI::DXVideoAPI(Window* window) :
     depthTex.SampleDesc.Count = 1;
     depthTex.BindFlags = D3D11_BIND_DEPTH_STENCIL;
 
-    CheckDXError(device->CreateTexture2D(&depthTex, nullptr, &depthStencilTex));
+    CheckDXError(device->CreateTexture2D(&depthTex, nullptr, &depthStencilTex.AsOut()));
 
     // Bind the depth and backbuffer
     D3D11_DEPTH_STENCIL_VIEW_DESC depthViewDesc = {};
     depthViewDesc.Format = depthTex.Format;
     depthViewDesc.ViewDimension = D3D11_DSV_DIMENSION_TEXTURE2D;
 
-    CheckDXError(device->CreateDepthStencilView(depthStencilTex, &depthViewDesc, &depthStencilView));
+    CheckDXError(device->CreateDepthStencilView(depthStencilTex.Get(), &depthViewDesc, &depthStencilView.AsOut()));
 
 #if !defined(PD_NO_IMGUI)
     // Initialize ImGui
-    ImGui_ImplDX11_Init(device, context);
+    ImGui_ImplDX11_Init(device.Get(), context.Get());
 #endif
 }
 
@@ -135,16 +135,6 @@ DXVideoAPI::DXVideoAPI(Window* window) :
 }
 
 DXVideoAPI::~DXVideoAPI() {
-    DX_RELEASE(context);
-    DX_RELEASE(device);
-    DX_RELEASE(target);
-    DX_RELEASE(rasterizer);
-    DX_RELEASE(alphaBlend);
-    DX_RELEASE(depthState);
-    DX_RELEASE(depthStencilTex);
-    DX_RELEASE(depthStencilView);
-    DX_RELEASE(vertexLayout);
-
 #if !defined(PD_NO_IMGUI)
     ImGui_ImplDX11_Shutdown();
 #endif
@@ -155,8 +145,8 @@ void DXVideoAPI::SetClearColor(Color color) {
 }
 
 void DXVideoAPI::Clear() {
-    context->ClearRenderTargetView(target, clearColor.elements);
-    context->ClearDepthStencilView(depthStencilView, D3D11_CLEAR_DEPTH | D3D11_CLEAR_STENCIL, 1.0f, 0);
+    context->ClearRenderTargetView(target.Get(), clearColor.elements);
+    context->ClearDepthStencilView(depthStencilView.Get(), D3D11_CLEAR_DEPTH | D3D11_CLEAR_STENCIL, 1.0f, 0);
 }
 
 void DXVideoAPI::Swap() {
@@ -253,7 +243,7 @@ void DXVideoAPI::BindDefaultFrameBuffer() {
     // Unbind all textures to avoid activating frame buffers while that texture is still bound from another draw call
     // Will cause: DEVICE_OMSETRENDERTARGETS_HAZARD
     UnbindAllTextures();
-    context->OMSetRenderTargets(1, &target, depthStencilView);
+    context->OMSetRenderTargets(1, &target.Get(), depthStencilView.Get());
 }
 
 #if !defined(PD_NO_IMGUI)
@@ -268,16 +258,16 @@ void DXVideoAPI::ImGuiRender() {
 }
 #endif
 
-ID3D11Device* DXVideoAPI::GetDevice() const {
-    return device;
+ID3D11Device* DXVideoAPI::GetDevice() {
+    return device.Get();
 }
 
-ID3D11DeviceContext* DXVideoAPI::GetDeviceContext() const {
-    return context;
+ID3D11DeviceContext* DXVideoAPI::GetDeviceContext() {
+    return context.Get();
 }
 
-ID3D11RenderTargetView* DXVideoAPI::GetBackBuffer() const {
-    return target;
+ID3D11RenderTargetView* DXVideoAPI::GetBackBuffer() {
+    return target.Get();
 }
 
 void DXVideoAPI::Init() {

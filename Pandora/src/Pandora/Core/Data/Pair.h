@@ -11,10 +11,10 @@ struct Pair {
 };
 
 template<typename K, typename V>
-inline void PrintType(Pair<K, V>* type, FormatInfo* info) {
-    PrintType(&type->key, info);
-    PrintfToStream(info->output, ": ");
-    PrintType(&type->val, info);
+inline void PrintType(Pair<K, V>& type, FormatInfo& info) {
+    PrintType(type.key, info);
+    PrintfToStream(info.output, ": ");
+    PrintType(type.val, info);
 }
 
 }

@@ -9,6 +9,8 @@
 #include "Pandora/Core/Encoding/JSON.h"
 #include "Pandora/Core/Encoding/Box.h"
 
+#include "Pandora/Graphics/Model/Mesh.h"
+
 #include "Pandora/Libs/stb/stb_image.h"
 
 #if !defined(PD_NO_ASSIMP)
@@ -20,7 +22,6 @@
 #include <SoLoud/soloud.h>
 #include <SoLoud/soloud_wav.h>
 #include <SoLoud/soloud_wavstream.h>
-
 
 #if !defined(PD_NO_DIRECTX)
 #include <d3dcompiler.h>
@@ -42,25 +43,28 @@ void BoxBuilder::Delete() {
     stagedFiles.Delete();
 }
 
-void BoxBuilder::StageBinary(StringView name, StringView path) {
-    StageGenericResource(name, path, ResourceType::Binary);
+void BoxBuilder::StageBinary(StringView name, StringView path, bool compressed) {
+    StageGeneric(name, path, ResourceType::Binary, compressed);
 }
 
-void BoxBuilder::StageTexture(StringView name, StringView path, TextureFiltering filtering, TextureWrapping wrapping) {
-    StagedFile* file = GetOrCreateStagedFile(name, ResourceType::Texture);
-    console.Log(" {}({}){}\n", ConColor::Grey, path, ConColor::White);
+void BoxBuilder::StageTexture(StringView name, StringView path, TextureFiltering filtering, TextureWrapping wrapping, bool compressed) {
+    StagedFile* file = GetOrCreateStagedFile(name, ResourceType::Texture, compressed);
+
+    if (logStatus) {
+        console.Log(" {}({}){}\n", ConColor::Grey, path, ConColor::White);
+    }
 
     file->texture.path.Set(path);
     file->texture.filtering = filtering;
     file->texture.wrapping = wrapping;
 }
 
-void BoxBuilder::StageMesh(StringView name, StringView path) {
-    StageGenericResource(name, path, ResourceType::Mesh);
+void BoxBuilder::StageMesh(StringView name, StringView path, bool compressed) {
+    StageGeneric(name, path, ResourceType::Mesh, compressed);
 }
 
-void BoxBuilder::StageShader(StringView name, VideoBackend backend, StringView vertexPath, StringView pixelPath) {
-    StagedFile* file = GetOrCreateStagedFile(name, ResourceType::Shader);
+void BoxBuilder::StageShader(StringView name, VideoBackend backend, StringView vertexPath, StringView pixelPath, bool compressed) {
+    StagedFile* file = GetOrCreateStagedFile(name, ResourceType::Shader, compressed);
 
     // Check if we have already added this backend
     for (int i = 0; i < file->shader.shaders.Count(); i++) {
@@ -69,29 +73,34 @@ void BoxBuilder::StageShader(StringView name, VideoBackend backend, StringView v
         }
     }
 
-    console.Log(" {}({}){}\n", ConColor::Grey, backend, ConColor::White);
+    if (logStatus) {
+        console.Log(" {}({}){}\n", ConColor::Grey, backend, ConColor::White);
+    }
+
     file->shader.shaders.Reserve(1);
     file->shader.shaders.Last().backend = backend;
     file->shader.shaders.Last().vertexPath.Set(vertexPath);
     file->shader.shaders.Last().pixelPath.Set(pixelPath);
 }
 
-void BoxBuilder::StageFont(StringView name, StringView path) {
-    StageGenericResource(name, path, ResourceType::Font);
+void BoxBuilder::StageFont(StringView name, StringView path, bool compressed) {
+    StageGeneric(name, path, ResourceType::Font, compressed);
 }
 
-void BoxBuilder::StageAudio(StringView name, StringView path) {
-    StageGenericResource(name, path, ResourceType::Audio);
+void BoxBuilder::StageAudio(StringView name, StringView path, bool compressed) {
+    StageGeneric(name, path, ResourceType::Audio, compressed);
 }
 
-void BoxBuilder::StageGenericResource(StringView name, StringView path, ResourceType type) {
-    StagedFile* file = GetOrCreateStagedFile(name, type);
-    console.Log(" {}({}){}\n", ConColor::Grey, path, ConColor::White);
+void BoxBuilder::StageGeneric(StringView name, StringView path, ResourceType type, bool compressed) {
+    StagedFile* file = GetOrCreateStagedFile(name, type, compressed);
+
+    if (logStatus) {
+        console.Log(" {}({}){}\n", ConColor::Grey, path, ConColor::White);
+    }
 
     file->generic.path.Set(path);
 }
 
-// This function is apparently 139616 bytes, that's an awful lot
 bool BoxBuilder::Build(StringView path) {
     BOXB_LOG("Starting build\n");
 
@@ -143,292 +152,11 @@ bool BoxBuilder::Build(StringView path) {
         file.Seek(dataPosition, SeekOrigin::Start);
 
         // Write file data
-        StagedFile* sf = &stagedFiles[i];
+        StagedFile& sf = stagedFiles[i];
         BOXB_LOG("Writing {}{}\t{}{}{}\n",
-            ConColor::Yellow, sf->type, ConColor::Cyan, sf->name, ConColor::White);
-        switch (sf->type) {
-            case ResourceType::Binary:
-            case ResourceType::Font: {
-                // Open the file (do we want to read the entire file or use a stream?)
-                Array<byte> fileBytes;
-                u64 fileSize = ReadEntireFile(sf->generic.path, fileBytes);
+                 ConColor::Yellow, sf.type, ConColor::Cyan, sf.name, ConColor::White);
 
-                if (fileSize == 0) return false;
-
-                // Write uncompressed size
-                file.Write(fileSize);
-
-                Array<byte> compressedBytes;
-                CompressData(fileBytes, compressedBytes);
-                fileBytes.Delete();
-
-                // Write compressed size and data
-                file.Write(compressedBytes.SizeInBytes());
-                file.WriteBytes(compressedBytes.SliceAs<byte>());
-                break;
-            }
-
-            case ResourceType::Shader: {
-                MemoryStream output;
-
-                // Write how many backends we support
-                output.Write((byte)sf->shader.shaders.Count());
-
-                auto writeShaderFile = [](Stream& output, StringView path, VideoBackend backend, bool isVertex) {
-                    if (backend == VideoBackend::DirectX) {
-#if !defined(PD_NO_DIRECTX)
-                        ID3DBlob* blob;
-                        ID3DBlob* error;
-
-                        const char* shaderModel = (isVertex) ? "vs_4_0_level_9_3" : "ps_4_0_level_9_3";
-                        HRESULT result = D3DCompileFromFile(path.ToWide(), NULL, D3D_COMPILE_STANDARD_FILE_INCLUDE,
-                            "main", shaderModel, 0, 0, &blob, &error);
-
-                        bool success = !error && result == S_OK;
-                        if (!success) {
-                            console.Log("[{}Box Error{}] D3DCompile: {}",
-                                ConColor::Red, ConColor::White, (char*)error->GetBufferPointer());
-                        } else {
-                            output.Write((u32)blob->GetBufferSize());
-                            output.WriteBytes(Slice<byte>((byte*)blob->GetBufferPointer(), (int)blob->GetBufferSize()));
-                        }
-
-                        if (blob) {
-                            blob->Release();
-                        }
-
-                        if (error) {
-                            error->Release();
-                        }
-
-                        return success;
-#else
-                        console.Log("[{}Box Error{}] cannot compile DirectX shaders because PD_NO_DIRECTX is defined\n",
-                            ConColor::Red, ConColor::White);
-                        return false;
-#endif
-                    } else if (backend == VideoBackend::OpenGL) {
-                        output.Write((u32)GetFileSize(path));
-
-                        Array<byte> fileBytes;
-                        u64 fileSize = ReadEntireFile(path, fileBytes);
-
-                        if (fileSize == 0) return false;
-
-                        output.WriteBytes(fileBytes);
-                    }
-
-                    return true;
-                };
-
-                for (int i = 0; i < sf->shader.shaders.Count(); i++) {
-                    StagedShader* ss = &sf->shader.shaders[i];
-
-                    // Write the backend type
-                    output.Write(ss->backend);
-
-                    if (!writeShaderFile(output, ss->vertexPath, ss->backend, true)) return false;
-                    if (!writeShaderFile(output, ss->pixelPath, ss->backend, false)) return false;
-                }
-
-                // Write uncompressed and compressed file size
-                u64 outputSize = output.Position();
-                file.Write(outputSize);
-
-                // Fill in later
-                u64 compressedSizePosition = file.Position();
-                file.Write<u64>(0);
-
-                // Compress output and write to file
-                int written = CompressData(output.AsSlice(0, (int)outputSize), &file);
-
-                // Go back and write compressed size
-                file.Seek(compressedSizePosition, SeekOrigin::Start);
-                file.Write((u64)written);
-                file.Seek(0, SeekOrigin::End);
-                break;
-            }
-
-            case ResourceType::Texture: {
-                int width, height, channels;
-                stbi_set_flip_vertically_on_load(true);
-                byte* pixels = stbi_load((char*)sf->texture.path.Data(), &width, &height, &channels, 4);
-
-                if (!pixels) return false;
-
-                // Write texture format
-                MemoryStream output;
-                output.Write(sf->texture.filtering);
-                output.Write(sf->texture.wrapping);
-
-                output.Write(width);
-                output.Write(height);
-
-                output.WriteBytes(Slice<byte>(pixels, width * height * 4));
-
-                // Free the texture data
-                Free(pixels);
-
-                // Write uncompressed and compressed file size
-                u64 outputSize = output.Position();
-                file.Write(outputSize);
-
-                // Fill in later
-                u64 compressedSizePosition = file.Position();
-                file.Write<u64>(0);
-
-                // Compress output and write to file
-                int written = CompressData(output.AsSlice(0, (int)outputSize), &file);
-
-                // Go back and write compressed size
-                file.Seek(compressedSizePosition, SeekOrigin::Start);
-                file.Write((u64)written);
-                file.Seek(0, SeekOrigin::End);
-                break;
-            }
-
-            case ResourceType::Mesh: {
-#if !defined(PD_NO_ASSIMP)
-                const aiScene* scene = aiImportFile((char*)sf->generic.path.Data(), aiProcess_Triangulate | aiProcess_JoinIdenticalVertices);
-
-                if (!scene) return false;
-
-                // Make sure this is in-sync with the MeshVertex in Graphics/Mesh
-                struct MeshVertex {
-                    Vec3 position;
-                    Vec2 uv;
-                    Vec3 normal;
-                };
-
-                aiMesh* mesh = scene->mMeshes[0];
-
-                // Load mesh and write data
-                MemoryStream output;
-
-                output.Write((u32)mesh->mNumVertices);
-
-                // Fill in the index count later
-                u64 indexPosition = output.Position();
-                output.Write<u32>(0);
-
-                for (u32 i = 0; i < mesh->mNumVertices; i++) {
-                    MeshVertex v;
-                    v.position = Vec3(mesh->mVertices[i].x, mesh->mVertices[i].y, mesh->mVertices[i].z);
-
-                    if (mesh->mTextureCoords) {
-                        v.uv = Vec2(mesh->mTextureCoords[0][i].x, mesh->mTextureCoords[0][i].y);
-                    }
-
-                    if (mesh->mNormals) {
-                        v.normal = Vec3(mesh->mNormals[i].x, mesh->mNormals[i].y, mesh->mNormals[i].z);
-                    }
-
-                    output.Write(v);
-                }
-
-                u32 indexCount = 0;
-                for (u32 i = 0; i < mesh->mNumFaces; i++) {
-                    for (u32 j = 0; j < mesh->mFaces[i].mNumIndices; j++) {
-                        output.Write(mesh->mFaces[i].mIndices[j]);
-                        indexCount += 1;
-                    }
-                }
-
-                // Free import
-                aiReleaseImport(scene);
-
-                u64 endPosition = output.Position();
-                output.Seek(indexPosition, SeekOrigin::Start);
-                output.Write(indexCount);
-                output.Seek(endPosition, SeekOrigin::Start);
-
-                // Write uncompressed and compressed file size
-                u64 outputSize = output.Position();
-                file.Write(outputSize);
-
-                // Fill in later
-                u64 compressedSizePosition = file.Position();
-                file.Write<u64>(0);
-
-                // Compress output and write to file
-                int written = CompressData(output.AsSlice(0, (int)outputSize), &file);
-
-                // Go back and write compressed size
-                file.Seek(compressedSizePosition, SeekOrigin::Start);
-                file.Write((u64)written);
-                file.Seek(0, SeekOrigin::End);
-#else
-                PD_ASSERT(false, "Assimp is not included, cannot build meshes.");
-#endif
-                break;
-            }
-
-            case ResourceType::Audio: {
-                SoLoud::Soloud soloud;
-                soloud.init();
-
-                SoLoud::Wav wave;
-                if (wave.load((char*)sf->generic.path.Data()) != 0) {
-                    return false;
-                }
-
-                MemoryStream output;
-
-
-                // Write the metadata and samples
-                output.Write<f64>(wave.getLength());
-                output.Write<u32>((u32)wave.mBaseSamplerate);
-                output.Write<u16>((u16)wave.mChannels);
-                output.Write<u32>(wave.mSampleCount);
-
-                // Convert float to PCM
-                const f32 SAMPLE_MAX = (f32)(INT16_MAX + 1);
-
-                // There is apparently some hot debate for the case where the sample is 1.0
-                // and it introduces some distortion.
-                // I found this blog that goes into more detail http://blog.bjornroche.com/2009/12/int-float-int-its-jungle-out-there.html
-                if (wave.mChannels == 1) {
-                    for (u32 i = 0; i < wave.mSampleCount; i++) {
-                        f32 monoConverted = wave.mData[i] * SAMPLE_MAX;
-                        i16 mono = (i16)Clamp<int>((int)monoConverted, INT16_MIN, INT16_MAX);
-                        output.Write<i16>(mono);
-                    }
-                } else {
-                    for (u32 i = 0; i < wave.mSampleCount; i++) {
-                        // Convert
-                        f32 leftConverted = wave.mData[i] * SAMPLE_MAX;
-                        f32 rightConverted = wave.mData[i + wave.mSampleCount] * SAMPLE_MAX;
-
-                        // Clamp
-                        i16 left = (i16)Clamp<int>((int)leftConverted, INT16_MIN, INT16_MAX);
-                        i16 right = (i16)Clamp<int>((int)rightConverted, INT16_MIN, INT16_MAX);
-
-                        // Write
-                        output.Write<i16>(left);
-                        output.Write<i16>(right);
-                    }
-                }
-
-                soloud.deinit();
-
-                // Write uncompressed and compressed file size
-                u64 outputSize = output.Position();
-                file.Write(outputSize);
-
-                // Fill in later
-                u64 compressedSizePosition = file.Position();
-                file.Write<u64>(0);
-
-                // Compress output and write to file
-                int written = CompressData(output.AsSlice(0, (int)outputSize), &file); // Seems like float/pcm samples don't compress well at all
-
-                // Go back and write compressed size
-                file.Seek(compressedSizePosition, SeekOrigin::Start);
-                file.Write((u64)written);
-                file.Seek(0, SeekOrigin::End);
-                break;
-            }
-        }
+        EncodeResource(file, sf);
     }
 
     return true;
@@ -454,12 +182,20 @@ void BoxBuilder::BuildEncrypted(StringView path, Slice<byte> iv, Slice<byte> key
 
 bool BoxBuilder::AddFromConfig(StringView configPath) {
     JsonValue configFile;
+    JsonParseSettings parseSettings;
+    parseSettings.allowComments = true;
 
     // Parse config file and so some sanity checks
-    BOX_ASSERT(configFile.Parse(configPath), "couldn't open config file");
+    BOX_ASSERT(configFile.Parse(configPath, true, parseSettings), "couldn't open config file");
     BOX_ASSERT(configFile.Type() == JsonType::Object, "root of config is not an object");
     BOX_ASSERT(configFile.HasField("items"), "array field 'items' not found in root object");
     BOX_ASSERT(configFile["items"].Type() == JsonType::Array, "field 'items' in root object is not a string");
+
+    bool defaultCompressed = true;
+    // Check if we define a default compression value
+    if (configFile.HasField("compressed") && configFile["compressed"].Type() == JsonType::Bool) {
+        defaultCompressed = configFile["compressed"].GetBool();
+    }
 
     // Stage all assets from the "items" array
     JsonValue& items = configFile["items"];
@@ -487,6 +223,11 @@ bool BoxBuilder::AddFromConfig(StringView configPath) {
 
         BOX_ASSERT(type != ResourceType::Unknown, "could not recognize type of item {} ({})", i, item["type"]);
 
+        bool compressed = defaultCompressed;
+        if (item.HasField("compressed") && item["compressed"].Type() == JsonType::Bool) {
+            compressed = item["compressed"].GetBool();
+        }
+
         // Parse type-specific fields
         switch (type) {
             case ResourceType::Binary:
@@ -496,21 +237,7 @@ bool BoxBuilder::AddFromConfig(StringView configPath) {
                 BOX_ASSERT(item.HasField("source"), "string field 'source' not found in item {}", i);
                 BOX_ASSERT(item["source"].Type() == JsonType::String, "field 'source' in item {} is not a string", i);
 
-                // If only we had access to AddGenericResource()...
-                switch (type) {
-                    case ResourceType::Binary:
-                        StageBinary(item["name"].GetString(), item["source"].GetString());
-                        break;
-                    case ResourceType::Mesh:
-                        StageMesh(item["name"].GetString(), item["source"].GetString());
-                        break;
-                    case ResourceType::Font:
-                        StageFont(item["name"].GetString(), item["source"].GetString());
-                        break;
-                    case ResourceType::Audio:
-                        StageAudio(item["name"].GetString(), item["source"].GetString());
-                        break;
-                }
+                StageGeneric(item["name"].GetString(), item["source"].GetString(), type, compressed);
                 break;
             }
 
@@ -544,11 +271,11 @@ bool BoxBuilder::AddFromConfig(StringView configPath) {
                 Slice<StringView> wrappingOptions((StringView*)TEXTURE_WRAPPING_NAMES, (int)TextureWrapping::Count);
 
                 BOX_ASSERT(filtering != TextureFiltering::Count, "invalid filtering mode '{}', acceptable values are:\n{#}",
-                    item["filtering"].GetString(), filteringOptions);
+                           item["filtering"].GetString(), filteringOptions);
                 BOX_ASSERT(wrapping != TextureWrapping::Count, "invalid wrapping mode '{}', acceptable values are:\n{#}",
-                    item["wrapping"].GetString(), wrappingOptions);
+                           item["wrapping"].GetString(), wrappingOptions);
 
-                StageTexture(item["name"].GetString(), item["source"].GetString(), filtering, wrapping);
+                StageTexture(item["name"].GetString(), item["source"].GetString(), filtering, wrapping, compressed);
                 break;
             }
 
@@ -578,7 +305,7 @@ bool BoxBuilder::AddFromConfig(StringView configPath) {
 
                     BOX_ASSERT(backend != VideoBackend::Count, "could not recognize backend of shader source {} in item {} ({})", j, i, sources[j]["backend"]);
 
-                    StageShader(item["name"].GetString(), backend, sources[j]["vertex"].GetString(), sources[j]["pixel"].GetString());
+                    StageShader(item["name"].GetString(), backend, sources[j]["vertex"].GetString(), sources[j]["pixel"].GetString(), compressed);
                 }
 
                 break;
@@ -592,7 +319,7 @@ bool BoxBuilder::AddFromConfig(StringView configPath) {
 
 #undef BOX_ASSERT
 
-BoxBuilder::StagedFile* BoxBuilder::GetOrCreateStagedFile(StringView name, ResourceType type) {
+BoxBuilder::StagedFile* BoxBuilder::GetOrCreateStagedFile(StringView name, ResourceType type, bool compressed) {
     BOXB_LOG("Staging {}{}\t{}{}{}", ConColor::Yellow, type, ConColor::Cyan, name, ConColor::White);
 
     int index = FindStagedFile(name);
@@ -606,6 +333,7 @@ BoxBuilder::StagedFile* BoxBuilder::GetOrCreateStagedFile(StringView name, Resou
         file = &stagedFiles.Last();
         file->name.Set(name);
         file->SetType(type);
+        file->compressed = compressed;
     }
 
     return file;
@@ -615,10 +343,6 @@ int BoxBuilder::FindStagedFile(StringView name) {
     return stagedFiles.Find([&](StagedFile& file) {
         return file.name == name;
     });
-}
-
-BoxBuilder::StagedFile::StagedFile() {
-    type = ResourceType::Unknown;
 }
 
 BoxBuilder::StagedFile::~StagedFile() {
@@ -652,6 +376,366 @@ void BoxBuilder::StagedFile::SetType(ResourceType type) {
         default:
             PD_ASSERT_D(false, "Unhandled case [%d] in StagedFile::SetType()");
     }
+}
+
+Slice<BoxBuilder::StagedFile> BoxBuilder::GetStagedFiles() {
+    return stagedFiles;
+}
+
+bool BoxBuilder::EncodeResource(Stream& out, BoxBuilder::StagedFile& sf) {
+    bool success = false;
+
+    switch (sf.type) {
+        case ResourceType::Binary: {
+            success = EncodeBinaryResource(out, sf.generic.path, sf.compressed);
+            break;
+        }
+
+        case ResourceType::Font: {
+            success = EncodeFontResource(out, sf.generic.path, sf.compressed);
+            break;
+        }
+
+        case ResourceType::Shader: {
+            success = EncodeShaderResource(out, sf.shader.shaders, sf.compressed);
+            break;
+        }
+
+        case ResourceType::Texture: {
+            success = EncodeTextureResource(out, sf.texture.path, sf.texture.filtering, sf.texture.wrapping, sf.compressed);
+            break;
+        }
+
+        case ResourceType::Mesh: {
+            success = EncodeMeshResource(out, sf.generic.path, sf.compressed);
+            break;
+        }
+
+        case ResourceType::Audio: {
+            success = EncodeAudioResource(out, sf.generic.path, sf.compressed);
+            break;
+        }
+    }
+
+    return success;
+}
+
+bool BoxBuilder::EncodeBinaryResource(Stream& out, StringView path, bool compressed) {
+    // Open the file (do we want to read the entire file or use a stream?)
+    Array<byte> fileBytes;
+    u64 fileSize = ReadEntireFile(path, fileBytes);
+
+    if (fileSize == 0) return false;
+
+    // Write uncompressed size
+    out.Write(fileSize);
+
+    if (compressed) {
+        Array<byte> compressedBytes;
+        CompressData(fileBytes, compressedBytes);
+
+        // Write compressed size and data
+        out.Write(compressedBytes.SizeInBytes());
+        out.WriteBytes(compressedBytes.SliceAs<byte>());
+    } else {
+        // Not compressed so we write the raw bytes
+        out.Write<u64>(0);
+        out.WriteBytes(fileBytes.SliceAs<byte>());
+    }
+
+    return true;
+}
+
+bool BoxBuilder::EncodeFontResource(Stream& out, StringView path, bool compressed) {
+    return EncodeBinaryResource(out, path, compressed);
+}
+
+bool BoxBuilder::EncodeShaderResource(Stream& out, Slice<BoxBuilder::StagedShader> shaders, bool compressed) {
+    MemoryStream output;
+
+    // Write how many backends we support
+    output.Write((byte)shaders.Count());
+
+    auto writeShaderFile = [](Stream& output, StringView path, VideoBackend backend, bool isVertex) {
+        if (backend == VideoBackend::DirectX) {
+#if !defined(PD_NO_DIRECTX)
+            ID3DBlob* source = nullptr;
+            ID3DBlob* error = nullptr;
+
+            const char* shaderModel = (isVertex) ? "vs_4_0_level_9_3" : "ps_4_0_level_9_3";
+            HRESULT result = D3DCompileFromFile(path.ToWide(), NULL, D3D_COMPILE_STANDARD_FILE_INCLUDE,
+                                                "main", shaderModel, 0, 0, &source, &error);
+
+            bool success = !error && result == S_OK;
+            if (!success) {
+                console.Log("[{}Box Error{}] D3DCompile: {}",
+                            ConColor::Red, ConColor::White, (char*)error->GetBufferPointer());
+            } else {
+                output.Write((u32)source->GetBufferSize());
+                output.WriteBytes(Slice<byte>((byte*)source->GetBufferPointer(), (int)source->GetBufferSize()));
+            }
+
+            if (source) {
+                source->Release();
+            }
+
+            if (error) {
+                error->Release();
+            }
+
+            return success;
+#else
+            console.Log("[{}Box Error{}] cannot compile DirectX shaders because PD_NO_DIRECTX is defined\n",
+                        ConColor::Red, ConColor::White);
+            return false;
+#endif
+        } else if (backend == VideoBackend::OpenGL) {
+            output.Write((u32)GetFileSize(path));
+
+            Array<byte> fileBytes;
+            u64 fileSize = ReadEntireFile(path, fileBytes);
+
+            if (fileSize == 0) return false;
+
+            output.WriteBytes(fileBytes);
+        }
+
+        return true;
+    };
+
+    for (int i = 0; i < shaders.Count(); i++) {
+        BoxBuilder::StagedShader* ss = (BoxBuilder::StagedShader*) & shaders[i];
+
+        // Write the backend type
+        output.Write(ss->backend);
+
+        if (!writeShaderFile(output, ss->vertexPath, ss->backend, true)) return false;
+        if (!writeShaderFile(output, ss->pixelPath, ss->backend, false)) return false;
+    }
+
+    // Write uncompressed and compressed file size
+    u64 outputSize = output.Position();
+    out.Write(outputSize);
+
+    if (compressed) {
+        // Fill in later
+        u64 compressedSizePosition = out.Position();
+        out.Write<u64>(0);
+
+        // Compress output and write to file
+        int written = CompressData(output.AsSlice(0, (int)outputSize), out);
+
+        // Go back and write compressed size
+        out.Seek(compressedSizePosition, SeekOrigin::Start);
+        out.Write((u64)written);
+        out.Seek(0, SeekOrigin::End);
+    } else {
+        out.Write<u64>(0);
+        out.WriteBytes(output.AsSlice(0, (int)outputSize));
+    }
+
+    return true;
+}
+
+bool BoxBuilder::EncodeTextureResource(Stream& out, StringView path, TextureFiltering filtering, TextureWrapping wrapping, bool compressed) {
+    int width, height, channels;
+    stbi_set_flip_vertically_on_load(true);
+    byte* pixels = stbi_load((char*)path.Data(), &width, &height, &channels, 4);
+
+    if (!pixels) return false;
+
+    // Write texture format
+    MemoryStream output;
+    output.Write(filtering);
+    output.Write(wrapping);
+
+    output.Write(width);
+    output.Write(height);
+
+    output.WriteBytes(Slice<byte>(pixels, width * height * 4));
+
+    // Free the texture data
+    Free(pixels);
+
+    // Write uncompressed and compressed file size
+    u64 outputSize = output.Position();
+    out.Write(outputSize);
+
+    if (compressed) {
+        // Fill in later
+        u64 compressedSizePosition = out.Position();
+        out.Write<u64>(0);
+
+        // Compress output and write to file
+        int written = CompressData(output.AsSlice(0, (int)outputSize), out);
+
+        // Go back and write compressed size
+        out.Seek(compressedSizePosition, SeekOrigin::Start);
+        out.Write((u64)written);
+        out.Seek(0, SeekOrigin::End);
+    } else {
+        out.Write<u64>(0);
+        out.WriteBytes(output.AsSlice(0, (int)outputSize));
+    }
+
+    return true;
+}
+
+bool BoxBuilder::EncodeMeshResource(Stream& out, StringView path, bool compressed) {
+#if !defined(PD_NO_ASSIMP)
+    const u32 FLAGS = aiProcess_Triangulate
+        | aiProcess_GenNormals
+        | aiProcess_GenUVCoords
+        | aiProcess_CalcTangentSpace
+        | aiProcess_OptimizeMeshes;
+
+    const aiScene* scene = aiImportFile((char*)path.Data(), FLAGS);
+
+    if (!scene) return false;
+
+    aiMesh* mesh = scene->mMeshes[0];
+
+    // Load mesh and write data
+    MemoryStream output;
+
+    output.Write((u32)mesh->mNumVertices);
+
+    // Fill in the index count later
+    u64 indexPosition = output.Position();
+    output.Write<u32>(0);
+
+    for (u32 i = 0; i < mesh->mNumVertices; i++) {
+        MeshVertex v;
+        v.position = Vec3(mesh->mVertices[i].x, mesh->mVertices[i].y, mesh->mVertices[i].z);
+
+        if (mesh->HasNormals()) {
+            v.normal = Vec3(mesh->mNormals[i].x, mesh->mNormals[i].y, mesh->mNormals[i].z);
+        }
+
+        if (mesh->HasTextureCoords(0)) {
+            v.uv = Vec2(mesh->mTextureCoords[0][i].x, mesh->mTextureCoords[0][i].y);
+        }
+
+        if (mesh->HasTangentsAndBitangents()) {
+            v.tangent = Vec3(mesh->mTangents[i].x, mesh->mTangents[i].y, mesh->mTangents[i].z);
+        }
+
+        output.Write(v);
+    }
+
+    u32 indexCount = 0;
+    for (u32 i = 0; i < mesh->mNumFaces; i++) {
+        for (u32 j = 0; j < mesh->mFaces[i].mNumIndices; j++) {
+            output.Write(mesh->mFaces[i].mIndices[j]);
+            indexCount += 1;
+        }
+    }
+
+    // Free import
+    aiReleaseImport(scene);
+
+    u64 endPosition = output.Position();
+    output.Seek(indexPosition, SeekOrigin::Start);
+    output.Write(indexCount);
+    output.Seek(endPosition, SeekOrigin::Start);
+
+    // Write uncompressed and compressed file size
+    u64 outputSize = output.Position();
+    out.Write(outputSize);
+
+    if (compressed) {
+        // Fill in later
+        u64 compressedSizePosition = out.Position();
+        out.Write<u64>(0);
+
+        // Compress output and write to file
+        int written = CompressData(output.AsSlice(0, (int)outputSize), out);
+
+        // Go back and write compressed size
+        out.Seek(compressedSizePosition, SeekOrigin::Start);
+        out.Write((u64)written);
+        out.Seek(0, SeekOrigin::End);
+    } else {
+        out.Write<u64>(0);
+        out.WriteBytes(output.AsSlice(0, (int)outputSize));
+    }
+#else
+    PD_ASSERT(false, "Assimp is not included, cannot build meshes.");
+#endif
+
+    return true;
+}
+
+bool BoxBuilder::EncodeAudioResource(Stream& out, StringView path, bool compressed) {
+    // The Soloud class is massive so we heap-allocate it
+    Ref<SoLoud::Soloud> soloud = New<SoLoud::Soloud>();
+    soloud->init();
+
+    SoLoud::Wav wave;
+    if (wave.load((char*)path.Data()) != 0) {
+        return false;
+    }
+
+    MemoryStream output;
+
+    // Write the metadata and samples
+    output.Write<f64>(wave.getLength());
+    output.Write<u32>((u32)wave.mBaseSamplerate);
+    output.Write<u16>((u16)wave.mChannels);
+    output.Write<u32>(wave.mSampleCount);
+
+    // Convert float to PCM
+    const f32 SAMPLE_MAX = (f32)(INT16_MAX + 1);
+
+    // There is apparently some hot debate for the case where the sample is 1.0
+    // and it introduces some distortion.
+    // I found this blog that goes into more detail http://blog.bjornroche.com/2009/12/int-float-int-its-jungle-out-there.html
+    if (wave.mChannels == 1) {
+        for (u32 i = 0; i < wave.mSampleCount; i++) {
+            f32 monoConverted = wave.mData[i] * SAMPLE_MAX;
+            i16 mono = (i16)Clamp<int>((int)monoConverted, INT16_MIN, INT16_MAX);
+            output.Write<i16>(mono);
+        }
+    } else {
+        for (u32 i = 0; i < wave.mSampleCount; i++) {
+            // Convert
+            f32 leftConverted = wave.mData[i] * SAMPLE_MAX;
+            f32 rightConverted = wave.mData[i + wave.mSampleCount] * SAMPLE_MAX;
+
+            // Clamp
+            i16 left = (i16)Clamp<int>((int)leftConverted, INT16_MIN, INT16_MAX);
+            i16 right = (i16)Clamp<int>((int)rightConverted, INT16_MIN, INT16_MAX);
+
+            // Write
+            output.Write<i16>(left);
+            output.Write<i16>(right);
+        }
+    }
+
+    soloud->deinit();
+
+    // Write uncompressed and compressed file size
+    u64 outputSize = output.Position();
+    out.Write(outputSize);
+
+    if (compressed) {
+        // Fill in later
+        u64 compressedSizePosition = out.Position();
+        out.Write<u64>(0);
+
+        // Compress output and write to file
+        int written = CompressData(output.AsSlice(0, (int)outputSize), out); // Seems like float/pcm samples don't compress well at all
+
+        // Go back and write compressed size
+        out.Seek(compressedSizePosition, SeekOrigin::Start);
+        out.Write((u64)written);
+        out.Seek(0, SeekOrigin::End);
+    } else {
+        out.Write<u64>(0);
+        out.WriteBytes(output.AsSlice(0, (int)outputSize));
+    }
+
+    return true;
 }
 
 void BoxBuilder::StagedFile::Delete() {

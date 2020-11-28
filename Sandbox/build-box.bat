@@ -1,9 +1,9 @@
 @echo off
 
-if exist "..\bin\Release\PBox\Pbox.exe" (
-    set pbox_path="..\bin\Release\PBox\Pbox.exe"
-) else if exist "..\bin\Debug\PBox\Pbox.exe" (
-    set pbox_path="..\bin\Debug\PBox\Pbox.exe"
+if exist "..\PBox\bin\Release\Pbox.exe" (
+    set pbox_path="..\PBox\bin\Release\Pbox.exe"
+) else if exist "..\PBox\bin\Debug\Pbox.exe" (
+    set pbox_path="..\PBox\bin\Debug\Pbox.exe"
 ) else (
     where /q "pbox.exe"
     if errorlevel 1 (
@@ -20,4 +20,6 @@ if exist "..\bin\Release\PBox\Pbox.exe" (
     )
 )
 
+echo Found box at %pbox_path%
 %pbox_path% --build data.box data.json
+echo Done!

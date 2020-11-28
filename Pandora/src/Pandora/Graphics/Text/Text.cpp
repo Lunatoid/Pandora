@@ -33,7 +33,9 @@ void Text::GenerateSprites() {
         letters.Reserve(1);
         letters.Last().point = point;
 
-        letters.Last().sprite.Load(g->texture, spriteMat);
+        letters.Last().sprite.Load(font->GetGlyphTexture(*g), spriteMat);
+        letters.Last().sprite.size = g->size;
+        letters.Last().sprite.SetNormalizedClippingMask(g->uv);
     }
 
     UpdateProperties();
@@ -63,7 +65,7 @@ void Text::UpdateProperties() {
 
         // Set position and scale, only set color if the glyph is grayscale
         f32 xOffset = g->bearing.x * scale.x;
-        f32 yOffset = ((g->bearing.y - (f32)g->texture->GetSize().y) + kerning.y) * scale.y;
+        f32 yOffset = ((g->bearing.y - (f32)g->size.y) + kerning.y) * scale.y;
 
         letters[i].sprite.position = penPos + Vec2(xOffset, yOffset);
         letters[i].sprite.scale = scale;

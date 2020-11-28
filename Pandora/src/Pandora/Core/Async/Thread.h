@@ -6,6 +6,7 @@ namespace pd {
 
 typedef void(ThreadFunc)(void* data);
 
+
 enum class ThreadPriority : byte {
     Normal,
     Low,
@@ -58,13 +59,13 @@ public:
     /// Executes the stored function.
     /// Do not call this. This is used for internal purposes.
     /// </summary>
-    void ExecuteFunc();
+    void InternalExecuteFunc();
 
     /// <summary>
     /// Sets the <c>done</c> bool to <c>val</c>.
     /// Do not call this. This is used for internal purposes.
     /// </summary>
-    void SetDone(bool val);
+    void InternalSetDone(bool val);
 #endif
 
 protected:

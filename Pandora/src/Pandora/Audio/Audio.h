@@ -1,7 +1,6 @@
 #pragma once
 
 #include "Pandora/Core/Resources/Resource.h"
-
 #include "Pandora/Core/Time/Stopwatch.h"
 
 #include "Pandora/Audio/AudioHandle.h"

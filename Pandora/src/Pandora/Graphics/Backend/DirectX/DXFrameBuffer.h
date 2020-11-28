@@ -11,7 +11,7 @@ namespace pd {
 
 class DXFrameBuffer final : public FrameBuffer {
 public:
-    virtual ~DXFrameBuffer();
+    virtual ~DXFrameBuffer() = default;
 
     virtual void Create(Vec2i size) override;
     virtual void Delete() override;
@@ -21,8 +21,8 @@ public:
 
 private:
     DXVideoAPI* video = nullptr;
-    ID3D11RenderTargetView* renderTarget = nullptr;
-    ID3D11DepthStencilView* depthStencilView = nullptr;
+    DXComRef<ID3D11RenderTargetView> renderTarget;
+    DXComRef<ID3D11DepthStencilView> depthStencilView;
 };
 
 }

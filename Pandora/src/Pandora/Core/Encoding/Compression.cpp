@@ -36,11 +36,11 @@ void CompressData(Slice<byte> bytes, Array<byte>& out) {
     Free(buffer);
 }
 
-int CompressData(Slice<byte> bytes, Stream* out) {
+int CompressData(Slice<byte> bytes, Stream& out) {
     int bufferLen;
     byte* buffer = stbi_zlib_compress(bytes.Data(), bytes.Count(), &bufferLen, COMPRESS_QUALITY);
 
-    int written = out->WriteBytes(Slice<byte>(buffer, bufferLen));
+    int written = out.WriteBytes(Slice<byte>(buffer, bufferLen));
 
     Free(buffer);
 
@@ -60,11 +60,11 @@ void DecompressData(Slice<byte> bytes, Array<byte>& out) {
     Free(buffer);
 }
 
-void DecompressData(Slice<byte> bytes, Stream* out) {
+void DecompressData(Slice<byte> bytes, Stream& out) {
     int bufferLen;
     byte* buffer = (byte*)stbi_zlib_decode_malloc((const char*)bytes.Data(), bytes.Count(), &bufferLen);
 
-    out->WriteBytes(Slice<byte>(buffer, bufferLen));
+    out.WriteBytes(Slice<byte>(buffer, bufferLen));
 
     Free(buffer);
 }

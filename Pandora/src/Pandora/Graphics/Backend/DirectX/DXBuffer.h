@@ -15,8 +15,6 @@ enum class DXBufferType {
 
 class DXBuffer {
 public:
-    ~DXBuffer();
-
     void Init(DXBufferType type);
 
     void Resize(int newSize);
@@ -29,7 +27,7 @@ private:
     DXVideoAPI* video = nullptr;
 
     DXBufferType type = DXBufferType::Vertex;
-    ID3D11Buffer* buffer = nullptr;
+    DXComRef<ID3D11Buffer> buffer;
 
     int size = 0;
 };

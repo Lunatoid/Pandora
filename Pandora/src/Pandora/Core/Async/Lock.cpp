@@ -2,12 +2,12 @@
 
 namespace pd {
 
-Lock::Lock(Mutex* mutex) : mutex(mutex) {
-    mutex->Lock();
+Lock::Lock(Mutex& mutex) : mutex(mutex) {
+    mutex.Lock();
 }
 
 Lock::~Lock() {
-    mutex->Unlock();
+    mutex.Unlock();
 }
 
 }
