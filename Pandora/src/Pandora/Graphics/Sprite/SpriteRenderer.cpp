@@ -28,14 +28,14 @@ void SpriteRenderer::UpdateProjection(Mat4 mvp) {
     this->mvp = mvp;
 }
 
-void SpriteRenderer::Draw(Sprite& sprite) {
+void SpriteRenderer::Draw(const Sprite& sprite) {
     sprites.Add(sprite);
 }
 
 void SpriteRenderer::Render() {
     if (sprites.Count() == 0) return;
 
-    sprites.Sort([](Sprite& a, Sprite& b) {
+    sprites.Sort([](const Sprite& a, const Sprite& b) {
         return a.position.z < b.position.z;
     });
 

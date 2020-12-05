@@ -54,6 +54,20 @@ bool CreateTempStorageFile(StringView fileName, bool deleteOnClose, FileStream& 
 bool CreateCacheStorageFile(StringView fileName, u64 hash, FileStream& stream);
 
 /// <summary>
+/// Checks if the file exists.
+/// </summary>
+/// <param name="fileName">The name of the file to check.</param>
+/// <returns>Whether or not the file exists.</returns>
+bool HasStorageFile(StringView fileName);
+
+/// <summary>
+/// Checks if the file exists.
+/// </summary>
+/// <param name="fileName">The name of the file to check.</param>
+/// <returns>Whether or not the file exists.</returns>
+bool HasTempStorageFile(StringView fileName);
+
+/// <summary>
 /// Checks if the file exists and if the hash descriptor matches.
 /// It will ignore the hash check if <c>hash</c> parameter is 0.
 /// </summary>
@@ -69,12 +83,27 @@ bool HasCacheStorageFile(StringView fileName, u64 hash);
 u64 GetCacheStorageHash(StringView fileName);
 
 /// <summary>
+/// Attempts to open the storage file if it exists.
+/// </summary>
+/// <param name="fileName">The name of the file to check.</param>
+/// <returns>Whether or not the file was opened successfully.</returns>
+bool OpenStorageFile(StringView filename, FileStream& stream);
+
+/// <summary>
+/// Attempts to open the temporary storage file if it exists.
+/// </summary>
+/// <param name="fileName">The name of the file to check.</param>
+/// <returns>Whether or not the file was opened successfully.</returns>
+bool OpenTempStorageFile(StringView filename, FileStream& stream);
+
+/// <summary>
 /// Attempts to open the cache file if it exists and the hash descriptor matches.
 /// </summary>
 /// <param name="fileName">The name of the file to check.</param>
 /// <param name="hash">The expected hash.</param>
-/// <returns>Whether or not the file exists and whether the hash matches.</returns>
+/// <returns>Whether or not the file was opened successfully.</returns>
 bool OpenCacheStorageFile(StringView fileName, u64 hash, FileStream& stream);
+
 
 /// <summary>
 /// Creates folders in the storage path.

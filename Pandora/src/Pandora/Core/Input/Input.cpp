@@ -84,10 +84,10 @@ int VKeyToKey(Key key) {
         case Key::Insert:       vkey = VK_INSERT;     break;
         case Key::Delete:       vkey = VK_DELETE;     break;
 
-        case Key::KeypadAdd:    vkey = VK_ADD;        break;
-        case Key::KeypadSub:    vkey = VK_SUBTRACT;   break;
-        case Key::KeypadMul:    vkey = VK_MULTIPLY;   break;
-        case Key::KeypadDiv:    vkey = VK_DIVIDE;     break;
+        case Key::NumpadAdd:    vkey = VK_ADD;        break;
+        case Key::NumpadSub:    vkey = VK_SUBTRACT;   break;
+        case Key::NumpadMul:    vkey = VK_MULTIPLY;   break;
+        case Key::NumpadDiv:    vkey = VK_DIVIDE;     break;
 
         case Key::Left:         vkey = VK_LEFT;       break;
         case Key::Right:        vkey = VK_RIGHT;      break;

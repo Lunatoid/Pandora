@@ -92,6 +92,9 @@ private:
 #if !defined(PD_NO_IMGUI)
     void OnImGuiInternal();
     void LoadImGuiTheme();
+
+    Array<byte> fontData;
+    ImFont* imguiFont = nullptr;
 #endif
 
     void OnEventInternal(Event* event);

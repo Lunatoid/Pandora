@@ -55,6 +55,20 @@ constexpr T Abs(const T& val) {
 }
 
 /// <summary>
+/// </summary>
+/// <param name="val">The value.</param>
+/// <returns>The absolute value.</returns>
+template<typename V>
+constexpr V AbsVec(const V& val) {
+    V absVal;
+    for (int i = 0; i < sizeof(val.elements) / sizeof(val.elements[0]); i++) {
+        absVal.elements[i] = Abs(val.elements[i]);
+    }
+
+    return absVal;
+}
+
+/// <summary>
 /// Aligns a value up to a specific alignment.
 /// </summary>
 /// <param name="val">The value.</param>

@@ -12,7 +12,7 @@ struct LineVertex {
     Color color;
 };
 
-enum class LineEnd {
+enum class LineCap {
     None,
     Round,
     Box
@@ -36,27 +36,22 @@ public:
 
     void UpdateProjection(Mat4 mvp);
 
-    void DrawLine(Vec2 start, Vec2 end, Color color);
-    void DrawLine(Vec2 start, Vec2 end, Color startColor, Color endColor);
+    void DrawLine(Vec2 start, Vec2 end, Color color, f32 depth);
+    void DrawLine(Vec2 start, Vec2 end, Color startColor, Color endColor, f32 depth);
 
-    void DrawBox(Vec2 start, Vec2 size, Color color);
-    void DrawSolidBox(Vec2 start, Vec2 size, Color color);
+    void DrawBox(Vec2 start, Vec2 size, Color color, f32 depth);
+    void DrawSolidBox(Vec2 start, Vec2 size, Color color, f32 depth);
 
-    void DrawCircle(Vec2 center, f32 radius, Color color, int vertexCount);
-    void DrawSolidCircle(Vec2 center, f32 radius, Color color, int vertexCount);
+    void DrawCircle(Vec2 center, f32 radius, Color color, int vertexCount, f32 depth);
+    void DrawSolidCircle(Vec2 center, f32 radius, Color color, int vertexCount, f32 depth);
 
     void Render();
-
-    void SetDepth(f32 newDepth);
-    void IncreaseDepth();
-    void DecreaseDepth();
 
     Material* GetMaterial();
 
     f32 width = 1.0f;
-    LineEnd endCap = LineEnd::Round;
+    LineCap endCap = LineCap::Round;
     int endCapVertices = 16;
-    f32 startingDepth = 0.0f;
 
 private:
     Ref<Material> material;
@@ -67,8 +62,6 @@ private:
     Array<u32> indices;
 
     Mat4 mvp;
-    f32 depth = 0.0f;
-    const f32 DEPTH_STEP = 0.1f;
 };
 
 }

@@ -21,7 +21,7 @@ public:
     /// Queues the specified sprite for drawing.
     /// </summary>
     /// <param name="sprite">The sprite.</param>
-    void Draw(Sprite& sprite);
+    void Draw(const Sprite& sprite);
     
     /// <summary>
     /// Renders all queued sprites.
@@ -47,7 +47,7 @@ public:
 
 private:
     Mat4 mvp = Mat4(1.0f);
-    f32 maxDepth;
+    f32 maxDepth = 0.0f;
 
     Ref<Renderer> renderer;
     Ref<ConstantBuffer> mvpBuffer;

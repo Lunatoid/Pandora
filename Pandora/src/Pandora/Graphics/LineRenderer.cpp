@@ -29,16 +29,16 @@ void LineRenderer::UpdateProjection(Mat4 mvp) {
     this->mvp = mvp;
 }
 
-void LineRenderer::DrawLine(Vec2 start, Vec2 end, Color color) {
-    DrawLine(start, end, color, color);
+void LineRenderer::DrawLine(Vec2 start, Vec2 end, Color color, f32 depth) {
+    DrawLine(start, end, color, color, depth);
 }
 
-void LineRenderer::DrawLine(Vec2 start, Vec2 end, Color startColor, Color endColor) {
+void LineRenderer::DrawLine(Vec2 start, Vec2 end, Color startColor, Color endColor, f32 depth) {
     LineVertex verts[4];
 
     Vec2 dir = Normalize(end - start);
 
-    if (endCap == LineEnd::Box) {
+    if (endCap == LineCap::Box) {
         start -= width * dir;
         end += width * dir;
     }
@@ -72,29 +72,21 @@ void LineRenderer::DrawLine(Vec2 start, Vec2 end, Color startColor, Color endCol
 
     vertices.AddRange(Slice<LineVertex>(verts, 4));
 
-    if (endCap == LineEnd::Round) {
-        DrawSolidCircle(start, width, startColor, endCapVertices);
-        DecreaseDepth();
-        DrawSolidCircle(end, width, endColor, endCapVertices);
-        DecreaseDepth();
+    if (endCap == LineCap::Round) {
+        DrawSolidCircle(start, width, startColor, endCapVertices, depth);
+        DrawSolidCircle(end, width, endColor, endCapVertices, depth);
     }
-
-    IncreaseDepth();
 }
 
-void LineRenderer::DrawBox(Vec2 start, Vec2 size, Color color) {
-    DrawLine(start, start + Vec2(size.x, 0.0f), color);
-    DecreaseDepth();
-    DrawLine(start, start + Vec2(0.0f, size.y), color);
-    DecreaseDepth();
-    DrawLine(start + Vec2(0.0f, size.y), start + size, color);
-    DecreaseDepth();
-    DrawLine(start + Vec2(size.x, 0.0f), start + size, color);
+void LineRenderer::DrawBox(Vec2 start, Vec2 size, Color color, f32 depth) {
+    DrawLine(start, start + Vec2(size.x, 0.0f), color, depth);
+    DrawLine(start, start + Vec2(0.0f, size.y), color, depth);
+    DrawLine(start + Vec2(0.0f, size.y), start + size, color, depth);
+    DrawLine(start + Vec2(size.x, 0.0f), start + size, color, depth);
 }
 
-void LineRenderer::DrawSolidBox(Vec2 start, Vec2 size, Color color) {
-    DrawBox(start, size, color);
-    DecreaseDepth();
+void LineRenderer::DrawSolidBox(Vec2 start, Vec2 size, Color color, f32 depth) {
+    DrawBox(start, size, color, depth);
 
     LineVertex verts[4];
 
@@ -123,11 +115,9 @@ void LineRenderer::DrawSolidBox(Vec2 start, Vec2 size, Color color) {
     indices.Add(s);
 
     vertices.AddRange(Slice<LineVertex>(verts, 4));
-
-    IncreaseDepth();
 }
 
-void LineRenderer::DrawCircle(Vec2 center, f32 radius, Color color, int vertexCount) {
+void LineRenderer::DrawCircle(Vec2 center, f32 radius, Color color, int vertexCount, f32 depth) {
     int s = vertices.Count();
 
     for (int i = 0; i < vertexCount; i++) {
@@ -137,20 +127,19 @@ void LineRenderer::DrawCircle(Vec2 center, f32 radius, Color color, int vertexCo
         Vec2 start = Vec2(Cos(angle) * radius + center.x, Sin(angle) * radius + center.y);
         Vec2 end = Vec2(Cos(nextAngle) * radius + center.x, Sin(nextAngle) * radius + center.y);
 
-        DrawLine(start, end, color);
-        DecreaseDepth();
+        DrawLine(start, end, color, depth);
     }
 }
 
-void LineRenderer::DrawSolidCircle(Vec2 center, f32 radius, Color color, int vertexCount) {
+void LineRenderer::DrawSolidCircle(Vec2 center, f32 radius, Color color, int vertexCount, f32 depth) {
     int s = vertices.Count();
     vertices.Reserve(vertexCount + 1);
     vertices[s].position = center;
     vertices[s].position.z = depth;
     vertices[s].color = color;
 
-    LineEnd end = endCap;
-    endCap = LineEnd::None;
+    LineCap end = endCap;
+    endCap = LineCap::None;
 
     for (int i = 1; i < vertexCount + 1; i++) {
         f32 angle = (f32)(i - 1) / (f32)vertexCount * PI32 * 2.0f;
@@ -169,8 +158,6 @@ void LineRenderer::DrawSolidCircle(Vec2 center, f32 radius, Color color, int ver
     }
 
     endCap = end;
-
-    IncreaseDepth();
 }
 
 void LineRenderer::Render() {
@@ -185,24 +172,10 @@ void LineRenderer::Render() {
 
     vertices.Clear();
     indices.Clear();
-
-    depth = startingDepth;
 }
 
 Material* LineRenderer::GetMaterial() {
     return material.Get();
-}
-
-void LineRenderer::SetDepth(f32 newDepth) {
-    depth = newDepth;
-}
-
-void LineRenderer::IncreaseDepth() {
-    depth += DEPTH_STEP;
-}
-
-void LineRenderer::DecreaseDepth() {
-    depth -= DEPTH_STEP;
 }
 
 }

@@ -480,7 +480,7 @@ inline void Array<T>::Swap(int a, int b) {
 
 template<typename T>
 inline void Array<T>::Reserve(int reservationCount) {
-    PD_ASSERT_D(reservationCount > 0, "reservation count must be positive, given: %d", reservationCount);
+    PD_ASSERT_D(reservationCount >= 0, "reservation count must be positive, given: %d", reservationCount);
 
     Resize(count + reservationCount);
     Construct(count, reservationCount);

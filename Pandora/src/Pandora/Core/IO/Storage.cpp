@@ -81,7 +81,7 @@ void GetAppDataFolder(String& out) {
 #else
 #error Implement me!
 #endif
-    }
+}
 
 void InitStorage(StringView author, StringView application) {
     storageData.SetPathData(author, application);
@@ -144,6 +144,22 @@ bool CreateCacheStorageFile(StringView fileName, u64 hash, FileStream& stream) {
     return stream.Open(path, FileMode::Write);
 }
 
+bool HasStorageFile(StringView fileName) {
+    String path;
+    path.Set(GetStoragePath());
+    path.Append(fileName);
+
+    return FileExists(path);
+}
+
+bool HasTempStorageFile(StringView fileName) {
+    String path;
+    path.Set(GetTempStoragePath());
+    path.Append(fileName);
+
+    return FileExists(path);
+}
+
 bool HasCacheStorageFile(StringView fileName, u64 hash) {
     String path;
     path.Set(GetCacheStoragePath());
@@ -183,6 +199,30 @@ u64 GetCacheStorageHash(StringView fileName) {
     }
 
     return 0;
+}
+
+bool OpenStorageFile(StringView fileName, FileStream& stream) {
+    if (HasStorageFile(fileName)) {
+        String path;
+        path.Set(GetStoragePath());
+        path.Append(fileName);
+
+        return stream.Open(path);
+    }
+
+    return false;
+}
+
+bool OpenTempStorageFile(StringView fileName, FileStream& stream) {
+    if (HasTempStorageFile(fileName)) {
+        String path;
+        path.Set(GetTempStoragePath());
+        path.Append(fileName);
+
+        return stream.Open(path);
+    }
+
+    return false;
 }
 
 bool OpenCacheStorageFile(StringView fileName, u64 hash, FileStream& stream) {

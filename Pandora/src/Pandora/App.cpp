@@ -54,6 +54,17 @@ App::~App() {
 void App::Run() {
     if (IsRunning()) return;
 
+#if !defined(PD_NO_IMGUI)
+    // Attempt to load ImGui font if we have any specified
+    // We don't do this in the constructor because the catalog will not have loaded anything yet
+    if (catalog.GetResourceData("Fonts/ImGui", fontData)) {
+        ImFontConfig config = {};
+        strcpy_s(config.Name, "ImGuiFont");
+        config.FontDataOwnedByAtlas = false;
+        imguiFont = ImGui::GetIO().Fonts->AddFontFromMemoryTTF(fontData.Data(), fontData.Count(), 16.0f, &config);
+    }
+#endif
+
     isRunning = true;
 
     Stopwatch deltaClock;
@@ -139,6 +150,7 @@ void App::OnRenderInternal(f32 dt) {
 }
 
 #if !defined(PD_NO_IMGUI)
+
 void App::OnImGuiInternal() {
     // Explicitly check if we're quitting because otherwise we abort
     if (!isRunning) return;
@@ -154,8 +166,17 @@ void App::OnImGuiInternal() {
     // Enable dockspace
     ImGui::DockSpaceOverViewport(nullptr, ImGuiDockNodeFlags_PassthruCentralNode);
 
+    if (imguiFont) {
+        ImGui::PushFont(imguiFont);
+    }
+
     OnImGui();
     sceneManager.ImGui();
+
+    if (imguiFont) {
+        ImGui::PopFont();
+    }
+
     ImGui::Render();
     video->ImGuiRender();
 }

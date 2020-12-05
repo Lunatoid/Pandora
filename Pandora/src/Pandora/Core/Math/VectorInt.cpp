@@ -6,7 +6,7 @@
 namespace pd {
 
 Vec2i::operator Vec2() const {
-    return Vec2((f32)this->x, (f32)y);
+    return Vec2((f32)x, (f32)y);
 }
 
 Vec3i::operator Vec3() const {
@@ -103,6 +103,18 @@ Vec4i operator+(const Vec4i& left, const Vec4i& right) {
     return Vec4i(left.x + right.x, left.y + right.y, left.z + right.z, left.w + right.w);
 }
 
+Vec2i operator+(const Vec2i& left, int right) {
+    return left + Vec2i(right);
+}
+
+Vec3i operator+(const Vec3i& left, int right) {
+    return left + Vec3i(right);
+}
+
+Vec4i operator+(const Vec4i& left, int right) {
+    return left + Vec4i(right);
+}
+
 Vec2i operator-(const Vec2i& left, const Vec2i& right) {
     return Vec2i(left.x - right.x, left.y - right.y);
 }
@@ -113,6 +125,18 @@ Vec3i operator-(const Vec3i& left, const Vec3i& right) {
 
 Vec4i operator-(const Vec4i& left, const Vec4i& right) {
     return Vec4i(left.x - right.x, left.y - right.y, left.z - right.z, left.w - right.w);
+}
+
+Vec2i operator-(const Vec2i& left, int right) {
+    return left - Vec2i(right);
+}
+
+Vec3i operator-(const Vec3i& left, int right) {
+    return left - Vec3i(right);
+}
+
+Vec4i operator-(const Vec4i& left, int right) {
+    return left - Vec4i(right);
 }
 
 Vec2i operator*(const Vec2i& left, const Vec2i& right) {
@@ -128,7 +152,15 @@ Vec4i operator*(const Vec4i& left, const Vec4i& right) {
 }
 
 Vec2i operator*(const Vec2i& left, int right) {
-    return operator*(left, Vec2i(right));
+    return left * Vec2i(right);
+}
+
+Vec3i operator*(const Vec3i& left, int right) {
+    return left * Vec3i(right);
+}
+
+Vec4i operator*(const Vec4i& left, int right) {
+    return left * Vec4i(right);
 }
 
 Vec2i operator/(const Vec2i& left, const Vec2i& right) {
@@ -141,6 +173,42 @@ Vec3i operator/(const Vec3i& left, const Vec3i& right) {
 
 Vec4i operator/(const Vec4i& left, const Vec4i& right) {
     return Vec4i(left.x / right.x, left.y / right.y, left.z / right.z, left.w / right.w);
+}
+
+Vec2i operator/(const Vec2i& left, int right) {
+    return left / Vec2i(right);
+}
+
+Vec3i operator/(const Vec3i& left, int right) {
+    return left / Vec3i(right);
+}
+
+Vec4i operator/(const Vec4i& left, int right) {
+    return left / Vec4i(right);
+}
+
+Vec2i operator%(const Vec2i& left, const Vec2i& right) {
+    return Vec2i(left.x % right.x, left.y % right.y);
+}
+
+Vec3i operator%(const Vec3i& left, const Vec3i& right) {
+    return Vec3i(left.x % right.x, left.y % right.y, left.z % right.z);
+}
+
+Vec4i operator%(const Vec4i& left, const Vec4i& right) {
+    return Vec4i(left.x % right.x, left.y % right.y, left.z % right.z, left.w % right.w);
+}
+
+Vec2i operator%(const Vec2i& left, int right) {
+    return left % Vec2i(right);
+}
+
+Vec3i operator%(const Vec3i& left, int right) {
+    return left % Vec3i(right);
+}
+
+Vec4i operator%(const Vec4i& left, int right) {
+    return left % Vec4i(right);
 }
 
 Vec2i& operator+=(Vec2i& left, Vec2i& right) {

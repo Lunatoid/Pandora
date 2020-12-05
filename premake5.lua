@@ -255,7 +255,6 @@ project "Nomad"
     includedirs "Pandora/src"
     libdirs "%{lib_dirs.pandora}"
     links "Pandora.lib"
-    prebuildcommands "tt src/TypeTitan/ src/*.h"
     
     configuration "Debug"
         kind "ConsoleApp"

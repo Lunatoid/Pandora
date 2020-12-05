@@ -55,7 +55,7 @@ public:
     /// <param name="name">The name. Must be unique.</param>
     /// <param name="args">The contructor arguments.</param>
     template<typename T, typename ...Args>
-    void AddScene(StringView name, Args... args) {
+    void AddScene(StringView name, Args&&... args) {
         static_assert(std::is_base_of<Scene, T>::value, "Template type T must derive from pd::Scene");
 
         u64 hash = DoHash(&name);
@@ -67,7 +67,7 @@ public:
 
         SceneEntry newScene = {};
         newScene.nameHash = hash;
-        newScene.scene = New<T>(app, name, args...);
+        newScene.scene = New<T>(app, name, std::forward<Args>(args)...);
 
         scenes.Add(newScene);
     }

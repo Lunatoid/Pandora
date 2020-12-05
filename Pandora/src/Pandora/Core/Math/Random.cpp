@@ -18,6 +18,8 @@ u64 RandomRange(u64 inclMin, u64 exclMax) {
     u64 x = rngState * 48271ull % RANDOM_MAX;
     rngState = x;
 
+    // Maybe in the future we can try a non-modulo version
+    // if we really care about the performance of this function
     return x % (exclMax - inclMin) + inclMin;
 }
 

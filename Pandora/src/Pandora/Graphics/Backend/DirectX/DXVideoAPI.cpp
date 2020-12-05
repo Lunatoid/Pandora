@@ -191,18 +191,13 @@ Ref<ConstantBuffer> DXVideoAPI::CreateConstantBuffer() {
 void DXVideoAPI::SetTextureRequestHandler(ResourceCatalog& catalog) {
     catalog.SetResourceRequestHandler(ResourceType::Texture, [](Box& box, ResourceType type, StringView name, void* data) {
         DXTexture* tex = New<DXTexture>();
-
-        // Apply import options
-        DXVideoAPI* video = (DXVideoAPI*)data;
-        tex->filtering = video->textureOptions.filtering;
-        tex->wrapping = video->textureOptions.wrapping;
-
+        
         if (!tex->Load(box, name)) {
             CONSOLE_LOG_DEBUG("[{}Resource Error{}] could not load texture {#} from box\n", ConColor::Red, ConColor::White, name);
         }
 
         return (Resource*)tex;
-    }, this);
+    });
 }
 
 void DXVideoAPI::SetShaderRequestHandler(ResourceCatalog& catalog) {
@@ -214,7 +209,7 @@ void DXVideoAPI::SetShaderRequestHandler(ResourceCatalog& catalog) {
         }
 
         return (Resource*)shader;
-    }, this);
+    });
 }
 
 void DXVideoAPI::SetFontRequestHandler(ResourceCatalog& catalog) {

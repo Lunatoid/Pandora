@@ -12,7 +12,7 @@
 
 namespace pd {
 
-// @TODO: mipmaps
+// @TODO: sRGB
 
 DXTexture::DXTexture() : video((DXVideoAPI*)VideoAPI::Get()) {
     bindFlags = D3D11_BIND_SHADER_RESOURCE;
@@ -100,11 +100,13 @@ void DXTexture::CreateDepthStencil(D3D11_DEPTH_STENCIL_VIEW_DESC* depthStencilDe
 }
 
 void DXTexture::CreateTextureData() {
+    const UINT MIP_LEVELS = 1;
+
     D3D11_TEXTURE2D_DESC texDesc = {};
     texDesc.Width = size.x;
     texDesc.Height = size.y;
     texDesc.Format = format;
-    texDesc.MipLevels = 1;
+    texDesc.MipLevels = MIP_LEVELS;
     texDesc.ArraySize = 1;
     texDesc.SampleDesc.Count = 1;
     texDesc.Usage = D3D11_USAGE_DEFAULT;
@@ -116,7 +118,7 @@ void DXTexture::CreateTextureData() {
         D3D11_SHADER_RESOURCE_VIEW_DESC viewDesc = {};
         viewDesc.Format = texDesc.Format;
         viewDesc.ViewDimension = D3D11_SRV_DIMENSION_TEXTURE2D;
-        viewDesc.Texture2D.MipLevels = 1;
+        viewDesc.Texture2D.MipLevels = MIP_LEVELS;
 
         CheckDXError(video->GetDevice()->CreateShaderResourceView(texture.Get(), &viewDesc, &textureView.AsOut()));
     }

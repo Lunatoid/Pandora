@@ -6,6 +6,9 @@ namespace pd {
 
 template<typename K, typename V>
 struct Pair {
+    Pair() = default;
+    Pair(const K& k, const V& v) : key(k), val(v) {}
+
     K key;
     V val;
 };

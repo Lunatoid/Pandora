@@ -763,10 +763,10 @@ Key VKeyToKey(WPARAM vkey, LPARAM flags) {
         case VK_INSERT:      key = Key::Insert;       break;
         case VK_DELETE:      key = Key::Delete;       break;
 
-        case VK_ADD:         key = Key::KeypadAdd;    break;
-        case VK_SUBTRACT:    key = Key::KeypadSub;    break;
-        case VK_MULTIPLY:    key = Key::KeypadMul;    break;
-        case VK_DIVIDE:      key = Key::KeypadDiv;    break;
+        case VK_ADD:         key = Key::NumpadAdd;    break;
+        case VK_SUBTRACT:    key = Key::NumpadSub;    break;
+        case VK_MULTIPLY:    key = Key::NumpadMul;    break;
+        case VK_DIVIDE:      key = Key::NumpadDiv;    break;
 
         case VK_LEFT:        key = Key::Left;         break;
         case VK_RIGHT:       key = Key::Right;        break;

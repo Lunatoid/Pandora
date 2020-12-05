@@ -86,10 +86,10 @@ enum class Key : byte {
     Insert,
     Delete,
 
-    KeypadAdd,
-    KeypadSub,
-    KeypadMul,
-    KeypadDiv,
+    NumpadAdd,
+    NumpadSub,
+    NumpadMul,
+    NumpadDiv,
 
     Left,
     Right,

@@ -18,7 +18,7 @@ Index of this file:
 // [SECTION] ImFontAtlas glyph ranges helpers
 // [SECTION] ImFontGlyphRangesBuilder
 // [SECTION] ImFont
-// [SECTION] ImGui Internal Render Helpers
+// [SECTION] ImGui Internal Draw Helpers
 // [SECTION] Decompression code
 // [SECTION] Default font data (ProggyClean.ttf)
 
@@ -497,7 +497,7 @@ void ImDrawList::UpdateTextureID()
 #undef GetCurrentClipRect
 #undef GetCurrentTextureId
 
-// Render-level scissoring. This is passed down to your render function but not used for CPU-side coarse clipping. Prefer using higher-level ImGui::PushClipRect() to affect logic (hit-testing and widget culling)
+// Draw-level scissoring. This is passed down to your render function but not used for CPU-side coarse clipping. Prefer using higher-level ImGui::PushClipRect() to affect logic (hit-testing and widget culling)
 void ImDrawList::PushClipRect(ImVec2 cr_min, ImVec2 cr_max, bool intersect_with_current_clip_rect)
 {
     ImVec4 cr(cr_min.x, cr_min.y, cr_max.x, cr_max.y);
@@ -2134,7 +2134,7 @@ bool    ImFontAtlasBuildWithStbTruetype(ImFontAtlas* atlas)
     spc.pixels = atlas->TexPixelsAlpha8;
     spc.height = atlas->TexHeight;
 
-    // 8. Render/rasterize font characters into the texture
+    // 8. Draw/rasterize font characters into the texture
     for (int src_i = 0; src_i < src_tmp_array.Size; src_i++)
     {
         ImFontConfig& cfg = atlas->ConfigData[src_i];
@@ -2270,7 +2270,7 @@ static void ImFontAtlasBuildRenderDefaultTexData(ImFontAtlas* atlas)
     const int w = atlas->TexWidth;
     if (!(atlas->Flags & ImFontAtlasFlags_NoMouseCursors))
     {
-        // Render/copy pixels
+        // Draw/copy pixels
         IM_ASSERT(r.Width == FONT_ATLAS_DEFAULT_TEX_DATA_W_HALF * 2 + 1 && r.Height == FONT_ATLAS_DEFAULT_TEX_DATA_H);
         for (int y = 0, n = 0; y < FONT_ATLAS_DEFAULT_TEX_DATA_H; y++)
             for (int x = 0; x < FONT_ATLAS_DEFAULT_TEX_DATA_W_HALF; x++, n++)
@@ -2292,7 +2292,7 @@ static void ImFontAtlasBuildRenderDefaultTexData(ImFontAtlas* atlas)
 
 void ImFontAtlasBuildFinish(ImFontAtlas* atlas)
 {
-    // Render into our custom data block
+    // Draw into our custom data block
     ImFontAtlasBuildRenderDefaultTexData(atlas);
 
     // Register custom rectangle glyphs
@@ -3103,7 +3103,7 @@ void ImFont::RenderText(ImDrawList* draw_list, float size, ImVec2 pos, ImU32 col
             float y2 = y + glyph->Y1 * scale;
             if (x1 <= clip_rect.z && x2 >= clip_rect.x)
             {
-                // Render a character
+                // Draw a character
                 float u1 = glyph->U0;
                 float v1 = glyph->V0;
                 float u2 = glyph->U1;
@@ -3166,7 +3166,7 @@ void ImFont::RenderText(ImDrawList* draw_list, float size, ImVec2 pos, ImU32 col
 }
 
 //-----------------------------------------------------------------------------
-// [SECTION] ImGui Internal Render Helpers
+// [SECTION] ImGui Internal Draw Helpers
 //-----------------------------------------------------------------------------
 // Vaguely redesigned to stop accessing ImGui global state:
 // - RenderArrow()
@@ -3182,7 +3182,7 @@ void ImFont::RenderText(ImDrawList* draw_list, float size, ImVec2 pos, ImU32 col
 // - RenderColorRectWithAlphaCheckerboard()
 //-----------------------------------------------------------------------------
 
-// Render an arrow aimed to be aligned with text (p_min is a position in the same space text would be positioned). To e.g. denote expanded/collapsed state
+// Draw an arrow aimed to be aligned with text (p_min is a position in the same space text would be positioned). To e.g. denote expanded/collapsed state
 void ImGui::RenderArrow(ImDrawList* draw_list, ImVec2 pos, ImU32 col, ImGuiDir dir, float scale)
 {
     const float h = draw_list->_Data->FontSize * 1.00f;
@@ -3255,7 +3255,7 @@ void ImGui::RenderMouseCursor(ImDrawList* draw_list, ImVec2 pos, float scale, Im
     }
 }
 
-// Render an arrow. 'pos' is position of the arrow tip. half_sz.x is length from base to tip. half_sz.y is length on each side.
+// Draw an arrow. 'pos' is position of the arrow tip. half_sz.x is length from base to tip. half_sz.y is length on each side.
 void ImGui::RenderArrowPointingAt(ImDrawList* draw_list, ImVec2 pos, ImVec2 half_sz, ImGuiDir direction, ImU32 col)
 {
     switch (direction)

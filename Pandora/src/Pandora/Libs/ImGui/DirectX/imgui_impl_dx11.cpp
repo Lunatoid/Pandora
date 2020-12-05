@@ -101,8 +101,8 @@ static void ImGui_ImplDX11_SetupRenderState(ImDrawData* draw_data, ID3D11DeviceC
     ctx->RSSetState(g_pRasterizerState);
 }
 
-// Render function
-// (this used to be set in io.RenderDrawListsFn and called by ImGui::Render(), but you can now call this directly from your main loop)
+// Draw function
+// (this used to be set in io.RenderDrawListsFn and called by ImGui::Draw(), but you can now call this directly from your main loop)
 void ImGui_ImplDX11_RenderDrawData(ImDrawData* draw_data)
 {
     // Avoid rendering when minimized
@@ -229,7 +229,7 @@ void ImGui_ImplDX11_RenderDrawData(ImDrawData* draw_data)
     // Setup desired DX state
     ImGui_ImplDX11_SetupRenderState(draw_data, ctx);
 
-    // Render command lists
+    // Draw command lists
     // (Because we merged all buffers into a single one, we maintain our own offset into them)
     int global_idx_offset = 0;
     int global_vtx_offset = 0;
@@ -332,7 +332,10 @@ static void ImGui_ImplDX11_CreateFontsTexture()
     {
         D3D11_SAMPLER_DESC desc;
         ZeroMemory(&desc, sizeof(desc));
-        desc.Filter = D3D11_FILTER_MIN_MAG_MIP_LINEAR;
+
+        // Changed the filtering to point filtering from the default linear filtering
+        // desc.Filter = D3D11_FILTER_MIN_MAG_MIP_LINEAR;
+        desc.Filter = D3D11_FILTER_MIN_MAG_MIP_POINT;
         desc.AddressU = D3D11_TEXTURE_ADDRESS_WRAP;
         desc.AddressV = D3D11_TEXTURE_ADDRESS_WRAP;
         desc.AddressW = D3D11_TEXTURE_ADDRESS_WRAP;

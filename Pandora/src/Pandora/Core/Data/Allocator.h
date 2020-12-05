@@ -72,9 +72,9 @@ Allocator GetAllocator(void* ptr);
 /// <param name="...args">The constructor arguments.</param>
 /// <returns>The allocated <c>T</c>.</returns>
 template<typename T, typename ...Args>
-T* New(Args ...args) {
+T* New(Args&&... args) {
     T* t = (T*)Alloc(sizeof(T));
-    new (t) T(args...);
+    new (t) T(std::forward<Args>(args)...);
 
     return t;
 }

@@ -368,7 +368,7 @@ void GameScene::OnRender(f32 dt) {
     Vec3 worldPos = board.position + Vec3(ghostPos.x * TILE_SIZE.x, ghostPos.y * TILE_SIZE.y, 1.0f);
     ghostPiece->Draw(spriteRenderer, worldPos - Vec3(0.0f, subY * TILE_SIZE.y, 0.0f), ghostRotation, tileAtlas, 1.0f);
 
-    // Render preview
+    // Draw preview
     int lowestY = 1;
     while (board.DoesPieceFit(ghostPos - Vec2i(0, lowestY), ghostPiece, ghostRotation)) {
         ++lowestY;
@@ -377,16 +377,16 @@ void GameScene::OnRender(f32 dt) {
 
     ghostPiece->Draw(spriteRenderer, worldPos - Vec3(0.0f, lowestY * TILE_SIZE.y, 0.0f), ghostRotation, tileAtlas, 0.33f);
 
-    // Render held
+    // Draw held
     Vec3 boardEnd = board.position + Vec3(BOARD_WIDTH * TILE_SIZE.x, BOARD_VISIBLE_HEIGHT * TILE_SIZE.y, 0.0f);
     if (heldPiece) {
         heldPiece->Draw(spriteRenderer, boardEnd + Vec3(TILE_SIZE.x * 2.0f, -TILE_SIZE.y * 6.0f, 0.0f), Rotation::Degrees0, tileAtlas, 1.0f);
     }
 
-    // Render next
+    // Draw next
     bag.DrawNext(spriteRenderer, boardEnd + Vec3(TILE_SIZE.x * 2.0f, -TILE_SIZE.y * 11.0f, 100.0f), pieces, tileAtlas, 5);
 
-    // Render HUD
+    // Draw HUD
     heldText.Draw(spriteRenderer);
     nextText.Draw(spriteRenderer);
     scoreText.Draw(spriteRenderer);

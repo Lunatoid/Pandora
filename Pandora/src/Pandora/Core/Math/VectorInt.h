@@ -243,17 +243,41 @@ Vec2i operator+(const Vec2i& left, const Vec2i& right);
 Vec3i operator+(const Vec3i& left, const Vec3i& right);
 Vec4i operator+(const Vec4i& left, const Vec4i& right);
 
+Vec2i operator+(const Vec2i& left, int right);
+Vec3i operator+(const Vec3i& left, int right);
+Vec4i operator+(const Vec4i& left, int right);
+
 Vec2i operator-(const Vec2i& left, const Vec2i& right);
 Vec3i operator-(const Vec3i& left, const Vec3i& right);
 Vec4i operator-(const Vec4i& left, const Vec4i& right);
+
+Vec2i operator-(const Vec2i& left, int right);
+Vec3i operator-(const Vec3i& left, int right);
+Vec4i operator-(const Vec4i& left, int right);
 
 Vec2i operator*(const Vec2i& left, const Vec2i& right);
 Vec3i operator*(const Vec3i& left, const Vec3i& right);
 Vec4i operator*(const Vec4i& left, const Vec4i& right);
 
+Vec2i operator*(const Vec2i& left, int right);
+Vec3i operator*(const Vec3i& left, int right);
+Vec4i operator*(const Vec4i& left, int right);
+
 Vec2i operator/(const Vec2i& left, const Vec2i& right);
 Vec3i operator/(const Vec3i& left, const Vec3i& right);
 Vec4i operator/(const Vec4i& left, const Vec4i& right);
+
+Vec2i operator/(const Vec2i& left, int right);
+Vec3i operator/(const Vec3i& left, int right);
+Vec4i operator/(const Vec4i& left, int right);
+
+Vec2i operator%(const Vec2i& left, const Vec2i& right);
+Vec3i operator%(const Vec3i& left, const Vec3i& right);
+Vec4i operator%(const Vec4i& left, const Vec4i& right);
+
+Vec2i operator%(const Vec2i& left, int right);
+Vec3i operator%(const Vec3i& left, int right);
+Vec4i operator%(const Vec4i& left, int right);
 
 Vec2i& operator+=(Vec2i& left, Vec2i& right);
 Vec3i& operator+=(Vec3i& left, Vec3i& right);

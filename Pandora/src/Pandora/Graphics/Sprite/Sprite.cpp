@@ -81,7 +81,8 @@ Material* Sprite::GetMaterial() {
 }
 
 void Sprite::SetClippingMask(Vec4 mask) {
-    uv = Vec4(mask.x / size.x, mask.y / size.y, mask.z / size.x, mask.w / size.y);
+    Vec2 texSize = (Vec2)GetSize(0, false);
+    uv = Vec4(mask.x / texSize.x, mask.y / texSize.y, mask.z / texSize.x, mask.w / texSize.y);
 }
 
 void Sprite::SetNormalizedClippingMask(Vec4 mask) {
@@ -92,11 +93,11 @@ void Sprite::SetAtlasMask(Vec2i position, Vec2 tileSize, Vec2 offset) {
     Vec2 texSize = GetSize(0, false);
     Vec2 maxIndex = texSize / tileSize;
 
-    if (position.x > 0) {
+    if (maxIndex.x > 0.0f && position.x > 0) {
         position.x %= (int)maxIndex.x;
     }
 
-    if (position.y > 0) {
+    if (maxIndex.y > 0.0f && position.y > 0) {
         position.y %= (int)maxIndex.y;
     }
 
