@@ -24,12 +24,15 @@ SpriteRenderer::SpriteRenderer() {
     mvpBuffer->SetBindTarget(ShaderType::Vertex);
 }
 
-void SpriteRenderer::UpdateProjection(Mat4 mvp) {
-    this->mvp = mvp;
+void SpriteRenderer::UpdateProjection(Camera cam) {
+    this->cam = cam;
 }
 
 void SpriteRenderer::Draw(const Sprite& sprite) {
-    sprites.Add(sprite);
+    // Culling!
+    if (cam.IsVisible(sprite.position.xy, sprite.GetSize(0, true))) {
+        sprites.Add(sprite);
+    }
 }
 
 void SpriteRenderer::Render() {
@@ -58,7 +61,7 @@ void SpriteRenderer::Render() {
 
     for (int i = 0; i < sprites.Count(); i++) {
         if (squishZ) {
-            sprites[i].position.z = zDistance * (f32)i;
+            sprites[i].position.z = startSquishDepth + zDistance * (f32)i;
         }
 
         maxDepth = Max(sprites[i].position.z, maxDepth);
@@ -78,7 +81,7 @@ void SpriteRenderer::Render() {
     for (int i = 0; i < batches.Count(); i++) {
         batches[i].material->Bind(renderer.Get());
         renderer->DrawQuads(vertices.Data() + (u64)batches[i].offset * 4, batches[i].quadCount);
-        mvpBuffer->SetElement("u_mvp", mvp);
+        mvpBuffer->SetElement("u_mvp", cam.GetMatrix());
         mvpBuffer->Upload();
 
         renderer->Submit();
@@ -87,8 +90,18 @@ void SpriteRenderer::Render() {
     sprites.Clear();
 }
 
+void SpriteRenderer::Render(f32 startSquishDepth) {
+    this->startSquishDepth = startSquishDepth;
+    Render();
+    this->startSquishDepth = 0.0f;
+}
+
 f32 SpriteRenderer::GetMaxDepth() const {
     return maxDepth;
+}
+
+void SpriteRenderer::ResetMaxDepth() {
+    maxDepth = 0.0f;
 }
 
 }

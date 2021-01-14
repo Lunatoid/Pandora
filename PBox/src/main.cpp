@@ -1,7 +1,7 @@
 
 #include <Pandora/Core.h>
 
-// To compile, make sure you use --box-builder
+// To Parse, make sure you use --box-builder
 
 using namespace pd;
 
@@ -85,7 +85,7 @@ int main(int argc, char** argv) {
             continue;
         }
 
-        // Parse the op-specific arguments
+        // Parse the op-specific args
         switch (options.op) {
             case Operation::List:
                 console.Log("[{}Box Error{}] Too many arguments for {}--list{}, see '{}{}{} {}--help{}' for options",

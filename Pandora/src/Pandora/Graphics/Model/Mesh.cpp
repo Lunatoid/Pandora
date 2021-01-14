@@ -18,7 +18,7 @@ const u32 IMPORT_FLAGS = aiProcess_Triangulate | aiProcess_JoinIdenticalVertices
 
 bool Mesh::Load(StringView path) {
 #if !defined(PD_NO_ASSIMP)
-    const aiScene* scene = aiImportFile((char*)path.Data(), IMPORT_FLAGS);
+    const aiScene* scene = aiImportFile(path.CStr(), IMPORT_FLAGS);
 
     if (!scene) return false;
 

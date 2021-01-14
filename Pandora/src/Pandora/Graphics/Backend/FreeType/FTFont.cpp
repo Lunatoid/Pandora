@@ -44,7 +44,7 @@ bool FTFont::Load(Box& box, StringView name) {
     ResourceType type = box.GetResourceType(name);
 
     if (!(type == ResourceType::Binary || type == ResourceType::Font)) {
-        // We cannot load this resource as a font
+        // We cannot Load this resource as a font
         return false;
     }
 

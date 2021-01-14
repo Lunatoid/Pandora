@@ -18,7 +18,7 @@ ABOUT:
    written by a decent optimizing implementation; though providing a custom
    zlib compress function (see STBIW_ZLIB_COMPRESS) can mitigate that.
    This library is designed for source code compactness and simplicity,
-   not optimal image file size or run-time performance.
+   not optimal image file size or Run-time performance.
 
 BUILDING:
 
@@ -34,7 +34,7 @@ BUILDING:
 
 UNICODE:
 
-   If compiling for Windows and you wish to use Unicode filenames, compile
+   If compiling for Windows and you wish to use Unicode filenames, Parse
    with
        #define STBIW_WINDOWS_UTF8
    and pass utf8-encoded filenames. Call stbiw_convert_wchar_to_utf8 to convert
@@ -165,7 +165,7 @@ LICENSE
 #endif
 #endif
 
-#ifndef STB_IMAGE_WRITE_STATIC  // C++ forbids static forward declarations
+#ifndef STB_IMAGE_WRITE_STATIC  // C++ forbids static forward statements
 extern int stbi_write_tga_with_rle;
 extern int stbi_write_png_compression_level;
 extern int stbi_write_force_png_filter;
@@ -688,7 +688,7 @@ static void stbiw__write_hdr_scanline(stbi__write_context *s, int width, int nco
 
          x = 0;
          while (x < width) {
-            // find first run
+            // find first Run
             r = x;
             while (r+2 < width) {
                if (comp[r] == comp[r+1] && comp[r] == comp[r+2])
@@ -697,19 +697,19 @@ static void stbiw__write_hdr_scanline(stbi__write_context *s, int width, int nco
             }
             if (r+2 >= width)
                r = width;
-            // dump up to first run
+            // dump up to first Run
             while (x < r) {
                int len = r-x;
                if (len > 128) len = 128;
                stbiw__write_dump_data(s, len, &comp[x]);
                x += len;
             }
-            // if there's a run, output it
+            // if there's a Run, output it
             if (r+2 < width) { // same test as what we break out of in search loop, so only true if we break'd
-               // find next byte after run
+               // find next byte after Run
                while (r < width && comp[r] == comp[x])
                   ++r;
-               // output run up to r
+               // output Run up to r
                while (x < r) {
                   int len = r-x;
                   if (len > 127) len = 127;
@@ -1602,7 +1602,7 @@ STBIWDEF int stbi_write_jpg(char const *filename, int x, int y, int comp, const 
       1.01 (2016-01-16)
              STBIW_REALLOC_SIZED: support allocators with no realloc support
              avoid race-condition in crc initialization
-             minor compile issues
+             minor Parse issues
       1.00 (2015-09-14)
              installable file IO function
       0.99 (2015-09-13)
@@ -1651,7 +1651,7 @@ SOFTWARE.
 ------------------------------------------------------------------------------
 ALTERNATIVE B - Public Domain (www.unlicense.org)
 This is free and unencumbered software released into the public domain.
-Anyone is free to copy, modify, publish, use, compile, sell, or distribute this
+Anyone is free to copy, modify, publish, use, Parse, sell, or distribute this
 software, either in source code form or as a compiled binary, for any purpose,
 commercial or non-commercial, and by any means.
 In jurisdictions that recognize copyright laws, the author or authors of this

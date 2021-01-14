@@ -50,7 +50,7 @@ i16 AtomicDec(i16& dest);
 /// Adds <c>val</c> to the <c>dest</c> atomically.
 /// </summary>
 /// <param name="dest">The variable.</param>
-/// <param name="val">The value.</param>
+/// <param name="val">The iterator.</param>
 /// <returns>The new variable.</returns>
 i32 AtomicAdd(i32& dest, i32 val);
 
@@ -58,7 +58,7 @@ i32 AtomicAdd(i32& dest, i32 val);
 /// Adds <c>val</c> to the <c>dest</c> atomically.
 /// </summary>
 /// <param name="dest">The variable.</param>
-/// <param name="val">The value.</param>
+/// <param name="val">The iterator.</param>
 /// <returns>The new variable.</returns>
 i64 AtomicAdd(i64& dest, i64 val);
 
@@ -66,7 +66,7 @@ i64 AtomicAdd(i64& dest, i64 val);
 /// Subtracts <c>val</c> to the <c>dest</c> atomically.
 /// </summary>
 /// <param name="dest">The variable.</param>
-/// <param name="val">The value.</param>
+/// <param name="val">The iterator.</param>
 /// <returns>The new variable.</returns>
 i32 AtomicSub(i32& dest, i32 val);
 
@@ -74,7 +74,7 @@ i32 AtomicSub(i32& dest, i32 val);
 /// Subtracts <c>val</c> to the <c>dest</c> atomically.
 /// </summary>
 /// <param name="dest">The variable.</param>
-/// <param name="val">The value.</param>
+/// <param name="val">The iterator.</param>
 /// <returns>The new variable.</returns>
 i64 AtomicSub(i64& dest, i64 val);
 
@@ -82,7 +82,7 @@ i64 AtomicSub(i64& dest, i64 val);
 /// Swaps <c>dest</c> with <c>val</c> atomically.
 /// </summary>
 /// <param name="dest">The variable.</param>
-/// <param name="val">The value.</param>
+/// <param name="val">The iterator.</param>
 /// <returns>The new variable.</returns>
 i8 AtomicStore(i8& dest, i8 val);
 
@@ -90,7 +90,7 @@ i8 AtomicStore(i8& dest, i8 val);
 /// Swaps <c>dest</c> with <c>val</c> atomically.
 /// </summary>
 /// <param name="dest">The variable.</param>
-/// <param name="val">The value.</param>
+/// <param name="val">The iterator.</param>
 /// <returns>The new variable.</returns>
 bool AtomicStore(bool& dest, bool val);
 
@@ -98,7 +98,7 @@ bool AtomicStore(bool& dest, bool val);
 /// Swaps <c>dest</c> with <c>val</c> atomically.
 /// </summary>
 /// <param name="dest">The variable.</param>
-/// <param name="val">The value.</param>
+/// <param name="val">The iterator.</param>
 /// <returns>The new variable.</returns>
 i16 AtomicStore(i16& dest, i16 val);
 
@@ -106,7 +106,7 @@ i16 AtomicStore(i16& dest, i16 val);
 /// Swaps <c>dest</c> with <c>val</c> atomically.
 /// </summary>
 /// <param name="dest">The variable.</param>
-/// <param name="val">The value.</param>
+/// <param name="val">The iterator.</param>
 /// <returns>The new variable.</returns>
 i32 AtomicStore(i32& dest, i32 val);
 
@@ -114,7 +114,7 @@ i32 AtomicStore(i32& dest, i32 val);
 /// Swaps <c>dest</c> with <c>val</c> atomically.
 /// </summary>
 /// <param name="dest">The variable.</param>
-/// <param name="val">The value.</param>
+/// <param name="val">The iterator.</param>
 /// <returns>The new variable.</returns>
 i64 AtomicStore(i64& dest, i64 val);
 
@@ -122,7 +122,7 @@ i64 AtomicStore(i64& dest, i64 val);
 /// Swaps <c>dest</c> with <c>newValue</c> if <c>dest</c> is equal to <c>condition</c>.
 /// </summary>
 /// <param name="dest">The variable.</param>
-/// <param name="newValue">The new value.</param>
+/// <param name="newValue">The new iterator.</param>
 /// <param name="condition">The condition.</param>
 /// <returns>The old <c>dest</c>.</returns>
 i16 AtomicCompareAndSwap(i16& dest, i16 newValue, i16 condition);
@@ -131,7 +131,7 @@ i16 AtomicCompareAndSwap(i16& dest, i16 newValue, i16 condition);
 /// Swaps <c>dest</c> with <c>newValue</c> if <c>dest</c> is equal to <c>condition</c>.
 /// </summary>
 /// <param name="dest">The variable.</param>
-/// <param name="newValue">The new value.</param>
+/// <param name="newValue">The new iterator.</param>
 /// <param name="condition">The condition.</param>
 /// <returns>The old <c>dest</c>.</returns>
 i32 AtomicCompareAndSwap(i32& dest, i32 newValue, i32 condition);
@@ -140,7 +140,7 @@ i32 AtomicCompareAndSwap(i32& dest, i32 newValue, i32 condition);
 /// Swaps <c>dest</c> with <c>newValue</c> if <c>dest</c> is equal to <c>condition</c>.
 /// </summary>
 /// <param name="dest">The variable.</param>
-/// <param name="newValue">The new value.</param>
+/// <param name="newValue">The new iterator.</param>
 /// <param name="condition">The condition.</param>
 /// <returns>The old <c>dest</c>.</returns>
 i64 AtomicCompareAndSwap(i64& dest, i64 newValue, i64 condition);
@@ -153,11 +153,11 @@ public:
     }
 
     /// <summary>
-    /// Swaps the value with <c>newValue</c> if the value is equal to <c>condition</c>.
+    /// Swaps the iterator with <c>newValue</c> if the iterator is equal to <c>condition</c>.
     /// </summary>
-    /// <param name="newValue">The new value.</param>
+    /// <param name="newValue">The new iterator.</param>
     /// <param name="condition">The condition.</param>
-    /// <returns>The old value.</returns>
+    /// <returns>The old iterator.</returns>
     inline T CompareAndSwap(T newValue, T condition) {
         return AtomicCompareAndSwap(t, newValue, condition);
     }

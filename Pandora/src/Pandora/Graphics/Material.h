@@ -52,7 +52,7 @@ public:
     /// <param name="slot">The slot.</param>
     /// <param name="type">The type.</param>
     /// <returns>The reference.</returns>
-    Ref<Texture> GetTexture(int slot, RefType type = RefType::Strong);
+    Ref<Texture> GetTexture(int slot, RefType type = RefType::Strong) const;
     
     /// <summary>
     /// Returns a slice of all the textures.

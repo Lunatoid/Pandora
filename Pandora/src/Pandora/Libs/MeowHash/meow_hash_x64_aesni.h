@@ -334,7 +334,7 @@ MeowHash(void* Seed128Init, meow_umm Len, void* SourceInit) {
     // to the & 0xf on the align computation.
     //
 
-    // NOTE(casey): First, we have to load the part that is _not_ 16-byte aligned
+    // NOTE(casey): First, we have to Load the part that is _not_ 16-byte aligned
     meow_u8 * Last = (meow_u8*)SourceInit + (Len & ~0xf);
     int unsigned Len8 = (Len & 0xf);
     if (Len8) {
@@ -351,7 +351,7 @@ MeowHash(void* Seed128Init, meow_umm Len, void* SourceInit) {
         pand(xmm9, xmm8);
     }
 
-    // NOTE(casey): Next, we have to load the part that _is_ 16-byte aligned
+    // NOTE(casey): Next, we have to Load the part that _is_ 16-byte aligned
     if (Len & 0x10) {
         xmm11 = xmm9;
         movdqu(xmm9, Last - 0x10);

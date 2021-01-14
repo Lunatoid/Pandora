@@ -23,7 +23,7 @@ public:
     /// Calls <c>Copy()</c> with <c>other</c>.
     /// </summary>
     /// <param name="other">The other reference.</param>
-    Ref(Ref<T>& other);
+    Ref(const Ref<T>& other);
     
     /// <summary>
     /// Calls <c>Reset()</c> with <c>data</c>.
@@ -36,7 +36,7 @@ public:
     /// <summary>
     /// Allocates a new reference using the persistent allocator.
     /// </summary>
-    /// <param name="args">The constructor arguments to use.</param>
+    /// <param name="args">The constructor args to use.</param>
     /// <returns>The new reference.</returns>
     template<typename ...Args>
     static Ref<T> Create(Args ...args);
@@ -46,7 +46,7 @@ public:
     /// </summary>
     /// <param name="type">The type.</param>
     /// <returns>A new reference with the desired type.</returns>
-    Ref<T> NewRef(RefType type = RefType::Strong);
+    Ref<T> NewRef(RefType type = RefType::Strong) const;
 
     /// <summary>
     /// Delets the reference data despite how many references it still has.
@@ -95,9 +95,9 @@ public:
 
     T* operator->() const;
 
-    T& operator*();
+    T& operator*() const;
     
-    operator bool();
+    operator bool() const;
 
 private:
     /// <summary>
@@ -175,7 +175,7 @@ inline U* Ref<T>::As() {
 }
 
 template<typename T>
-inline Ref<T>::Ref(Ref<T>& other) {
+inline Ref<T>::Ref(const Ref<T>& other) {
     Copy(other);
 }
 
@@ -190,7 +190,7 @@ inline Ref<T>::~Ref() {
 }
 
 template<typename T>
-inline Ref<T> Ref<T>::NewRef(RefType type) {
+inline Ref<T> Ref<T>::NewRef(RefType type) const {
     Ref<T> newRef;
     newRef.type = type;
     newRef.data = data;
@@ -288,13 +288,13 @@ inline T* Ref<T>::operator->() const {
 }
 
 template<typename T>
-inline T& Ref<T>::operator*() {
+inline T& Ref<T>::operator*() const {
     return *Get();
 }
 
 template<typename T>
-inline Ref<T>::operator bool() {
-    return data != nullptr;
+inline Ref<T>::operator bool() const {
+    return Get() != nullptr;
 }
 
 }

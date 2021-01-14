@@ -102,7 +102,7 @@ public:
     /// <param name="spriteRenderer">The sprite renderer.</param>
     /// <param name="position">The position.</param>
     /// <param name="rotation">The rotation.</param>
-    /// <param name="atlas">The atlas.</param>
+    /// <param name="atlasName">The atlasName.</param>
     /// <param name="alpha">The alpha.</param>
     void Draw(SpriteRenderer& spriteRenderer, Vec3 position, Rotation rotation, Ref<SpriteAtlas> atlas, f32 alpha);
 

@@ -67,7 +67,7 @@ public:
     
     /// <summary>
     /// Gets the hash of the font file.
-    /// The hash is calculated on load.
+    /// The hash is calculated on Load.
     /// </summary>
     /// <returns>The hash.</returns>
     virtual u64 GetHash() { return hash; }

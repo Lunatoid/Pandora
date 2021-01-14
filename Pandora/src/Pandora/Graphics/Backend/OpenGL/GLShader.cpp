@@ -224,7 +224,7 @@ Slice<byte> GLShader::GetPixelData() {
 int GLShader::GetLocation(StringView name) {
     Bind();
 
-    int location = glGetUniformLocation(programID, (char*)name.Data());
+    int location = glGetUniformLocation(programID, name.CStr());
 
     if (location == GL_INVALID_INDEX) {
         CONSOLE_LOG_DEBUG("[{}OpenGL{}] Uniform '{}' not found\n", ConColor::Red, ConColor::White, name);
@@ -317,11 +317,11 @@ void GLShader::CreateFromFile() {
 
     PD_ASSERT_D(vertexID != 0 && pixelID != 0, "failed to create vertex/pixel shader (%d, %d)", vertexID, pixelID);
 
-    const char* vertexFilePtr = (char*)vertexFile.Data();
+    const char* vertexFilePtr = vertexFile.CStr();
     glShaderSource(vertexID, 1, &vertexFilePtr, nullptr);
     glCompileShader(vertexID);
 
-    // Check compile status
+    // Check Parse status
     GLint success = 0;
     glGetShaderiv(vertexID, GL_COMPILE_STATUS, &success);
     if (success == GL_FALSE) {
@@ -335,11 +335,11 @@ void GLShader::CreateFromFile() {
         PD_ASSERT_D(false, "Failed to compile vertex shader.\nInfo log:\n%s", infoLog);
     }
 
-    const char* pixelFilePtr = (char*)pixelFile.Data();
+    const char* pixelFilePtr = pixelFile.CStr();
     glShaderSource(pixelID, 1, &pixelFilePtr, nullptr);
     glCompileShader(pixelID);
 
-    // Check compile status
+    // Check Parse status
     glGetShaderiv(pixelID, GL_COMPILE_STATUS, &success);
     if (success == GL_FALSE) {
         GLint len;

@@ -51,6 +51,8 @@ public:
     /// <returns>The world point.</returns>
     Vec3 ScreenToWorld(Vec2 screen);
 
+    bool IsVisible(Vec2 position, Vec2 size);
+
     Vec2i GetSize() const;
 
     Vec3 up = Vec3(0.0f, 1.0f, 0.0f);

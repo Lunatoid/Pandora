@@ -169,7 +169,10 @@ void Window::Open(StringView title, Vec2i size, u32 style) {
 
     // Set up config BEFORE initializing backends
     ImGuiIO& io = ImGui::GetIO();
-    io.RenderDrawListsFn = nullptr; // For some reason this was not always set to nullptr
+
+    // This has been removed..?
+    // io.RenderDrawListsFn = nullptr; // For some reason this was not always set to nullptr
+
     io.ConfigFlags |= ImGuiConfigFlags_DockingEnable;
     io.ConfigFlags |= ImGuiConfigFlags_ViewportsEnable;
 

@@ -6,6 +6,8 @@
 
 using namespace pd;
 
+#if 1
+
 class LitMaterial : public Material {
 public:
     LitMaterial() {
@@ -58,16 +60,16 @@ public:
 
         cerberus.Load<LitMaterial>("Cerberus", "Shaders/Lit");
         cerberus.scale = 0.1f;
-        
+
         mats.Add((LitMaterial*)cerberus.GetMaterial());
         mats.Last()->SetTexture("cerberus_A", 0);
         mats.Last()->SetTexture("cerberus_N", 1);
-        
+
         plane.Load<LitMaterial>("Plane", "Shaders/Lit");
         plane.rotation.z = 180.0f;
         plane.position.z = -5.0f;
         plane.scale = Vec3(0.1f);
-        
+
         mats.Add((LitMaterial*)plane.GetMaterial());
         mats.Last()->SetTexture("BricksAlbedo", 0);
         mats.Last()->SetTexture("BricksNormal", 1);
@@ -109,11 +111,11 @@ protected:
         buffer->BindAndClear(video->GetClearColor());
 
         modelRenderer.UpdateProjection(cam.GetMatrix());
-        
+
         modelRenderer.Draw(cerberus);
         modelRenderer.Draw(plane);
 
-        spriteRenderer.UpdateProjection(cam.GetMatrix());
+        spriteRenderer.UpdateProjection(cam);
 
         spriteRenderer.squishZ = false;
         text.Draw(spriteRenderer);
@@ -162,7 +164,7 @@ protected:
             if (ImGui::DragFloat3("Position", text.position.elements, 0.1f)) {
                 text.UpdateProperties();
             }
-            
+
             if (ImGui::DragFloat3("Scale", text.scale.elements, 0.1f)) {
                 text.UpdateProperties();
             }
@@ -221,6 +223,27 @@ protected:
     Ref<FrameBuffer> buffer;
     Ref<Texture> bufferTex;
 };
+
+#endif
+
+#if 0
+
+#include <Pandora/Blitz/Test.h>
+
+class Game : public App {
+public:
+    Game(int argc, char** argv, VideoBackend backend) : App(argc, argv, backend, "Pandora Window", Vec2i(1280, 720)) {
+        InitStorage("TomMol", "Sandbox");
+
+        // In a distributable build we want to use a box
+        // catalog.Load("data.box");
+        catalog.LoadFromConfig("data.json");
+
+        TestBlitz();
+    }
+};
+
+#endif
 
 App* pd::CreateApp(int argc, char** argv) {
 

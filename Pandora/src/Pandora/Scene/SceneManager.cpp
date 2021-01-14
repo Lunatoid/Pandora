@@ -80,6 +80,12 @@ Scene* SceneManager::GetCurrent() {
     return current;
 }
 
+Scene* SceneManager::GetScene(StringView name) {
+    SceneEntry* entry = FindScene(DoHash(&name));
+
+    return (entry) ? entry->scene : nullptr;
+}
+
 SceneManager::SceneEntry* SceneManager::FindScene(u64 hash) {
     int index = FindSceneIndex(hash);
     return (index != -1) ? &scenes[index] : nullptr;

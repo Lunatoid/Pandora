@@ -18,9 +18,9 @@ bool SLAudio::Load(StringView path) {
 
     bool success = false;
     if (usingStream) {
-        success = waveStream.load((char*)path.Data()) == 0;
+        success = waveStream.load(path.CStr()) == 0;
     } else {
-        success = wave.load((char*)path.Data()) == 0;
+        success = wave.load(path.CStr()) == 0;
     }
 
     if (success) {
@@ -36,7 +36,7 @@ bool SLAudio::Load(Box& box, StringView name) {
     ResourceType type = box.GetResourceType(name);
 
     if (!(type == ResourceType::Binary || type == ResourceType::Audio)) {
-        // We cannot load this resource as an audio clip
+        // We cannot Load this resource as an audio clip
         return false;
     }
 
@@ -64,7 +64,7 @@ bool SLAudio::Load(Box& box, StringView name) {
 
                 waveData.Delete();
 
-                waveStream.load((char*)path.Data());
+                waveStream.load(path.CStr());
             } else {
                 wave.loadMem(waveData.Data(), (u32)waveData.SizeInBytes(), false, false);
             }
@@ -82,7 +82,7 @@ bool SLAudio::Load(Box& box, StringView name) {
                 path.Set(GetCacheStoragePath());
                 path.Append(name);
 
-                waveStream.load((char*)path.Data());
+                waveStream.load((char*)path.CStr());
 
                 hash = GetCacheStorageHash(name);
 
@@ -90,7 +90,7 @@ bool SLAudio::Load(Box& box, StringView name) {
                 return true;
             }
 
-            // No cache, load from box
+            // No cache, Load from box
             Array<byte> data;
             box.GetResourceData(name, data);
 
@@ -133,7 +133,7 @@ bool SLAudio::Load(Box& box, StringView name) {
 
                 waveData.Delete();
 
-                waveStream.load((char*)path.Data());
+                waveStream.load((char*)path.CStr());
             } else {
                 // SoLoud is very fun in that it expects [left samples][right samples] instead of interleaved samples
                 if (channels == 2) {

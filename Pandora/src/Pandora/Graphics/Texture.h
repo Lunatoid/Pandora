@@ -209,7 +209,7 @@ protected:
     /// Creates a white texture with the specified size and format.
     /// </summary>
     /// <param name="size">The size.</param>
-    /// <param name="value">The pixel value.</param>
+    /// <param name="iterator">The pixel iterator.</param>
     void CreateBlankPixels(Vec2i size, byte value);
     
     /// <summary>

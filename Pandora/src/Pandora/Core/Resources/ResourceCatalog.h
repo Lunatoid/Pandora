@@ -25,7 +25,7 @@ public:
     static ResourceCatalog& Get();
 
     /// <summary>
-    /// Sets the resource box to load all the assets from.
+    /// Sets the resource box to Load all the assets from.
     /// </summary>
     /// <param name="boxPath">The path to the .box file.</param>
     /// <returns>Whether or not it loaded successfully.</returns>
@@ -107,7 +107,7 @@ inline Ref<T> ResourceCatalog::Get(StringView name) {
     String nameStr = name.ToString();
     Ref<Resource>& rsc = catalog->Get(nameStr);
 
-    // Use handler to load it if there is no data in this reference
+    // Use handler to Load it if there is no data in this reference
     if (!rsc.Get()) {
         rsc.Reset(onRequestResource[(int)type](box, type, name, requestUserData[(int)type]));
     }

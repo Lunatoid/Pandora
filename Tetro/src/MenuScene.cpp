@@ -115,7 +115,7 @@ void MenuScene::OnUpdate(f32 dt) {
 }
 
 void MenuScene::OnRender(f32 dt) {
-    spriteRenderer.UpdateProjection(cam.GetMatrix());
+    spriteRenderer.UpdateProjection(cam);
 
     for (int i = 0; i < options.Count(); i++) {
         options[i].Draw(spriteRenderer);

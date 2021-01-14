@@ -78,7 +78,7 @@ public:
     /// Writes formatted UTF-8 text to the file.
     /// </summary>
     /// <param name="fmt">The printf base string.</param>
-    /// <param name="">The arguments.</param>
+    /// <param name="">The args.</param>
     /// <returns>How many bytes were written.</returns>
     int WriteFormatF(const uchar* fmt, ...);
 
@@ -86,7 +86,7 @@ public:
     /// Writes formatted UTF-8 text to the file.
     /// </summary>
     /// <param name="fmt">The base string.</param>
-    /// <param name="">The arguments.</param>
+    /// <param name="">The args.</param>
     /// <returns>How many bytes were written.</returns>
     template<typename... Args>
     void WriteFormat(StringView fmt, const Args &... args) {

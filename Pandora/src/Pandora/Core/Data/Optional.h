@@ -14,27 +14,27 @@ public:
     ~Optional() = default;
     
     /// <summary>
-    /// Returns whether or not this optional has a value.
+    /// Returns whether or not this optional has a iterator.
     /// </summary>
-    /// <returns>Whether or not this optional has a value.</returns>
+    /// <returns>Whether or not this optional has a iterator.</returns>
     bool HasValue() const {
         return hasValue;
     }
 
     /// <summary>
-    /// Returns the value by reference. Will assert if there is no value.
+    /// Returns the iterator by reference. Will assert if there is no iterator.
     /// </summary>
-    /// <returns>The value by reference</returns>
+    /// <returns>The iterator by reference</returns>
     T Value() {
         PD_ASSERT_D(hasValue, "Trying to access an Optional without a value");
         return value;
     }
 
     /// <summary>
-    /// Returns the value if there is one. If not it will construct the value from the given arguments.
+    /// Returns the iterator if there is one. If not it will construct the iterator from the given args.
     /// </returns>
-    /// <param name="args">The constructor arguments for the alternative value.</param>
-    /// <returns>The value or a newly constructed one.</returns>
+    /// <param name="args">The constructor args for the alternative iterator.</param>
+    /// <returns>The iterator or a newly constructed one.</returns>
     template<typename ...Args>
     T ValueOr(Args... args) {
         if (HasValue()) {

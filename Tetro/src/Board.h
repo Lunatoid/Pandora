@@ -73,10 +73,10 @@ public:
     int GetScore();
     
     /// <summary>
-    /// Gets a reference to the tile atlas.
+    /// Gets a reference to the tile atlasName.
     /// </summary>
     /// <param name="type">The reference type.</param>
-    /// <returns>The atlas.</returns>
+    /// <returns>The atlasName.</returns>
     Ref<SpriteAtlas> GetTileAtlas(RefType type = RefType::Strong);
 
     Vec3 position;

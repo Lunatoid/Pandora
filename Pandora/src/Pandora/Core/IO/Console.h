@@ -64,7 +64,7 @@ public:
     /// Logs a formatted stream to <c>stdout</c>.
     /// </summary>
     /// <param name="fmt">The base string.</param>
-    /// <param name="...args">The arguments.</param>
+    /// <param name="...args">The args.</param>
     template<typename... Args>
     void Log(StringView fmt, const Args&... args) {
         pd::Log(*this, fmt, args...);

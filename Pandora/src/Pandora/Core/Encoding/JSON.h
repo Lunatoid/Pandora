@@ -40,39 +40,39 @@ public:
     JsonValue(JsonType type = JsonType::Null);
 
     JsonValue(StringView string);
-    JsonValue(const uchar* string);
+    JsonValue(const char* string);
     JsonValue(f64 number);
     JsonValue(bool boolean);
 
     ~JsonValue();
 
     /// <summary>
-    /// Resets the internal value reference.
+    /// Resets the internal iterator reference.
     /// </summary>
     void Delete();
 
     /// <summary>
-    /// Sets the type and value to a string.
+    /// Sets the type and iterator to a string.
     /// </summary>
-    /// <param name="string">The string value.</param>
+    /// <param name="string">The string iterator.</param>
     void Set(StringView string);
 
     /// <summary>
-    /// Sets the type and value to a string.
+    /// Sets the type and iterator to a string.
     /// </summary>
-    /// <param name="string">The string value.</param>
-    void Set(const uchar* string);
+    /// <param name="string">The string iterator.</param>
+    void Set(const char* string);
 
     /// <summary>
-    /// Sets the type and value to a number.
+    /// Sets the type and iterator to a number.
     /// </summary>
-    /// <param name="string">The number value.</param>
+    /// <param name="string">The number iterator.</param>
     void Set(f64 number);
 
     /// <summary>
-    /// Sets the type and value to a bool.
+    /// Sets the type and iterator to a bool.
     /// </summary>
-    /// <param name="string">The bool value.</param>
+    /// <param name="string">The bool iterator.</param>
     void Set(bool boolean);
 
     /// <summary>
@@ -89,7 +89,7 @@ public:
     bool Parse(Stream& stream, JsonParseSettings settings = JsonParseSettings());
 
     /// <summary>
-    /// Creates a deep copy of this value.
+    /// Creates a deep copy of this iterator.
     /// </summary>
     /// <returns>The clone.</returns>
     JsonValue Clone();
@@ -101,36 +101,36 @@ public:
     JsonType Type() const;
 
     /// <summary>
-    /// Sets the type of the JSON value. Destructs any necessary memory.
+    /// Sets the type of the JSON iterator. Destructs any necessary memory.
     /// </summary>
     /// <param name="type">The type.</param>
     void SetType(JsonType type);
 
     /// <summary>
-    /// Adds a value to our array.
+    /// Adds a iterator to our array.
     /// </summary>
-    /// <param name="value">The value. This gets cloned.</param>
+    /// <param name="iterator">The iterator. This gets cloned.</param>
     void AddElement(JsonValue value);
 
     /// <summary>
-    /// Adds a value to this array with the specified type.
+    /// Adds a iterator to this array with the specified type.
     /// </summary>
     void AddElement(JsonType type = JsonType::Null);
 
     /// <summary>
-    /// Adds a value to our array.
+    /// Adds a iterator to our array.
     /// </summary>
     /// <param name="string">The string.</param>
     void AddElement(StringView string);
 
     /// <summary>
-    /// Adds a value to our array.
+    /// Adds a iterator to our array.
     /// </summary>
     /// <param name="string">The number.</param>
     void AddElement(f64 number);
 
     /// <summary>
-    /// Adds a value to our array.
+    /// Adds a iterator to our array.
     /// </summary>
     /// <param name="string">The bool.</param>
     void AddElement(bool boolean);
@@ -139,7 +139,7 @@ public:
     /// Adds a field to our object.
     /// </summary>
     /// <param name="key">The key.</param>
-    /// <param name="value">The value. This gets cloned.</param>
+    /// <param name="iterator">The iterator. This gets cloned.</param>
     void AddField(StringView key, JsonValue value);
 
     /// <summary>
@@ -173,105 +173,105 @@ public:
     bool& GetBool() const;
     
     /// <summary>
-    /// Attempts to get this value as a number.
+    /// Attempts to get this iterator as a number.
     /// </summary>
     /// <param name="target">The target.</param>
     /// <returns>Whether it succeeded or not.</returns>
     bool TryGetNumber(f64& target);
 
     /// <summary>
-    /// Attempts to get this value as a boolean.
+    /// Attempts to get this iterator as a boolean.
     /// </summary>
     /// <param name="target">The target.</param>
     /// <returns>Whether it succeeded or not.</returns>
     bool TryGetBool(bool& target);
 
     /// <summary>
-    /// Attempts to get this value as a string.
+    /// Attempts to get this iterator as a string.
     /// </summary>
     /// <param name="target">The target.</param>
     /// <returns>Whether it succeeded or not.</returns>
     bool TryGetString(String& target);
 
     /// <summary>
-    /// Attempts to get this value as an array.
+    /// Attempts to get this iterator as an array.
     /// </summary>
     /// <param name="target">The target.</param>
     /// <returns>Whether it succeeded or not.</returns>
     bool TryGetArray(JsonValue& target);
 
     /// <summary>
-    /// Attempts to get this value as an object.
+    /// Attempts to get this iterator as an object.
     /// </summary>
     /// <param name="target">The target.</param>
     /// <returns>Whether it succeeded or not.</returns>
     bool TryGetObject(JsonValue& target);
 
     /// <summary>
-    /// Attempts to get the value at the index of the array/object as a number.
+    /// Attempts to get the iterator at the index of the array/object as a number.
     /// </summary>
     /// <param name="target">The target.</param>
     /// <returns>Whether it succeeded or not.</returns>
     bool TryGetNumber(int index, f64& target);
 
     /// <summary>
-    /// Attempts to get the value at the index of the array/object as a boolean.
+    /// Attempts to get the iterator at the index of the array/object as a boolean.
     /// </summary>
     /// <param name="target">The target.</param>
     /// <returns>Whether it succeeded or not.</returns>
     bool TryGetBool(int index, bool& target);
 
     /// <summary>
-    /// Attempts to get the value at the index of the array/object as a string.
+    /// Attempts to get the iterator at the index of the array/object as a string.
     /// </summary>
     /// <param name="target">The target.</param>
     /// <returns>Whether it succeeded or not.</returns>
     bool TryGetString(int index, String& target);
 
     /// <summary>
-    /// Attempts to get the value at the index of the array/object as an array.
+    /// Attempts to get the iterator at the index of the array/object as an array.
     /// </summary>
     /// <param name="target">The target.</param>
     /// <returns>Whether it succeeded or not.</returns>
     bool TryGetArray(int index, JsonValue& target);
 
     /// <summary>
-    /// Attempts to get the value at the index of the array/object as an object.
+    /// Attempts to get the iterator at the index of the array/object as an object.
     /// </summary>
     /// <param name="target">The target.</param>
     /// <returns>Whether it succeeded or not.</returns>
     bool TryGetObject(int index, JsonValue& target);
 
     /// <summary>
-    /// Attempts to get the value of the field of the object as a number.
+    /// Attempts to get the iterator of the field of the object as a number.
     /// </summary>
     /// <param name="target">The target.</param>
     /// <returns>Whether it succeeded or not.</returns>
     bool TryGetNumber(StringView key, f64& target);
 
     /// <summary>
-    /// Attempts to get the value of the field of the object as a boolean.
+    /// Attempts to get the iterator of the field of the object as a boolean.
     /// </summary>
     /// <param name="target">The target.</param>
     /// <returns>Whether it succeeded or not.</returns>
     bool TryGetBool(StringView key, bool& target);
 
     /// <summary>
-    /// Attempts to get the value of the field of the object as a string.
+    /// Attempts to get the iterator of the field of the object as a string.
     /// </summary>
     /// <param name="target">The target.</param>
     /// <returns>Whether it succeeded or not.</returns>
     bool TryGetString(StringView key, String& target);
 
     /// <summary>
-    /// Attempts to get the value of the field of the object as an array.
+    /// Attempts to get the iterator of the field of the object as an array.
     /// </summary>
     /// <param name="target">The target.</param>
     /// <returns>Whether it succeeded or not.</returns>
     bool TryGetArray(StringView key, JsonValue& target);
 
     /// <summary>
-    /// Attempts to get the value of the field of the object as an object.
+    /// Attempts to get the iterator of the field of the object as an object.
     /// </summary>
     /// <param name="target">The target.</param>
     /// <returns>Whether it succeeded or not.</returns>
@@ -327,7 +327,7 @@ public:
     int GetFieldIndex(StringView key) const;
 
     /// <summary>
-    /// Writes this value to a file.
+    /// Writes this iterator to a file.
     /// </summary>
     /// <param name="path">The path.</param>
     /// <param name="pretty">Whether or not to pretty-print it.</param>
@@ -335,14 +335,14 @@ public:
     bool WriteToFile(StringView path, bool pretty = true);
 
     /// <summary>
-    /// Writes this value to a stream.
+    /// Writes this iterator to a stream.
     /// </summary>
     /// <param name="stream">The stream.</param>
     /// <param name="pretty">Whether or not to pretty-print it.</param>
     void ToStream(Stream& stream, bool pretty = true);
 
     JsonValue& operator=(StringView string);
-    JsonValue& operator=(const uchar* text);
+    JsonValue& operator=(const char* text);
     JsonValue& operator=(double number);
     JsonValue& operator=(bool boolean);
 

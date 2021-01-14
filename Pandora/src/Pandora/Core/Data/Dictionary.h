@@ -61,62 +61,62 @@ public:
     inline bool Contains(const K& key);
 
     /// <summary>
-    /// Gets the value associated with the key. Inserts the key if the value was not found.
+    /// Gets the iterator associated with the key. Inserts the key if the iterator was not found.
     /// </summary>
     /// <param name="key">The key.</param>
-    /// <returns>A reference to the value.</returns>
+    /// <returns>A reference to the iterator.</returns>
     V& Get(const K* key);
 
     /// <summary>
-    /// Gets the value associated with the key. Inserts the key if the value was not found.
+    /// Gets the iterator associated with the key. Inserts the key if the iterator was not found.
     /// </summary>
     /// <param name="key">The key.</param>
-    /// <returns>A reference to the value.</returns>
+    /// <returns>A reference to the iterator.</returns>
     inline V& Get(const K& key);
 
     /// <summary>
-    /// Sets the value assocaited with the key to <c>val</c>.
+    /// Sets the iterator assocaited with the key to <c>val</c>.
     /// </summary>
     /// <param name="key">The key.</param>
-    /// <param name="val">The value.</param>
+    /// <param name="val">The iterator.</param>
     /// <param name="insertIfNotFound">Whether or not it should insert it if the key was not found.</param>
-    /// <returns>Whether or not the value got set.</returns>
+    /// <returns>Whether or not the iterator got set.</returns>
     inline bool Set(K* key, V* val, bool insertIfNotFound = true);
 
     /// <summary>
-    /// Sets the value assocaited with the key to <c>val</c>.
+    /// Sets the iterator assocaited with the key to <c>val</c>.
     /// </summary>
     /// <param name="key">The key.</param>
-    /// <param name="val">The value.</param>
+    /// <param name="val">The iterator.</param>
     /// <param name="insertIfNotFound">Whether or not it should insert it if the key was not found.</param>
-    /// <returns>Whether or not the value got set.</returns>
+    /// <returns>Whether or not the iterator got set.</returns>
     inline bool Set(const K& key, const V& val, bool insertIfNotFound = true);
 
     /// <summary>
-    /// Inserts the key value pair into the dictionary.
+    /// Inserts the key iterator pair into the dictionary.
     /// </summary>
     /// <param name="key">The key.</param>
-    /// <param name="val">The value.</param>
+    /// <param name="val">The iterator.</param>
     /// <returns>Whether or not it inserted successfully.</returns>
     bool Insert(K* key, V* val);
 
     /// <summary>
-    /// Inserts the key value pair into the dictionary.
+    /// Inserts the key iterator pair into the dictionary.
     /// </summary>
     /// <param name="key">The key.</param>
-    /// <param name="val">The value.</param>
+    /// <param name="val">The iterator.</param>
     /// <returns>Whether or not it inserted successfully.</returns>
     inline bool Insert(const K& key, const V& val);
 
     /// <summary>
-    /// Removes the specified key value pair.
+    /// Removes the specified key iterator pair.
     /// </summary>
     /// <param name="key">The key.</param>
     /// <returns>Whether or not it removed it successfully.</returns>
     bool Remove(const K* key);    
 
     /// <summary>
-    /// Removes the specified key value pair.
+    /// Removes the specified key iterator pair.
     /// </summary>
     /// <param name="key">The key.</param>
     /// <returns>Whether or not it removed it successfully.</returns>
@@ -135,15 +135,15 @@ public:
     inline u64 BufferSize() const;
     
     /// <summary>
-    /// Returns how many key value pairs are in the dictionary.
+    /// Returns how many key iterator pairs are in the dictionary.
     /// </summary>
-    /// <returns>How many key value pairs are in the dictionary.</returns>
+    /// <returns>How many key iterator pairs are in the dictionary.</returns>
     inline int Count() const;
     
     /// <summary>
-    /// Returns how many key value pairs can fit in the memory.
+    /// Returns how many key iterator pairs can fit in the memory.
     /// </summary>
-    /// <returns>How many key value pairs can fit in the memory.</returns>
+    /// <returns>How many key iterator pairs can fit in the memory.</returns>
     inline int Capacity() const;
     
     /// <summary>
@@ -156,8 +156,44 @@ public:
 
     template<typename K, typename V>
     struct DictIt {
-        DictIt(const Dictionary<K, V>& parent, int i) : parent(parent), i(i) {
-            // If we pass in a value that is below zero that means we want to find
+        DictIt(Dictionary<K, V>& parent, int i) : parent(parent), i(i) {
+            // If we pass in a iterator that is below zero that means we want to find
+            // the first filled bucket
+            if (i < 0) {
+                operator++();
+            }
+        }
+
+        Entry& operator*() {
+            return parent.Data()[i];
+        }
+
+        void operator++() {
+            do {
+                i += 1;
+
+                if (i >= parent.bufferSize / sizeof(Entry)) break;
+
+            } while (parent.Data()[i].dist < 0);
+        }
+
+        bool operator==(const DictIt<K, V>& other) {
+            return i == other.i && parent.Data() == other.parent.Data();
+        }
+
+        bool operator!=(const DictIt<K, V>& other) {
+            return !operator==(other);
+        }
+
+    private:
+        Dictionary<K, V>& parent;
+        int i;
+    };
+
+    template<typename K, typename V>
+    struct ConstDictIt {
+        ConstDictIt(const Dictionary<K, V>& parent, int i) : parent(parent), i(i) {
+            // If we pass in a iterator that is below zero that means we want to find
             // the first filled bucket
             if (i < 0) {
                 operator++();
@@ -190,8 +226,10 @@ public:
         int i;
     };
 
-    DictIt<K, V> begin() const;
-    DictIt<K, V> end() const;
+    DictIt<K, V> begin();
+    DictIt<K, V> end();
+    ConstDictIt<K, V> begin() const;
+    ConstDictIt<K, V> end() const;
 
 protected:
     /// <summary>
@@ -200,7 +238,7 @@ protected:
     inline void Init();
     
     /// <summary>
-    /// Doubles the memory and rehashes all key value pairs.
+    /// Doubles the memory and rehashes all key iterator pairs.
     /// </summary>
     void GrowAndRehash();
 
@@ -513,13 +551,23 @@ inline void Dictionary<K, V>::GrowAndRehash() {
 }
 
 template<typename K, typename V>
-inline Dictionary<K, V>::DictIt<K, V> Dictionary<K, V>::begin() const {
+inline Dictionary<K, V>::DictIt<K, V> Dictionary<K, V>::begin() {
     return DictIt<K, V>(*this, -1);
 }
 
 template<typename K, typename V>
-inline Dictionary<K, V>::DictIt<K, V> Dictionary<K, V>::end() const {
+inline Dictionary<K, V>::DictIt<K, V> Dictionary<K, V>::end() {
     return DictIt<K, V>(*this, (int)(bufferSize / sizeof(Entry)));
+}
+
+template<typename K, typename V>
+inline Dictionary<K, V>::ConstDictIt<K, V> Dictionary<K, V>::begin() const {
+    return ConstDictIt<K, V>(*this, -1);
+}
+
+template<typename K, typename V>
+inline Dictionary<K, V>::ConstDictIt<K, V> Dictionary<K, V>::end() const {
+    return ConstDictIt<K, V>(*this, (int)(bufferSize / sizeof(Entry)));
 }
 
 }

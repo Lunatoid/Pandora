@@ -56,6 +56,31 @@ Vec3 Camera::ScreenToWorld(Vec2 screen) {
     return Vec2(0.0f);
 }
 
+bool Camera::IsVisible(Vec2 position, Vec2 size) {
+    switch (projection) {
+        case Projection::Orthographic: {
+            Vec2 scaledScreenDimension = (Vec2)this->size / scale;
+
+            float xDistance = (size.x / 2.0f) + (scaledScreenDimension.x / 2.0f);
+            float yDistance = (size.y / 2.0f) + (scaledScreenDimension.y / 2.0f);
+
+            Vec2 centerPos = position + (size / 2.f);
+            Vec2 centerCameraPos = this->position.xy;
+            Vec2 distVec = centerPos - centerCameraPos;
+
+            float xDepth = xDistance - Abs(distVec.x);
+            float yDepth = yDistance - Abs(distVec.y);
+
+            return xDepth > 0 && yDepth > 0;
+        }
+
+        default:
+            PD_ASSERT_D(false, "Unhandled case: ScreenToWorld [ {} ]", projection);
+    }
+
+    return false;
+}
+
 Mat4 Camera::GetMatrix() const {
     return view;
 }

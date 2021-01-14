@@ -26,7 +26,7 @@ bool Texture::Load(Box& box, StringView name) {
     ResourceType type = box.GetResourceType(name);
 
     if (!(type == ResourceType::Binary || type == ResourceType::Texture)) {
-        // We cannot load this resource as a texture
+        // We cannot Load this resource as a texture
         return false;
     }
 
@@ -131,19 +131,19 @@ void Texture::Export(StringView path, TextureExportFormat exportFormat) {
     stbi_flip_vertically_on_write(true);
     switch (exportFormat) {
         case TextureExportFormat::PNG:
-            stbi_write_png((char*)path.Data(), size.x, size.y, 4, pixels, stride);
+            stbi_write_png(path.CStr(), size.x, size.y, 4, pixels, stride);
             break;
 
         case TextureExportFormat::JPG:
-            stbi_write_jpg((char*)path.Data(), size.x, size.y, 4, pixels, 0);
+            stbi_write_jpg(path.CStr(), size.x, size.y, 4, pixels, 0);
             break;
 
         case TextureExportFormat::BMP:
-            stbi_write_bmp((char*)path.Data(), size.x, size.y, 4, pixels);
+            stbi_write_bmp(path.CStr(), size.x, size.y, 4, pixels);
             break;
 
         case TextureExportFormat::TGA:
-            stbi_write_tga((char*)path.Data(), size.x, size.y, 4, pixels);
+            stbi_write_tga(path.CStr(), size.x, size.y, 4, pixels);
             break;
     }
 }
@@ -245,7 +245,7 @@ bool Texture::LoadPixelsFromFile(StringView path) {
     stbi_set_flip_vertically_on_load(true);
 
     int channels = 0;
-    pixels = (byte*)stbi_load((char*)path.Data(), &size.x, &size.y, &channels, 4);
+    pixels = (byte*)stbi_load(path.CStr(), &size.x, &size.y, &channels, 4);
 
     return pixels != nullptr;
 }

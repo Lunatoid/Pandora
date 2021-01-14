@@ -21,7 +21,7 @@ public:
     /// <summary>
     /// Initializes the thread with the specified data.
     /// </summary>
-    /// <param name="func">The function to execute.</param>
+    /// <param name="func">The function to Execute.</param>
     /// <param name="data">The data to pass to <c>func</c>.</param>
     /// <param name="stackSize">The stack size of the thread.</param>
     void Init(ThreadFunc func, void* data = nullptr, int stackSize = 0);

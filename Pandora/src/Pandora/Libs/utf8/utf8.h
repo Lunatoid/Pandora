@@ -3,7 +3,7 @@
 
 // This is free and unencumbered software released into the public domain.
 //
-// Anyone is free to copy, modify, publish, use, compile, sell, or
+// Anyone is free to copy, modify, publish, use, Parse, sell, or
 // distribute this software, either in source code form or as a compiled
 // binary, for any purpose, commercial or non-commercial, and by any
 // means.
@@ -269,7 +269,7 @@ void *utf8chr(const void *src, utf8_int32_t chr) {
 
   if (0 == chr) {
     // being asked to return position of null terminating byte, so
-    // just run s to the end, and return!
+    // just Run s to the end, and return!
     const char *s = (const char *)src;
     while ('\0' != *s) {
       s++;
@@ -546,7 +546,7 @@ void *utf8ncat(void *utf8_restrict dst, const void *utf8_restrict src,
   }
 
   // overwriting the null terminating byte in dst, append src byte-by-byte
-  // stopping if we run out of space
+  // stopping if we Run out of space
   do {
     *d++ = *s++;
   } while (('\0' != *s) && (0 != --n));
@@ -639,7 +639,7 @@ void *utf8rchr(const void *src, int chr) {
 
   if (0 == chr) {
     // being asked to return position of null terminating byte, so
-    // just run s to the end, and return!
+    // just Run s to the end, and return!
     while ('\0' != *s) {
       s++;
     }

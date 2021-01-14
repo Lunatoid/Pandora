@@ -53,7 +53,7 @@ public:
     /// Adds a new scene.
     /// </summary>
     /// <param name="name">The name. Must be unique.</param>
-    /// <param name="args">The contructor arguments.</param>
+    /// <param name="args">The contructor args.</param>
     template<typename T, typename ...Args>
     void AddScene(StringView name, Args&&... args) {
         static_assert(std::is_base_of<Scene, T>::value, "Template type T must derive from pd::Scene");
@@ -95,6 +95,12 @@ public:
     /// </summary>
     /// <returns>The current scene.</returns>
     Scene* GetCurrent();
+
+    /// <summary>
+    /// Returns a scene by name.
+    /// </summary>
+    /// <returns>The scene. Returns <c>nullptr</c> if not found.</returns>
+    Scene* GetScene(StringView name);
 
 private:    
     /// <summary>

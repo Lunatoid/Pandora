@@ -162,7 +162,7 @@ void DXShader::SetLayout(DataLayout& layout) {
         this->layout.Add(e->name, e->type);
 
         D3D11_INPUT_ELEMENT_DESC elem = {};
-        elem.SemanticName = (char*)e->name.Data();
+        elem.SemanticName = e->name.CStr();
         elem.SemanticIndex = 0;
         elem.Format = DX_FORMATS[(int)e->type];
         elem.InputSlot = 0;

@@ -12,7 +12,7 @@ void LogInternal(Stream& out, wchar* remainingFormat) {
     for (int i = 0; i < formatLength; i++) {
         if (remainingFormat[i] == L'{') {
             if (i + 1 < formatLength && remainingFormat[i + 1] == L'{') {
-                out.Write("{");
+                out.WriteByte('{');
                 i += 1;
                 continue;
             }
@@ -27,11 +27,11 @@ void LogInternal(Stream& out, wchar* remainingFormat) {
 
             if (parsingParam) {
                 parsingParam = false;
-                out.WriteBytes("{ missing }");
+                out.WriteText("{ missing }");
                 continue;
             }
         } else if (parsingParam) {
-            // No parsing because no arguments
+            // No parsing because no args
         } else {
             // Convert wide char to char
             char buffer[2];

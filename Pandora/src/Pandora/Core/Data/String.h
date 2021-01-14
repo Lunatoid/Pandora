@@ -245,7 +245,12 @@ public:
     /// </summary>
     /// <returns>The raw data of the string as a byte pointer.</returns>
     virtual byte* ByteData() const;
-    
+
+    /// <summary>
+    /// </summary>
+    /// <returns>The raw data of the string as a <c>const char</c> pointer.</returns>
+    const char* CStr() const;
+
     /// <summary>
     /// </summary>
     /// <returns>The allocator of the string</returns>
@@ -258,7 +263,7 @@ public:
     int Count() const;
     
     /// <summary>
-    /// Calculates the size of the string in bytes including the null terminator.
+    /// Calculates the size of the string in bytes, excluding the null terminator.
     /// </summary>
     /// <returns>How many bytes long the string is.</returns>
     u64 SizeInBytes() const;
@@ -272,7 +277,7 @@ public:
 
     String& operator=(const uchar* other);
 
-    String& operator=(String& other);
+    String& operator=(const String& other);
 
     bool operator==(const String& other) const;
     bool operator==(StringView other) const;
@@ -343,7 +348,7 @@ inline void PrintType(StringView& type, FormatInfo& info) {
         PrintfToStream(info.output, "\"");
     }
 
-    PrintfToStream(info.output, "%.*s", size, (char*)type.Data());
+    PrintfToStream(info.output, "%.*s", size, type.CStr());
 
     if (info.pretty) {
         PrintfToStream(info.output, "\"");

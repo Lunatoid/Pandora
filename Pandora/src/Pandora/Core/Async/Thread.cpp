@@ -62,6 +62,10 @@ void Thread::Start() {
 
 void Thread::Terminate(int returnCode) {
 #if defined(PD_WINDOWS)
+    // warning C6258: using TerminateThread does not allow proper thread clean up.
+    // See https://docs.microsoft.com/en-us/cpp/code-quality/c6258?view=msvc-160
+    // We might need a wrapper function to check for WaitForSingleObject to see if 
+    // a quit event has been received
     TerminateThread(DATA->handle, returnCode);
     CloseHandle(DATA->handle);
     DATA->handle = INVALID_HANDLE_VALUE;
@@ -98,7 +102,7 @@ bool Thread::IsDone() {
     return *(bool*)done.Get();
 }
 
-#if defined(PD_WINDOWS)
+#if defined(PD_WINDOWS) && defined(PD_LIB)
 void Thread::InternalExecuteFunc() {
     func(data);
 }

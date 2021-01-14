@@ -36,8 +36,8 @@ void GLTexture::Upload(bool releasePixelData) {
     glBindTexture(GL_TEXTURE_2D, id);
 
     glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA,
-        size.x, size.y, 0, GL_RGBA,
-        GL_UNSIGNED_BYTE, pixels);
+                 size.x, size.y, 0, GL_RGBA,
+                 GL_UNSIGNED_BYTE, pixels);
 
     glGenerateMipmap(GL_TEXTURE_2D);
 
@@ -68,12 +68,12 @@ void GLTexture::AttachFramebuffer(u32 fbo, Vec2i size, bool asColor) {
 
     if (asColor) {
         glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA,
-            size.x, size.y, 0, GL_RGBA, GL_UNSIGNED_BYTE, NULL);
+                     size.x, size.y, 0, GL_RGBA, GL_UNSIGNED_BYTE, NULL);
 
         glFramebufferTexture2D(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, GL_TEXTURE_2D, id, 0);
     } else {
         glTexImage2D(GL_TEXTURE_2D, 0, GL_DEPTH24_STENCIL8,
-            size.x, size.y, 0, GL_DEPTH_STENCIL, GL_UNSIGNED_INT_24_8, NULL);
+                     size.x, size.y, 0, GL_DEPTH_STENCIL, GL_UNSIGNED_INT_24_8, NULL);
 
         glFramebufferTexture2D(GL_FRAMEBUFFER, GL_DEPTH_STENCIL_ATTACHMENT, GL_TEXTURE_2D, id, 0);
     }
@@ -137,11 +137,10 @@ void GLTexture::CreateTextureData() {
                 f32 largestSupportedAnitropy = 0.0f;
                 glGetFloatv(GL_MAX_TEXTURE_MAX_ANISOTROPY_EXT, &largestSupportedAnitropy);
                 glTexParameterf(GL_TEXTURE_2D, GL_TEXTURE_MAX_ANISOTROPY_EXT, largestSupportedAnitropy);
-                break;
             } else {
                 CONSOLE_LOG_DEBUG("[{}GL Error{}] GL_EXT_texture_filter_anisotropic is not supported\n", ConColor::Red, ConColor::White);
-                // Fall through to Trilinear
             }
+            // Fall through to Trilinear
 
         case TextureFiltering::Trilinear:
             minFilterMode = GL_LINEAR_MIPMAP_LINEAR;

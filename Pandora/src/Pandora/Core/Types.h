@@ -91,7 +91,7 @@ uchar* GetNextCodepoint(const uchar* string, codepoint* out);
 bool IsValidUTF8(const uchar* string);
 
 /// <summary>
-/// Calculates how many bytes long a UTF-8 string is.
+/// Calculates how many bytes long a UTF-8 string is, excluding the null terminator.
 /// </summary>
 /// <returns>The length of the string in bytes.</returns>
 int UTF8Size(const uchar* string);

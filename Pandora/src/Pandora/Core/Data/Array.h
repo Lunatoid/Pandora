@@ -53,7 +53,7 @@ public:
     /// <summary>
     /// Instantiates a new element at the end of the array.
     /// </summary>
-    /// <param name="...args">The constructor arguments.</param>
+    /// <param name="...args">The constructor args.</param>
     /// <returns>The index of the element.</returns>
     template<typename ...Args>
     int Add(Args ...args);
@@ -228,13 +228,15 @@ public:
     T& operator[](int i) const;
 
     // Delete memory and Copy by reference
-    void operator=(Array<T>& other);
+    void operator=(const Array<T>& other);
 
     template<typename T>
     struct ArrayIt {
-        ArrayIt(const Array<T>& parent, int i) : parent(parent), i(i) {}
+        ArrayIt(Array<T>& parent, int i)
+            : parent(parent), i(i) {
+        }
 
-        T& operator*() const {
+        T& operator*() {
             return parent.At(i);
         }
 
@@ -250,14 +252,55 @@ public:
             return !operator==(other);
         }
 
+        ArrayIt<T>& operator=(const ArrayIt<T>& other) {
+            i = other.i;
+            parent = other.parent;
+            return *this;
+        }
+
+    private:
+        int i = 0;
+        Array<T>& parent;
+    };
+
+    template<typename T>
+    struct ConstArrayIt {
+        ConstArrayIt(const Array<T>& parent, int i)
+            : parent(parent), i(i) {
+        }
+
+        T& operator*() const {
+            return parent.At(i);
+        }
+
+        void operator++() {
+            i += 1;
+        }
+
+        bool operator==(const ConstArrayIt<T>& other) const {
+            return i == other.i && parent.Data() == other.parent.Data();
+        }
+
+        bool operator!=(const ConstArrayIt<T>& other) const {
+            return !operator==(other);
+        }
+
+        const ConstArrayIt<T>& operator=(const ConstArrayIt<T>& other) {
+            i = other.i;
+            parent = other.parent;
+            return *this;
+        }
+
     private:
         int i = 0;
         const Array<T>& parent;
     };
 
     // Ranged for begin/end functions
-    inline ArrayIt<T> begin() const;
-    inline ArrayIt<T> end() const;
+    inline ArrayIt<T> begin();
+    inline ArrayIt<T> end();
+    inline ConstArrayIt<T> begin() const;
+    inline ConstArrayIt<T> end() const;
 
 protected:
     /// <summary>
@@ -512,13 +555,12 @@ inline void Array<T>::RemoveUnordered(int index) {
     PD_ASSERT_D(index >= 0 && index < Count(),
                 "illegal removal index, valid: 0:%d, given: %d", Count(), index);
 
-    Destruct(index, 1);
-
     count -= 1;
     if (index != count) {
         // Put the last element in it's place
         At(index) = At(count);
     }
+    Destruct(count, 1);
 }
 
 template<typename T>
@@ -685,13 +727,23 @@ inline Slice<T> Array<T>::Slice(int offset, int count) {
 }
 
 template<typename T>
-inline Array<T>::ArrayIt<T> Array<T>::begin() const {
+inline Array<T>::ArrayIt<T> Array<T>::begin() {
     return ArrayIt<T>(*this, 0);
 }
 
 template<typename T>
-inline Array<T>::ArrayIt<T> Array<T>::end() const {
+inline Array<T>::ArrayIt<T> Array<T>::end() {
     return ArrayIt<T>(*this, Count());
+}
+
+template<typename T>
+inline Array<T>::ConstArrayIt<T> Array<T>::begin() const {
+    return ConstArrayIt<T>(*this, 0);
+}
+
+template<typename T>
+inline Array<T>::ConstArrayIt<T> Array<T>::end() const {
+    return ConstArrayIt<T>(*this, Count());
 }
 
 template<typename T>
@@ -700,12 +752,14 @@ inline T& Array<T>::operator[](int i) const {
 }
 
 template<typename T>
-inline void Array<T>::operator=(Array<T>& other) {
+inline void Array<T>::operator=(const Array<T>& other) {
     Delete();
-    this->memory = other.Data();
-    this->bufferSize = other.SizeInBytes();
-    this->count = other.Count() + 1;
-    this->allocator = other.Allocator();
+
+    Reserve(other.Count());
+
+    for (int i = 0; i < other.Count(); i++) {
+        Data()[i] = other.Data()[i];
+    }
 }
 
 template<typename T>

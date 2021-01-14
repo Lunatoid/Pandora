@@ -58,7 +58,7 @@ void Material::SetTexture(const Ref<Texture>& texture, int slot) {
     AfterSetTexture(slot);
 }
 
-Ref<Texture> Material::GetTexture(int slot, RefType type) {
+Ref<Texture> Material::GetTexture(int slot, RefType type) const {
     return textures[slot].NewRef(type);
 }
 

@@ -69,7 +69,7 @@ Allocator GetAllocator(void* ptr);
 /// <summary>
 /// Allocates and constructs <c>T</c> with the persitent allocator.
 /// </summary>
-/// <param name="...args">The constructor arguments.</param>
+/// <param name="...args">The constructor args.</param>
 /// <returns>The allocated <c>T</c>.</returns>
 template<typename T, typename ...Args>
 T* New(Args&&... args) {

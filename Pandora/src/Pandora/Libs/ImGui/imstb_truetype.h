@@ -1,5 +1,3 @@
-#if !defined(PD_NO_IMGUI)
-
 // [DEAR IMGUI]
 // This is a slightly modified version of stb_truetype.h 1.20.
 // Mostly fixing for compiler and static analyzer warnings.
@@ -109,7 +107,7 @@
 //           stbtt_GetFontOffsetForIndex()        -- indexing for TTC font collections
 //           stbtt_GetNumberOfFonts()             -- number of fonts for TTC font collections
 //
-//   Draw a unicode codepoint to a bitmap
+//   Render a unicode codepoint to a bitmap
 //           stbtt_GetCodepointBitmap()           -- allocates and returns a bitmap
 //           stbtt_MakeCodepointBitmap()          -- renders into bitmap you provide
 //           stbtt_GetCodepointBitmapBox()        -- how big the bitmap must be
@@ -4903,5 +4901,3 @@ ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION
 WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 ------------------------------------------------------------------------------
 */
-
-#endif

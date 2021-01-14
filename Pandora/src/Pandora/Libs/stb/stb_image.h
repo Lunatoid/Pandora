@@ -126,7 +126,7 @@ RECENT REVISION HISTORY:
 //    int *channels_in_file  -- outputs # of image components in image file
 //    int desired_channels   -- if non-zero, # of image components requested in result
 //
-// The return value from an image loader is an 'unsigned char *' which points
+// The return iterator from an image loader is an 'unsigned char *' which points
 // to the pixel data, or NULL on an allocation failure or if the image is
 // corrupt or invalid. The pixel data consists of *y scanlines of *x pixels,
 // with each pixel consisting of N interleaved 8-bit components; the first
@@ -148,10 +148,10 @@ RECENT REVISION HISTORY:
 //       3           red, green, blue
 //       4           red, green, blue, alpha
 //
-// If image loading fails for any reason, the return value will be NULL,
+// If image loading fails for any reason, the return iterator will be NULL,
 // and *x, *y, *channels_in_file will be unchanged. The function
 // stbi_failure_reason() can be queried for an extremely brief, end-user
-// unfriendly explanation of why the load failed. Define STBI_NO_FAILURE_STRINGS
+// unfriendly explanation of why the Load failed. Define STBI_NO_FAILURE_STRINGS
 // to avoid compiling these strings at all, and STBI_FAILURE_USERMSG to get slightly
 // more user-friendly ones.
 //
@@ -203,7 +203,7 @@ RECENT REVISION HISTORY:
 // (The old do-it-yourself SIMD API is no longer supported in the current
 // code.)
 //
-// On x86, SSE2 will automatically be used when available based on a run-time
+// On x86, SSE2 will automatically be used when available based on a Run-time
 // test; if not, the generic C versions are used as a fall-back. On ARM targets,
 // the typical path is to have separate builds for NEON and non-NEON devices
 // (at least this is true for iOS and Android). Therefore, the NEON support is
@@ -219,8 +219,8 @@ RECENT REVISION HISTORY:
 //
 // stb_image now supports loading HDR images in general, and currently
 // the Radiance .HDR file base, although the support is provided
-// generically. You can still load any file through the existing interface;
-// if you attempt to load an HDR file, it will be automatically remapped to
+// generically. You can still Load any file through the existing interface;
+// if you attempt to Load an HDR file, it will be automatically remapped to
 // LDR, assuming gamma 2.2 and an arbitrary scale factor defaulting to 1;
 // both of these constants can be reconfigured through this interface:
 //
@@ -235,8 +235,8 @@ RECENT REVISION HISTORY:
 //
 //    float *data = stbi_loadf(filename, &x, &y, &n, 0);
 //
-// If you load LDR images through this interface, those images will
-// be promoted to floating point values, run through the inverse of
+// If you Load LDR images through this interface, those images will
+// be promoted to floating point values, Run through the inverse of
 // constants corresponding to the above:
 //
 //     stbi_ldr_to_hdr_scale(1.0f);
@@ -336,7 +336,7 @@ extern "C" {
 //
 
 //
-// load image by filename, open file, or memory memory
+// Load image by filename, open file, or memory memory
 //
 
 typedef struct
@@ -596,7 +596,7 @@ typedef unsigned char validate_uint32[sizeof(stbi__uint32)==4 ? 1 : -1];
 #endif
 
 #if defined(__GNUC__) && defined(STBI__X86_TARGET) && !defined(__SSE2__) && !defined(STBI_NO_SIMD)
-// gcc doesn't support sse2 intrinsics unless you compile with -msse2,
+// gcc doesn't support sse2 intrinsics unless you Parse with -msse2,
 // which in turn means it gets to use SSE2 everywhere. This is unfortunate,
 // but previous attempts to provide the SSE2 functions with runtime
 // detection caused numerous issues. The way architecture extensions are
@@ -660,7 +660,7 @@ static int stbi__sse2_available(void)
 
 static int stbi__sse2_available(void)
 {
-   // If we're even attempting to compile this on GCC/Clang, that means
+   // If we're even attempting to Parse this on GCC/Clang, that means
    // -msse2 is on, which means the compiler is allowed to use SSE2
    // instructions at will, and so are we.
    return 1;
@@ -1754,7 +1754,7 @@ static int stbi__build_huffman(stbi__huffman *h, int *count)
    return 1;
 }
 
-// build a table that decodes both magnitude and value of small ACs in
+// build a table that decodes both magnitude and iterator of small ACs in
 // one go.
 static void stbi__build_fast_ac(stbi__int16 *fast_ac, stbi__huffman *h)
 {
@@ -1802,7 +1802,7 @@ static void stbi__grow_buffer_unsafe(stbi__jpeg *j)
 // (1 << n) - 1
 static stbi__uint32 stbi__bmask[17]={0,1,3,7,15,31,63,127,255,511,1023,2047,4095,8191,16383,32767,65535};
 
-// decode a jpeg huffman value from the bitstream
+// decode a jpeg huffman iterator from the bitstream
 stbi_inline static int stbi__jpeg_huff_decode(stbi__jpeg *j, stbi__huffman *h)
 {
    unsigned int temp;
@@ -1894,7 +1894,7 @@ stbi_inline static int stbi__jpeg_get_bit(stbi__jpeg *j)
    return k & 0x80000000;
 }
 
-// given a value that's at position X in the zigzag stream,
+// given a iterator that's at position X in the zigzag stream,
 // where does it appear in the 8x8 matrix coded as row-major?
 static stbi_uc stbi__jpeg_dezigzag[64+15] =
 {
@@ -1938,7 +1938,7 @@ static int stbi__jpeg_decode_block(stbi__jpeg *j, short data[64], stbi__huffman 
       c = (j->code_buffer >> (32 - FAST_BITS)) & ((1 << FAST_BITS)-1);
       r = fac[c];
       if (r) { // fast-AC path
-         k += (r >> 4) & 15; // run
+         k += (r >> 4) & 15; // Run
          s = r & 15; // combined length
          j->code_buffer <<= s;
          j->code_bits -= s;
@@ -2012,7 +2012,7 @@ static int stbi__jpeg_decode_block_prog_ac(stbi__jpeg *j, short data[64], stbi__
          c = (j->code_buffer >> (32 - FAST_BITS)) & ((1 << FAST_BITS)-1);
          r = fac[c];
          if (r) { // fast-AC path
-            k += (r >> 4) & 15; // run
+            k += (r >> 4) & 15; // Run
             s = r & 15; // combined length
             j->code_buffer <<= s;
             j->code_bits -= s;
@@ -2073,7 +2073,7 @@ static int stbi__jpeg_decode_block_prog_ac(stbi__jpeg *j, short data[64], stbi__
                   r = 64; // force end of block
                } else {
                   // r=15 s=0 should write 16 0s, so we just do
-                  // a run of 15 0s and then write s (which is 0),
+                  // a Run of 15 0s and then write s (which is 0),
                   // so we don't have to do anything special here
                }
             } else {
@@ -2110,7 +2110,7 @@ static int stbi__jpeg_decode_block_prog_ac(stbi__jpeg *j, short data[64], stbi__
    return 1;
 }
 
-// take a -128..127 value and stbi__clamp it and convert to 0..255
+// take a -128..127 iterator and stbi__clamp it and convert to 0..255
 stbi_inline static stbi_uc stbi__clamp(int x)
 {
    // trick to use a single test to catch both cases
@@ -2323,7 +2323,7 @@ static void stbi__idct_simd(stbi_uc *out, int out_stride, short data[64])
    __m128i bias_0 = _mm_set1_epi32(512);
    __m128i bias_1 = _mm_set1_epi32(65536 + (128<<17));
 
-   // load
+   // Load
    row0 = _mm_load_si128((const __m128i *) (data + 0*8));
    row1 = _mm_load_si128((const __m128i *) (data + 1*8));
    row2 = _mm_load_si128((const __m128i *) (data + 2*8));
@@ -2494,7 +2494,7 @@ static void stbi__idct_simd(stbi_uc *out, int out_stride, short data[64])
       dct_bfly32o(row3,row4, x3,x4,shiftop,shift); \
    }
 
-   // load
+   // Load
    row0 = vld1q_s16(data + 0*8);
    row1 = vld1q_s16(data + 1*8);
    row2 = vld1q_s16(data + 2*8);
@@ -2613,7 +2613,7 @@ static void stbi__idct_simd(stbi_uc *out, int out_stride, short data[64])
 #define STBI__MARKER_none  0xff
 // if there's a pending marker from the entropy stream, return that
 // otherwise, fetch from the stream and get a marker. if there's no
-// marker, return 0xff, which is never a valid marker value
+// marker, return 0xff, which is never a valid marker iterator
 static stbi_uc stbi__get_marker(stbi__jpeg *j)
 {
    stbi_uc x;
@@ -3212,7 +3212,7 @@ static stbi_uc *stbi__resample_row_hv_2_simd(stbi_uc *out, stbi_uc *in_near, stb
    // because we need to handle the filter boundary conditions.
    for (; i < ((w-1) & ~7); i += 8) {
 #if defined(STBI_SSE2)
-      // load and perform the vertical filtering pass
+      // Load and perform the vertical filtering pass
       // this uses 3*x + y = 4*x + (y - x)
       __m128i zero  = _mm_setzero_si128();
       __m128i farb  = _mm_loadl_epi64((__m128i *) (in_far + i));
@@ -3225,7 +3225,7 @@ static stbi_uc *stbi__resample_row_hv_2_simd(stbi_uc *out, stbi_uc *in_near, stb
 
       // horizontal filter works the same based on shifted vers of current
       // row. "prev" is current row shifted right by 1 pixel; we need to
-      // insert the previous pixel value (from t1).
+      // insert the previous pixel iterator (from t1).
       // "next" is current row shifted left by 1 pixel, with first pixel
       // of next block of 8 pixels added in.
       __m128i prv0 = _mm_slli_si128(curr, 2);
@@ -3255,7 +3255,7 @@ static stbi_uc *stbi__resample_row_hv_2_simd(stbi_uc *out, stbi_uc *in_near, stb
       __m128i outv = _mm_packus_epi16(de0, de1);
       _mm_storeu_si128((__m128i *) (out + i*2), outv);
 #elif defined(STBI_NEON)
-      // load and perform the vertical filtering pass
+      // Load and perform the vertical filtering pass
       // this uses 3*x + y = 4*x + (y - x)
       uint8x8_t farb  = vld1_u8(in_far + i);
       uint8x8_t nearb = vld1_u8(in_near + i);
@@ -3265,7 +3265,7 @@ static stbi_uc *stbi__resample_row_hv_2_simd(stbi_uc *out, stbi_uc *in_near, stb
 
       // horizontal filter works the same based on shifted vers of current
       // row. "prev" is current row shifted right by 1 pixel; we need to
-      // insert the previous pixel value (from t1).
+      // insert the previous pixel iterator (from t1).
       // "next" is current row shifted left by 1 pixel, with first pixel
       // of next block of 8 pixels added in.
       int16x8_t prv0 = vextq_s16(curr, curr, 7);
@@ -3290,7 +3290,7 @@ static stbi_uc *stbi__resample_row_hv_2_simd(stbi_uc *out, stbi_uc *in_near, stb
       vst2_u8(out + i*2, o);
 #endif
 
-      // "previous" value for next iter
+      // "previous" iterator for next iter
       t1 = 3*in_near[i+7] + in_far[i+7];
    }
 
@@ -3371,7 +3371,7 @@ static void stbi__YCbCr_to_RGB_simd(stbi_uc *out, stbi_uc const *y, stbi_uc cons
       __m128i xw = _mm_set1_epi16(255); // alpha channel
 
       for (; i+7 < count; i += 8) {
-         // load
+         // Load
          __m128i y_bytes = _mm_loadl_epi64((__m128i *) (y+i));
          __m128i cr_bytes = _mm_loadl_epi64((__m128i *) (pcr+i));
          __m128i cb_bytes = _mm_loadl_epi64((__m128i *) (pcb+i));
@@ -3428,7 +3428,7 @@ static void stbi__YCbCr_to_RGB_simd(stbi_uc *out, stbi_uc const *y, stbi_uc cons
       int16x8_t cb_const1 = vdupq_n_s16(   (short) ( 1.77200f*4096.0f+0.5f));
 
       for (; i+7 < count; i += 8) {
-         // load
+         // Load
          uint8x8_t y_bytes  = vld1_u8(y + i);
          uint8x8_t cr_bytes = vld1_u8(pcr + i);
          uint8x8_t cb_bytes = vld1_u8(pcb + i);
@@ -3536,10 +3536,10 @@ static stbi_uc *load_jpeg_image(stbi__jpeg *z, int *out_x, int *out_y, int *comp
    int n, decode_n, is_rgb;
    z->s->img_n = 0; // make stbi__cleanup_jpeg safe
 
-   // validate req_comp
+   // Validate req_comp
    if (req_comp < 0 || req_comp > 4) return stbi__errpuc("bad req_comp", "Internal error");
 
-   // load a jpeg image from whichever source, but leave in YCbCr base
+   // Load a jpeg image from whichever source, but leave in YCbCr base
    if (!stbi__decode_jpeg_image(z)) { stbi__cleanup_jpeg(z); return NULL; }
 
    // determine actual number of components to generate
@@ -3759,7 +3759,7 @@ typedef struct
    int maxcode[17];
    stbi__uint16 firstsymbol[16];
    stbi_uc  size[288];
-   stbi__uint16 value[288];
+   stbi__uint16 iterator[288];
 } stbi__zhuffman;
 
 stbi_inline static int stbi__bitreverse16(int n)
@@ -3812,7 +3812,7 @@ static int stbi__zbuild_huffman(stbi__zhuffman *z, const stbi_uc *sizelist, int 
          int c = next_code[s] - z->firstcode[s] + z->firstsymbol[s];
          stbi__uint16 fastv = (stbi__uint16) ((s << 9) | i);
          z->size [c] = (stbi_uc     ) s;
-         z->value[c] = (stbi__uint16) i;
+         z->iterator[c] = (stbi__uint16) i;
          if (s <= STBI__ZFAST_BITS) {
             int j = stbi__bit_reverse(next_code[s],s);
             while (j < (1 << STBI__ZFAST_BITS)) {
@@ -3886,7 +3886,7 @@ static int stbi__zhuffman_decode_slowpath(stbi__zbuf *a, stbi__zhuffman *z)
    STBI_ASSERT(z->size[b] == s);
    a->code_buffer >>= s;
    a->num_bits -= s;
-   return z->value[b];
+   return z->iterator[b];
 }
 
 stbi_inline static int stbi__zhuffman_decode(stbi__zbuf *a, stbi__zhuffman *z)
@@ -3968,7 +3968,7 @@ static int stbi__parse_huffman_block(stbi__zbuf *a)
             zout = a->zout;
          }
          p = (stbi_uc *) (zout - dist);
-         if (dist == 1) { // run of one byte; common in images.
+         if (dist == 1) { // Run of one byte; common in images.
             stbi_uc v = *p;
             if (len) { do *zout++ = v; while (--len); }
          } else {
@@ -4036,7 +4036,7 @@ static int stbi__parse_uncompressed_block(stbi__zbuf *a)
    // drain the bit-packed data into header
    k = 0;
    while (a->num_bits > 0) {
-      header[k++] = (stbi_uc) (a->code_buffer & 255); // suppress MSVC run-time check
+      header[k++] = (stbi_uc) (a->code_buffer & 255); // suppress MSVC Run-time check
       a->code_buffer >>= 8;
       a->num_bits -= 8;
    }
@@ -4411,7 +4411,7 @@ static int stbi__create_png_image_raw(stbi__png *a, stbi_uc *raw, stbi__uint32 r
    }
 
    // we make a separate pass to expand bits to pixels; for performance,
-   // this could run two scanlines behind the above code, so it won't
+   // this could Run two scanlines behind the above code, so it won't
    // intefere with filtering but will still be in the cache.
    if (depth < 8) {
       for (j=0; j < y; ++j) {
@@ -4549,7 +4549,7 @@ static int stbi__compute_transparency(stbi__png *z, stbi_uc tc[3], int out_n)
    stbi_uc *p = z->out;
 
    // compute color-based transparency, assuming we've
-   // already got 255 as the alpha value in the output
+   // already got 255 as the alpha iterator in the output
    STBI_ASSERT(out_n == 2 || out_n == 4);
 
    if (out_n == 2) {
@@ -4574,7 +4574,7 @@ static int stbi__compute_transparency16(stbi__png *z, stbi__uint16 tc[3], int ou
    stbi__uint16 *p = (stbi__uint16*) z->out;
 
    // compute color-based transparency, assuming we've
-   // already got 65535 as the alpha value in the output
+   // already got 65535 as the alpha iterator in the output
    STBI_ASSERT(out_n == 2 || out_n == 4);
 
    if (out_n == 2) {
@@ -5355,7 +5355,7 @@ errorEnd:
    return res;
 }
 
-// read 16bit value and convert to 24bit RGB
+// read 16bit iterator and convert to 24bit RGB
 static void stbi__tga_read_rgb16(stbi__context *s, stbi_uc* out)
 {
    stbi__uint16 px = (stbi__uint16)stbi__get16le(s);
@@ -5439,12 +5439,12 @@ static void *stbi__tga_load(stbi__context *s, int *x, int *y, int *comp, int req
          stbi__getn(s, tga_row, tga_width * tga_comp);
       }
    } else  {
-      //   do I need to load a palette?
+      //   do I need to Load a palette?
       if ( tga_indexed)
       {
          //   any data to skip? (offset usually = 0)
          stbi__skip(s, tga_palette_start );
-         //   load the palette
+         //   Load the palette
          tga_palette = (unsigned char*)stbi__malloc_mad2(tga_palette_len, tga_comp, 0);
          if (!tga_palette) {
             STBI_FREE(tga_data);
@@ -5463,7 +5463,7 @@ static void *stbi__tga_load(stbi__context *s, int *x, int *y, int *comp, int req
                return stbi__errpuc("bad palette", "Corrupt TGA");
          }
       }
-      //   load the data
+      //   Load the data
       for (i=0; i < tga_width * tga_height; ++i)
       {
          //   if I'm in RLE mode, do I need to get a RLE stbi__pngchunk?
@@ -5487,7 +5487,7 @@ static void *stbi__tga_load(stbi__context *s, int *x, int *y, int *comp, int req
          //   OK, if I need to read a pixel, do it now
          if ( read_next_pixel )
          {
-            //   load however much data we did have
+            //   Load however much data we did have
             if ( tga_indexed )
             {
                // read in index, then perform the lookup
@@ -5736,7 +5736,7 @@ static void *stbi__psd_load(stbi__context *s, int *x, int *y, int *comp, int req
 
    } else {
       // We're at the raw image data.  It's each channel in order (Red, Green, Blue, Alpha, ...)
-      // where each channel consists of an 8-bit (or 16-bit) value for each pixel in the image.
+      // where each channel consists of an 8-bit (or 16-bit) iterator for each pixel in the image.
 
       // Read the data by channel.
       for (channel = 0; channel < 4; channel++) {
@@ -5933,7 +5933,7 @@ static stbi_uc *stbi__pic_load_core(stbi__context *s,int width,int height,int *c
                   int left=width, i;
 
                   while (left>0) {
-                     stbi_uc count,value[4];
+                     stbi_uc count,iterator[4];
 
                      count=stbi__get8(s);
                      if (stbi__at_eof(s))   return stbi__errpuc("bad file","file too short (pure read count)");
@@ -5941,10 +5941,10 @@ static stbi_uc *stbi__pic_load_core(stbi__context *s,int width,int height,int *c
                      if (count > left)
                         count = (stbi_uc) left;
 
-                     if (!stbi__readval(s,packet->channel,value))  return 0;
+                     if (!stbi__readval(s,packet->channel,iterator))  return 0;
 
                      for(i=0; i<count; ++i,dest+=4)
-                        stbi__copyval(packet->channel,dest,value);
+                        stbi__copyval(packet->channel,dest,iterator);
                      left -= count;
                   }
                }
@@ -5957,7 +5957,7 @@ static stbi_uc *stbi__pic_load_core(stbi__context *s,int width,int height,int *c
                   if (stbi__at_eof(s))  return stbi__errpuc("bad file","file too short (mixed read count)");
 
                   if (count >= 128) { // Repeated
-                     stbi_uc value[4];
+                     stbi_uc iterator[4];
 
                      if (count==128)
                         count = stbi__get16be(s);
@@ -5966,11 +5966,11 @@ static stbi_uc *stbi__pic_load_core(stbi__context *s,int width,int height,int *c
                      if (count > left)
                         return stbi__errpuc("bad file","scanline overrun");
 
-                     if (!stbi__readval(s,packet->channel,value))
+                     if (!stbi__readval(s,packet->channel,iterator))
                         return 0;
 
                      for(i=0;i<count;++i, dest += 4)
-                        stbi__copyval(packet->channel,dest,value);
+                        stbi__copyval(packet->channel,dest,iterator);
                   } else { // Raw
                      ++count;
                      if (count>left) return stbi__errpuc("bad file","scanline overrun");
@@ -6492,7 +6492,7 @@ static float *stbi__hdr_load(stbi__context *s, int *x, int *y, int *comp, int re
    stbi_uc *scanline;
    float *hdr_data;
    int len;
-   unsigned char count, value;
+   unsigned char count, iterator;
    int i, j, k, c1,c2, z;
    const char *headerToken;
    STBI_NOTUSED(ri);
@@ -6557,7 +6557,7 @@ static float *stbi__hdr_load(stbi__context *s, int *x, int *y, int *comp, int re
          c2 = stbi__get8(s);
          len = stbi__get8(s);
          if (c1 != 2 || c2 != 2 || (len & 0x80)) {
-            // not run-length encoded, so we have to actually use THIS data as a decoded
+            // not Run-length encoded, so we have to actually use THIS data as a decoded
             // pixel (note this can't be a valid pixel--one of RGB must be >= 128)
             stbi_uc rgbe[4];
             rgbe[0] = (stbi_uc) c1;
@@ -6588,11 +6588,11 @@ static float *stbi__hdr_load(stbi__context *s, int *x, int *y, int *comp, int re
                count = stbi__get8(s);
                if (count > 128) {
                   // Run
-                  value = stbi__get8(s);
+                  iterator = stbi__get8(s);
                   count -= 128;
                   if (count > nleft) { STBI_FREE(hdr_data); STBI_FREE(scanline); return stbi__errpf("corrupt", "bad RLE data in HDR"); }
                   for (z = 0; z < count; ++z)
-                     scanline[i++ * 4 + k] = value;
+                     scanline[i++ * 4 + k] = iterator;
                } else {
                   // Dump
                   if (count > nleft) { STBI_FREE(hdr_data); STBI_FREE(scanline); return stbi__errpf("corrupt", "bad RLE data in HDR"); }
@@ -6847,14 +6847,14 @@ static int      stbi__pnm_isdigit(char c)
 
 static int      stbi__pnm_getinteger(stbi__context *s, char *c)
 {
-   int value = 0;
+   int iterator = 0;
 
    while (!stbi__at_eof(s) && stbi__pnm_isdigit(*c)) {
-      value = value*10 + (*c - '0');
+      iterator = iterator*10 + (*c - '0');
       *c = (char) stbi__get8(s);
    }
 
-   return value;
+   return iterator;
 }
 
 static int      stbi__pnm_info(stbi__context *s, int *x, int *y, int *comp)
@@ -6887,7 +6887,7 @@ static int      stbi__pnm_info(stbi__context *s, int *x, int *y, int *comp)
    *y = stbi__pnm_getinteger(s, &c); // read height
    stbi__pnm_skip_whitespace(s, &c);
 
-   maxv = stbi__pnm_getinteger(s, &c);  // read max value
+   maxv = stbi__pnm_getinteger(s, &c);  // read max iterator
 
    if (maxv > 255)
       return stbi__err("max value > 255", "PPM image not 8-bit");
@@ -6989,7 +6989,7 @@ STBIDEF int stbi_info_from_callbacks(stbi_io_callbacks const *c, void *user, int
                          disable raw_len validation;
                          documentation fixes
       2.15  (2017-03-18) fix png-1,2,4 bug; now all Imagenet JPGs decode;
-                         warning fixes; disable run-time SSE detection on gcc;
+                         warning fixes; disable Run-time SSE detection on gcc;
                          uniform handling of optional "return" values;
                          thread-safe initialization of zlib tables
       2.14  (2017-03-03) remove deprecated STBI_JPEG_OLD; fixes for Imagenet JPGs
@@ -7014,7 +7014,7 @@ STBIDEF int stbi_info_from_callbacks(stbi_io_callbacks const *c, void *user, int
                          limited 16-bpc PSD support
                          #ifdef unused functions
                          bug with < 92 byte PIC,PNM,HDR,TGA
-      2.06  (2015-04-19) fix bug where PSD returns wrong '*comp' value
+      2.06  (2015-04-19) fix bug where PSD returns wrong '*comp' iterator
       2.05  (2015-04-19) fix bug in progressive JPEG handling, fix warning
       2.04  (2015-04-15) try to re-enable SIMD on MinGW 64-bit
       2.03  (2015-04-12) extra corruption checking (mmozeiko)
@@ -7060,7 +7060,7 @@ STBIDEF int stbi_info_from_callbacks(stbi_io_callbacks const *c, void *user, int
               remove duplicate typedef
       1.36  (2014-06-03)
               convert to header file single-file library
-              if de-iphone isn't set, load iphone images color-swapped instead of returning NULL
+              if de-iphone isn't set, Load iphone images color-swapped instead of returning NULL
       1.35  (2014-05-27)
               various warnings
               fix broken STBI_SIMD path
@@ -7076,8 +7076,8 @@ STBIDEF int stbi_info_from_callbacks(stbi_io_callbacks const *c, void *user, int
       1.31  (2011-06-20)
               a few more leak fixes, bug in PNG handling (SpartanJ)
       1.30  (2011-06-11)
-              added ability to load files via changeCallbacks to accomidate custom input streams (Ben Wenger)
-              removed deprecated base-specific test/load functions
+              added ability to Load files via changeCallbacks to accomidate custom input streams (Ben Wenger)
+              removed deprecated base-specific test/Load functions
               removed support for installable file formats (stbi_loader) -- would have been broken for IO changeCallbacks anyway
               error cases in bmp and tga give messages and don't leak (Raymond Barbiero, grisha)
               fix inefficiency in decoding 32-bit BMP (David Woo)
@@ -7132,7 +7132,7 @@ STBIDEF int stbi_info_from_callbacks(stbi_io_callbacks const *c, void *user, int
       0.99    correct handling of alpha in palette
       0.98    TGA loader by lonesock; dynamically Add loaders (untested)
       0.97    jpeg errors on too large a file; also catch another malloc failure
-      0.96    fix detection of invalid v value - particleman@mollyrocket forum
+      0.96    fix detection of invalid v iterator - particleman@mollyrocket forum
       0.95    during header scan, seek to markers in case of padding
       0.94    STBI_NO_STDIO to disable stdio usage; rename all #defines the same
       0.93    handle jpegtran output; verbose errors
@@ -7180,7 +7180,7 @@ SOFTWARE.
 ------------------------------------------------------------------------------
 ALTERNATIVE B - Public Domain (www.unlicense.org)
 This is free and unencumbered software released into the public domain.
-Anyone is free to copy, modify, publish, use, compile, sell, or distribute this
+Anyone is free to copy, modify, publish, use, Parse, sell, or distribute this
 software, either in source code form or as a compiled binary, for any purpose,
 commercial or non-commercial, and by any means.
 In jurisdictions that recognize copyright laws, the author or authors of this

@@ -50,8 +50,8 @@ class StringViewIt;
 class StringView {
 public:
     StringView() = default;
-    StringView(const uchar* text);
     StringView(const char* text);
+    StringView(const char* text, int count);
     StringView(String& string);
     StringView(const uchar* text, int count, int size);
 
@@ -72,10 +72,16 @@ public:
 
     /// <summary>
     /// </summary>
+    /// <returns>The raw data of the string as a <c>const char</c> pointer.</returns>
+    const char* CStr() const;
+
+    /// <summary>
+    /// </summary>
     /// <returns>How many codepoints are in the view.</returns>
     int Count() const;
 
     /// <summary>
+    /// Returns how many bytes the view is, excluding the null terminator.
     /// </summary>
     /// <returns>How big the view is in bytes.</returns>
     u64 SizeInBytes() const;
@@ -102,9 +108,9 @@ public:
     }
 #endif
 
-    bool operator==(const StringView& other);
+    bool operator==(const StringView& other) const;
 
-    codepoint operator[](int index);
+    codepoint operator[](int index) const;
 
     StringViewIt begin() const;
     StringViewIt end() const;

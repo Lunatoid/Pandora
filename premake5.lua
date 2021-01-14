@@ -23,6 +23,7 @@ inc_dirs["freetype"]   = (depsdir .. "/FreeType/include")
 inc_dirs["steamworks"] = (depsdir .. "/steamworks-146/include")
 inc_dirs["soloud"]     = (depsdir .. "/SoLoud/include")
 inc_dirs["assimp"]     = (depsdir .. "/assimp/include")
+inc_dirs["lua"]        = (depsdir .. "/Lua/include")
 
 lib_dirs = {}
 lib_dirs["pandora"]      = ("bin/" .. outputdir .. "/Pandora")
@@ -31,6 +32,7 @@ lib_dirs["freetype"]   = (depsdir .. "/FreeType/lib/x64")
 lib_dirs["steamworks"] = (depsdir .. "/steamworks-146/lib/win64")
 lib_dirs["soloud"]     = (depsdir .. "/SoLoud/lib")
 lib_dirs["assimp"]     = (depsdir .. "/assimp/lib/x64")
+lib_dirs["lua"]        = (depsdir .. "/Lua/lib")
 
 -- Register command-line options
 newoption {
@@ -145,15 +147,18 @@ project "Pandora"
 
     includedirs {
         "Pandora/src",
-        "%{inc_dirs.freetype}"
+        "%{inc_dirs.freetype}",
+        "%{inc_dirs.lua}"
     }
 
     libdirs {
-        "%{lib_dirs.freetype}"
+        "%{lib_dirs.freetype}",
+        "%{lib_dirs.lua}"
     }
 
     links {
-        "freetype"
+        "freetype",
+        "lua-x64-s"
     }
 
     defines {

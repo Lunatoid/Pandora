@@ -66,6 +66,7 @@ public:
     
 protected:
     // Overload these
+    virtual void OnQuit() {}
     virtual void OnUpdate(f32 dt) {}
     virtual void OnRender(f32 dt) {}
 

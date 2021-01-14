@@ -589,7 +589,7 @@ bool BoxBuilder::EncodeMeshResource(Stream& out, StringView path, bool compresse
         | aiProcess_CalcTangentSpace
         | aiProcess_OptimizeMeshes;
 
-    const aiScene* scene = aiImportFile((char*)path.Data(), FLAGS);
+    const aiScene* scene = aiImportFile(path.CStr(), FLAGS);
 
     if (!scene) return false;
 
@@ -672,7 +672,7 @@ bool BoxBuilder::EncodeAudioResource(Stream& out, StringView path, bool compress
     soloud->init();
 
     SoLoud::Wav wave;
-    if (wave.load((char*)path.Data()) != 0) {
+    if (wave.load(path.CStr()) != 0) {
         return false;
     }
 

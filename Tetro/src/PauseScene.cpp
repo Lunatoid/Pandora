@@ -86,7 +86,7 @@ void PauseScene::OnUpdate(f32 dt) {
 }
 
 void PauseScene::OnRender(f32 dt) {
-    spriteRenderer.UpdateProjection(cam.GetMatrix());
+    spriteRenderer.UpdateProjection(cam);
 
     for (int i = 0; i < options.Count(); i++) {
         options[i].Draw(spriteRenderer);

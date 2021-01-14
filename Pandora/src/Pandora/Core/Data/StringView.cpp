@@ -50,14 +50,19 @@ uchar* WideToUTF8(const wchar* text, int size, Allocator allocator) {
 
 #endif
 
-StringView::StringView(const uchar* text) {
+StringView::StringView(const char* text) {
     memory = (byte*)text;
     sizeInBytes = (u64)UTF8Size(text) - 1;
     count = (int)UTF8Count(text);
 }
 
-StringView::StringView(const char* text) :
-    StringView((const uchar*)text) {
+StringView::StringView(const char* text, int count) {
+    memory = (byte*)text;
+    this->count = count;
+
+    for (int i = 0; i < count; i++) {
+        sizeInBytes += CodepointSize(At(i));
+    }
 }
 
 StringView::StringView(String& string) {
@@ -89,6 +94,10 @@ const uchar* StringView::Data() const {
 
 const byte* StringView::ByteData() const {
     return memory;
+}
+
+const char* StringView::CStr() const {
+    return (const char*)memory;
 }
 
 int StringView::Count() const {
@@ -143,7 +152,7 @@ const uchar* StringView::ToString(Allocator allocator) {
     return buffer;
 }
 
-bool StringView::operator==(const StringView& other) {
+bool StringView::operator==(const StringView& other) const {
     if (SizeInBytes() == other.SizeInBytes()) {
         return utf8ncmp(Data(), other.Data(), SizeInBytes()) == 0;
     } else {
@@ -151,7 +160,7 @@ bool StringView::operator==(const StringView& other) {
     }
 }
 
-codepoint StringView::operator[](int index) {
+codepoint StringView::operator[](int index) const {
     return At(index);
 }
 

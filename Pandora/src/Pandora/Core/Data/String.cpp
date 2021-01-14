@@ -250,15 +250,31 @@ void String::Insert(int index, const uchar* text) {
     PD_ASSERT_D(index >= 0 && index <= Count(),
                u8"illegal insertion index, valid 0:%d, given: %d", Count(), index);
 
+    if (Count() == 0) {
+        Set(text);
+        return;
+    } else if (index == Count()) {
+        Append(text);
+        return;
+    }
+
     int textSize = (int)UTF8Size(text) - 1;
     Grow(textSize);
 
     int offset = ByteOffset(index);
 
+    u64 copySize = SizeInBytes() - textSize - offset + 1;
+
+    // Shift everything right of the inserted area
+    // "Hello, world!"
+    //         ^^^^^^
+    // "Hello, _____world!"
     MemoryCopy(ByteData() + offset + textSize,
                ByteData() + offset,
-               SizeInBytes() - textSize - offset, true);
+               copySize, true);
 
+    // Copy inserted text to the now vacant area
+    // "Hello, good world!"
     MemoryCopy(ByteData() + offset, text, textSize);
 }
 
@@ -420,6 +436,10 @@ byte* String::ByteData() const {
     return memory;
 }
 
+const char* String::CStr() const {
+    return (const char*)ByteData();
+}
+
 Allocator String::Allocator() const {
     return allocator;
 }
@@ -445,7 +465,7 @@ String& String::operator=(const uchar* other) {
     return *this;
 }
 
-String& String::operator=(String& other) {
+String& String::operator=(const String& other) {
     Set(other.Data());
     return *this;
 }

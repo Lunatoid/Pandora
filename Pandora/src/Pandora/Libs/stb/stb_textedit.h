@@ -73,7 +73,7 @@
 //   state of a text widget (except for the string, which you will store
 //   separately).
 //
-//   To compile in this mode, you must define STB_TEXTEDIT_CHARTYPE to a
+//   To Parse in this mode, you must define STB_TEXTEDIT_CHARTYPE to a
 //   primitive type that defines a single character (e.g. char, wchar_t, etc).
 //
 //   To save space or increase undo-ability, you can optionally define the
@@ -94,7 +94,7 @@
 // Implementation mode:
 //
 //   If you define STB_TEXTEDIT_IMPLEMENTATION before including this, it
-//   will compile the implementation of the text edit widget, depending
+//   will Parse the implementation of the text edit widget, depending
 //   on a large number of symbols which must be defined before the include.
 //
 //   The implementation is defined only as static functions. You will then
@@ -251,11 +251,11 @@
 // as possible. (For example, to locate the mouse pointer in the text, we
 // could define functions that return the X and Y positions of characters
 // and binary search Y and then X, but if we're doing dynamic layout this
-// will run the layout algorithm many times, so instead we manually search
+// will Run the layout algorithm many times, so instead we manually search
 // forward in one pass. Similar logic applies to e.g. up-arrow and
 // down-arrow movement.)
 //
-// If it's run in a widget that *has* cached the layout, then this is less
+// If it's Run in a widget that *has* cached the layout, then this is less
 // efficient, but it's not horrible on modern computers. But you wouldn't
 // want to edit million-line files with it.
 
@@ -490,7 +490,7 @@ static void stb_textedit_drag(STB_TEXTEDIT_STRING *str, STB_TexteditState *state
 //      Keyboard input handling
 //
 
-// forward declarations
+// forward statements
 static void stb_text_undo(STB_TEXTEDIT_STRING *str, STB_TexteditState *state);
 static void stb_text_redo(STB_TEXTEDIT_STRING *str, STB_TexteditState *state);
 static void stb_text_makeundo_delete(STB_TEXTEDIT_STRING *str, STB_TexteditState *state, int where, int length);
@@ -1385,7 +1385,7 @@ SOFTWARE.
 ------------------------------------------------------------------------------
 ALTERNATIVE B - Public Domain (www.unlicense.org)
 This is free and unencumbered software released into the public domain.
-Anyone is free to copy, modify, publish, use, compile, sell, or distribute this
+Anyone is free to copy, modify, publish, use, Parse, sell, or distribute this
 software, either in source code form or as a compiled binary, for any purpose,
 commercial or non-commercial, and by any means.
 In jurisdictions that recognize copyright laws, the author or authors of this

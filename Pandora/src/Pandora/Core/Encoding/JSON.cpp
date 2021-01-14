@@ -21,7 +21,7 @@ namespace pd {
 // JsonValue
 
 JsonValue::JsonValue(JsonType type) {
-    // We want the value to be immediately usable
+    // We want the iterator to be immediately usable
     value = Ref<InternalValue>::Create();
     value->SetType(type);
 }
@@ -31,7 +31,7 @@ JsonValue::JsonValue(StringView string) {
     Set(string);
 }
 
-JsonValue::JsonValue(const uchar* string)
+JsonValue::JsonValue(const char* string)
     : JsonValue(StringView(string)) {
 }
 
@@ -58,7 +58,7 @@ void JsonValue::Set(StringView string) {
     GetString().Set(string);
 }
 
-void JsonValue::Set(const uchar* string) {
+void JsonValue::Set(const char* string) {
     Set(StringView(string));
 }
 
@@ -378,7 +378,7 @@ JsonValue& JsonValue::operator=(StringView string) {
     return *this;
 }
 
-JsonValue& JsonValue::operator=(const uchar* text) {
+JsonValue& JsonValue::operator=(const char* text) {
     Set(StringView(text));
     return *this;
 }
@@ -671,7 +671,7 @@ void JsonValue::ParseNumber(ParsingContext* c, f64* value) {
     } while (isdigit(point) || (point == '.' && radixCount == 1));
 
     f64 base;
-    sscanf_s((char*)number.Data(), "%lf", &base);
+    sscanf_s(number.CStr(), "%lf", &base);
 
     number.Set("");
 
@@ -706,7 +706,7 @@ void JsonValue::ParseNumber(ParsingContext* c, f64* value) {
         } while (isdigit(point) || (point == '.' && radixCount == 1));
 
         f64 exp;
-        sscanf_s((char*)number.Data(), "%lf", &exp);
+        sscanf_s(number.CStr(), "%lf", &exp);
 
         if (!basePositive) {
             exp *= -1.0;

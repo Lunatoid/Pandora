@@ -361,7 +361,7 @@ void GameScene::OnUpdate(f32 dt) {
 }
 
 void GameScene::OnRender(f32 dt) {
-    spriteRenderer.UpdateProjection(cam.GetMatrix());
+    spriteRenderer.UpdateProjection(cam);
     board.Draw(spriteRenderer);
     spriteRenderer.Draw(bg);
 

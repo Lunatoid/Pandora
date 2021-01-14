@@ -111,11 +111,12 @@ Vec4 Sprite::GetClippingMask() {
     return uv;
 }
 
-Vec2 Sprite::GetSize(int slot, bool applyScale) {
+Vec2 Sprite::GetSize(int slot, bool applyScale) const {
     Vec2 texSize = material->GetTexture(slot, RefType::Weak)->GetSize();
 
     if (applyScale) {
-        texSize *= scale;
+        texSize.x *= scale.x;
+        texSize.y *= scale.y;
     }
 
     return texSize;

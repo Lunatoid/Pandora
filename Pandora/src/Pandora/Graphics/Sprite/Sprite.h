@@ -104,7 +104,7 @@ public:
     void SetNormalizedClippingMask(Vec4 mask);
     
     /// <summary>
-    /// Sets the clipping mask as if it were a tile on an atlas.
+    /// Sets the clipping mask as if it were a tile on an atlasName.
     /// </summary>
     /// <param name="position">The tile position, (0,0) being the top left.</param>
     /// <param name="tileSize">The size of the tile in pixels.</param>
@@ -123,7 +123,7 @@ public:
     /// <param name="slot">The slot.</param>
     /// <param name="applyScale">If <c>true</c> it will apply the scale of the sprite.</param>
     /// <returns>The size of the texture.</returns>
-    Vec2 GetSize(int slot, bool applyScale);
+    Vec2 GetSize(int slot, bool applyScale) const;
     
     /// <summary>
     /// Returns the hash of the sprite material.

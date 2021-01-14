@@ -31,6 +31,21 @@
         </Expand>
     </Type>
 
+    <!-- BoundedString -->
+    <Type Name="pd::BoundedString&lt;*&gt;">
+        <DisplayString>{{ string={stackMemory,na}, count={strlen((char*)memory)}, max={maxCapacity} }}</DisplayString>
+        <Expand>
+            <Item Name="[max capacity]">maxCapacity</Item>
+            <Item Name="[capacity]">bufferSize</Item>
+            <Item Name="[string]">(char*)stackMemory,na</Item>
+
+            <ArrayItems>
+                <Size>bufferSize</Size>
+                <ValuePointer>(u8*)stackMemory</ValuePointer>
+            </ArrayItems>
+        </Expand>
+    </Type>
+
     <!-- Slice -->
     <Type Name="pd::Slice&lt;*&gt;">
         <DisplayString>{"$T1"} {{ count={count} }}</DisplayString>

@@ -42,7 +42,7 @@ App::App(int argc, char** argv, VideoBackend backend, StringView title, Vec2i si
 }
 
 App::~App() {
-    // Scene destructors must run before video/audio destructors
+    // Scene destructors must Run before video/audio destructors
     sceneManager.Delete();
 
     AudioAPI::Delete();
@@ -55,7 +55,7 @@ void App::Run() {
     if (IsRunning()) return;
 
 #if !defined(PD_NO_IMGUI)
-    // Attempt to load ImGui font if we have any specified
+    // Attempt to Load ImGui font if we have any specified
     // We don't do this in the constructor because the catalog will not have loaded anything yet
     if (catalog.GetResourceData("Fonts/ImGui", fontData)) {
         ImFontConfig config = {};
@@ -84,6 +84,8 @@ void App::Run() {
 
         video->Swap();
     }
+
+    OnQuit();
 }
 
 void App::Quit() {
