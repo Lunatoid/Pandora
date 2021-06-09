@@ -1,0 +1,127 @@
+﻿{
+    "compressed": true,
+    "items": [
+        {
+            "name": "Shaders/Lit",
+            "type": "Shader",
+            "sources": [
+                {
+                    "backend": "OpenGL",
+                    "vertex": "data/shaders/Lit.Vertex.glsl",
+                    "pixel": "data/shaders/Lit.Pixel.glsl"
+                }
+            ]
+        },
+        {
+            "name": "Shaders/Unlit",
+            "type": "Shader",
+            "sources": [
+                {
+                    "backend": "OpenGL",
+                    "vertex": "data/shaders/Unlit.Vertex.glsl",
+                    "pixel": "data/shaders/Unlit.Pixel.glsl"
+                }
+            ]
+        },
+        {
+            "name": "Shaders/Sprite",
+            "type": "Shader",
+            "sources": [
+                {
+                    "backend": "OpenGL",
+                    "vertex": "data/shaders/Sprite.Vertex.glsl",
+                    "pixel": "data/shaders/Sprite.Pixel.glsl"
+                }
+            ]
+        },
+        {
+            "name": "Shaders/SolidSprite",
+            "type": "Shader",
+            "sources": [
+                {
+                    "backend": "OpenGL",
+                    "vertex": "data/shaders/SolidSprite.Vertex.glsl",
+                    "pixel": "data/shaders/SolidSprite.Pixel.glsl"
+                }
+            ]
+        },
+        {
+            "name": "MonkeTex",
+            "type": "Texture",
+            "source": "data/textures/monke.png",
+            "filtering": "Anisotropic",
+            "wrapping": "Clamp"
+        },
+        {
+            "name": "MonkeTexInv",
+            "type": "Texture",
+            "source": "data/textures/monkeInv.png",
+            "filtering": "Anisotropic",
+            "wrapping": "Clamp"
+        },
+        {
+            "name": "Tiles",
+            "type": "Texture",
+            "source": "data/textures/tiles.png",
+            "filtering": "Point",
+            "wrapping": "Clamp"
+        },
+        {
+            "name": "cerberus_A",
+            "type": "Texture",
+            "source": "data/textures/cerberus_A.png",
+            "filtering": "Trilinear",
+            "wrapping": "Repeat"
+        },
+        // {
+        //     "name": "cerberus_M",
+        //     "type": "Texture",
+        //     "source": "data/textures/cerberus_M.png",
+        //     "filtering": "Anisotropic",
+        //     "wrapping": "Repeat"
+        // },
+        {
+            "name": "cerberus_N",
+            "type": "Texture",
+            "source": "data/textures/cerberus_N.png",
+            "filtering": "Trilinear",
+            "wrapping": "Repeat"
+        },
+        // {
+        //     "name": "cerberus_R",
+        //     "type": "Texture",
+        //     "source": "data/textures/cerberus_R.png",
+        //     "filtering": "Anisotropic",
+        //     "wrapping": "Repeat"
+        // },
+        {
+            "name": "Cerberus",
+            "type": "Mesh",
+            "source": "data/models/cerberus.fbx"
+        },
+        {
+            "name": "BricksAlbedo",
+            "type": "Texture",
+            "source": "data/textures/bricks_albedo.png",
+            "filtering": "Anisotropic",
+            "wrapping": "Clamp"
+        },
+        {
+            "name": "BricksNormal",
+            "type": "Texture",
+            "source": "data/textures/bricks_normal.png",
+            "filtering": "Anisotropic",
+            "wrapping": "Clamp"
+        },
+        {
+            "name": "Plane",
+            "type": "Mesh",
+            "source": "data/models/plane.fbx"
+        },
+        {
+            "name": "Osaka",
+            "type": "Font",
+            "source": "data/fonts/osaka.ttf"
+        }
+    ]
+}
